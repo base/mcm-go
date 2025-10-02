@@ -1,21 +1,11 @@
 # MCM Go SDK
 
-A comprehensive Go SDK for interacting with the Multi-Chain Multisig (MCM) program on Solana.
-
-## Features
-
-- 🔑 **PDA Derivation**: Utilities for deriving all MCM program PDAs
-- 🌳 **Merkle Trees**: Keccak256-based Merkle tree construction with proof generation
-- 📝 **Proposal Management**: Build and validate proposals with automatic Merkle proof generation
-- 🔐 **Signature Handling**: ECDSA signature encoding/decoding
-- 📡 **RPC Client**: Solana RPC client wrapper with MCM-specific functionality
-- 🛠️ **High-level Services**: Simplified workflows for common operations
-- 🧪 **Transaction Building**: Flexible transaction construction and submission
+Go SDK for the Multi-Chain Multisig (MCM) Solana program.
 
 ## Installation
 
 ```bash
-go get mcm-go
+go get github.com/base/mcm-go
 ```
 
 ## Quick Start
@@ -26,116 +16,181 @@ package main
 import (
     "context"
     "github.com/gagliardetto/solana-go"
-    "mcm-go"
     "mcm-go/pkg/client"
+    "mcm-go/pkg/services"
 )
 
 func main() {
-    // Create client
     cfg := client.Config{
         RPCURL:    "https://api.devnet.solana.com",
-        ProgramID: solana.MustPublicKeyFromBase58("55CNTEUq6cAa2sBA7bkDfJ2bb3uWs7Zh77vAF9H8TnJL"),
+        WSURL:     "wss://api.devnet.solana.com",
+        ProgramID: solana.MustPublicKeyFromBase58("YourProgramID"),
     }
 
-    mcmClient, _ := mcm.NewClient(cfg)
+    mcmClient, _ := client.New(cfg)
     defer mcmClient.Close()
 
-    // Create services
-    proposalSvc := mcm.NewProposalService(mcmClient)
+    proposalSvc := services.NewProposalService(mcmClient)
 
-    // Build and submit proposals...
+    // Create proposal from on-chain state
+    ctx := context.Background()
+    p, _ := proposalSvc.CreateProposalFromChain(ctx, services.CreateProposalFromChainParams{
+        MultisigID:           multisigID,
+        ValidUntil:           validUntil,
+        Instructions:         instructions,
+        OverridePreviousRoot: false,
+    })
+
+    // Compute Merkle root and hash to sign
+    pwr, _ := p.WithRoot()
+    pts, _ := pwr.WithHashToSign()
+
+    // Distribute pts.HashToSign to signers for ECDSA signing
 }
 ```
+
+## Examples
+
+- [**basic_usage**](examples/basic_usage/main.go) - Complete workflow: create proposal from chain, compute Merkle root, prepare hash for signing
+- [**persistence**](examples/persistence/main.go) - Save/load proposals to/from JSON files
 
 ## Package Structure
 
 ```
 mcm-go/
-├── bindings/           # Auto-generated Anchor bindings
 ├── pkg/
-│   ├── client/        # RPC client wrapper
-│   ├── pda/           # PDA derivation utilities
-│   ├── crypto/        # Merkle tree & signatures
-│   ├── proposal/      # Proposal types and builders
-│   ├── instructions/  # Instruction wrappers
-│   ├── state/         # Account fetchers
-│   ├── services/      # High-level services
-│   └── tx/            # Transaction builder
+│   ├── bindings/      # Anchor-generated types from mcm.json IDL
+│   ├── client/        # Solana RPC/WebSocket client wrapper
+│   ├── crypto/        # Keccak256 Merkle tree implementation with proof generation
+│   ├── pda/           # Program Derived Address utilities
+│   ├── proposal/      # Proposal types, builder, Merkle computation, signing
+│   │   ├── io/        # JSON persistence (save/load proposals)
+│   │   ├── types.go   # Core types (Proposal, ProposalWithRoot, ProposalToSign)
+│   │   ├── builder.go # Builder pattern for constructing proposals
+│   │   ├── merkle.go  # Merkle root computation (p.WithRoot())
+│   │   └── signing.go # Hash to sign computation (pwr.WithHashToSign())
+│   ├── instructions/  # MCM instruction builders (Initialize, SetConfig, etc.)
+│   ├── state/         # On-chain account fetchers
+│   ├── services/      # High-level services (ProposalService, SignersService, etc.)
+│   └── tx/            # Transaction builder and submission utilities
 ├── examples/          # Usage examples
-└── mcm.go            # Main SDK entry point
+└── mcm.json          # MCM program IDL (Anchor >= 0.30.0)
 ```
 
 ## Core Concepts
 
-### 1. PDA Derivation
+### 1. Proposals
 
-Derive Program Derived Addresses for MCM accounts:
-
-```go
-import "mcm-go/pkg/pda"
-
-multisigID := [32]byte{...}
-configPDA, _, _ := pda.MultisigConfigPDA(programID, multisigID)
-```
-
-### 2. Building Proposals
-
-Create proposals with Merkle proofs:
+Proposals contain instructions and metadata. The SDK provides a fluent API for computing cryptographic components:
 
 ```go
 import "mcm-go/pkg/proposal"
 
+// Option 1: Using Builder
 builder := proposal.NewBuilder(multisigID, validUntil)
 builder.SetRootMetadata(metadata)
 builder.AddInstruction(instruction)
+p, _ := builder.Build()
 
-proposalWithRoot, _ := builder.Build()
+// Option 2: Direct construction
+p := &proposal.Proposal{
+    MultisigID:   multisigID,
+    ValidUntil:   validUntil,
+    Instructions: instructions,
+    RootMetadata: metadata,
+}
+
+// Compute Merkle root and proofs
+pwr, _ := p.WithRoot()
+
+// Compute hash for ECDSA signing (keccak256(root || validUntil))
+pts, _ := pwr.WithHashToSign()
+
+// Distribute pts.HashToSign to signers
 ```
 
-### 3. Merkle Tree Construction
+### 2. Merkle Trees
 
-Build Merkle trees with automatic proof generation:
+Keccak256-based Merkle tree with automatic proof generation:
 
 ```go
 import "mcm-go/pkg/crypto"
 
-leaves := [][32]byte{...}
+leaves := [][32]byte{leaf1, leaf2, leaf3}
 tree, _ := crypto.BuildMerkleTreeFromLeaves(leaves)
 
-// tree.Root contains the Merkle root
-// tree.Proofs[i] contains the proof for leaves[i]
+// tree.Root is the Merkle root
+// tree.Proofs[i] is the proof for leaves[i]
+```
+
+### 3. PDA Derivation
+
+Derive Program Derived Addresses:
+
+```go
+import "mcm-go/pkg/pda"
+
+configPDA, _, _ := pda.MultisigConfigPDA(programID, multisigID)
+rootMetadataPDA, _, _ := pda.RootMetadataPDA(programID, multisigID)
 ```
 
 ### 4. Services
 
-Use high-level services for common workflows:
+High-level services for common workflows:
 
 ```go
+import "mcm-go/pkg/services"
+
 // Signers management
-signersService := mcm.NewSignersService(client)
-signersService.InitSigners(ctx, params)
-signersService.AppendSignersInBatches(ctx, multisigID, signers, 10, authority)
+signersSvc := services.NewSignersService(client)
+signersSvc.InitSigners(ctx, params)
+signersSvc.AppendSignersInBatches(ctx, multisigID, signers, batchSize, authority)
+signersSvc.FinalizeSigners(ctx, params)
+signersSvc.SetConfig(ctx, setConfigParams)
 
 // Signatures management
-signaturesService := mcm.NewSignaturesService(client)
-signaturesService.InitSignatures(ctx, params)
-signaturesService.AppendSignaturesInBatches(ctx, multisigID, root, validUntil, sigs, 5, authority)
+sigsSvc := services.NewSignaturesService(client)
+sigsSvc.InitSignatures(ctx, params)
+sigsSvc.AppendSignaturesInBatches(ctx, multisigID, root, validUntil, sigs, batchSize, authority)
+sigsSvc.FinalizeSignatures(ctx, params)
 
-// Proposal operations
-proposalService := mcm.NewProposalService(client)
-proposalService.SetRoot(ctx, params)
+// Proposal service
+proposalSvc := services.NewProposalService(client)
+p, _ := proposalSvc.CreateProposalFromChain(ctx, params)
+proposalSvc.SetRoot(ctx, setRootParams)
 
 // Execution
-executionService := mcm.NewExecutionService(client)
-executionService.ExecuteOperation(ctx, params)
+execSvc := services.NewExecutionService(client)
+execSvc.ExecuteOperation(ctx, params)
+execSvc.ExecuteAllOperations(ctx, multisigID, proposalWithRoot, authority)
 ```
 
-## Workflow Example
+### 5. Persistence
+
+Save and load proposals to/from JSON:
+
+```go
+import "mcm-go/pkg/proposal/io"
+
+// Save proposal to file
+io.SaveProposal(p, "proposal.json")
+
+// Load proposal from file
+p, _ := io.LoadProposal("proposal.json")
+
+// Compute root and hash after loading
+pwr, _ := p.WithRoot()
+pts, _ := pwr.WithHashToSign()
+```
+
+## Complete Workflow
 
 ### 1. Initialize Multisig
 
 ```go
-ix, _ := mcm.Initialize(instructions.InitializeParams{
+import "mcm-go/pkg/instructions"
+
+ix, _ := instructions.Initialize(instructions.InitializeParams{
     ChainID:    1,
     MultisigID: multisigID,
     Authority:  authority,
@@ -146,18 +201,20 @@ ix, _ := mcm.Initialize(instructions.InitializeParams{
 ### 2. Configure Signers
 
 ```go
+signersSvc := services.NewSignersService(client)
+
 // Initialize signer storage
-signersService.InitSigners(ctx, InitSignersParams{
+signersSvc.InitSigners(ctx, services.InitSignersParams{
     MultisigID:   multisigID,
     TotalSigners: 10,
     Authority:    authority,
 })
 
-// Add signers in batches
-signersService.AppendSignersInBatches(ctx, multisigID, signerAddresses, 5, authority)
+// Add signers in batches (max 10 per transaction)
+signersSvc.AppendSignersInBatches(ctx, multisigID, signerAddresses, 10, authority)
 
 // Finalize
-signersService.FinalizeSigners(ctx, FinalizeSignersParams{
+signersSvc.FinalizeSigners(ctx, services.FinalizeSignersParams{
     MultisigID: multisigID,
     Authority:  authority,
 })
@@ -166,7 +223,7 @@ signersService.FinalizeSigners(ctx, FinalizeSignersParams{
 ### 3. Set Configuration
 
 ```go
-ix, _ := mcm.SetConfig(instructions.SetConfigParams{
+ix, _ := instructions.SetConfig(instructions.SetConfigParams{
     MultisigID:   multisigID,
     SignerGroups: groups,
     GroupQuorums: quorums,
@@ -177,48 +234,49 @@ ix, _ := mcm.SetConfig(instructions.SetConfigParams{
 })
 ```
 
-### 4. Create and Sign Proposal
+### 4. Create Proposal and Collect Signatures
 
 ```go
-// Build proposal
-proposalToSign, _ := proposalService.CreateProposalToSign(
-    multisigID,
-    validUntil,
-    instructions,
-    metadata,
-)
+proposalSvc := services.NewProposalService(client)
 
-// Signers sign proposalToSign.HashToSign off-chain
-// Collect ECDSA signatures...
+// Create proposal from on-chain state
+p, _ := proposalSvc.CreateProposalFromChain(ctx, services.CreateProposalFromChainParams{
+    MultisigID:           multisigID,
+    ValidUntil:           validUntil,
+    Instructions:         instructions,
+    OverridePreviousRoot: false,
+})
 
-// Submit signatures
-signaturesService.InitSignatures(ctx, params)
-signaturesService.AppendSignaturesInBatches(ctx, multisigID, root, validUntil, signatures, 5, authority)
-signaturesService.FinalizeSignatures(ctx, params)
+// Compute root and hash
+pwr, _ := p.WithRoot()
+pts, _ := pwr.WithHashToSign()
+
+// Distribute pts.HashToSign to signers for off-chain ECDSA signing
+// Collect signatures...
+
+// Submit signatures on-chain
+sigsSvc := services.NewSignaturesService(client)
+sigsSvc.InitSignatures(ctx, params)
+sigsSvc.AppendSignaturesInBatches(ctx, multisigID, pwr.Root, validUntil, signatures, 5, authority)
+sigsSvc.FinalizeSignatures(ctx, params)
 ```
 
-### 5. Set Root
+### 5. Set Root and Execute
 
 ```go
-proposalService.SetRoot(ctx, SetRootParams{
+// Set root on-chain
+proposalSvc.SetRoot(ctx, services.SetRootParams{
     MultisigID: multisigID,
-    Proposal:   proposalWithRoot,
+    Proposal:   pwr,
     Authority:  authority,
 })
+
+// Execute operations
+execSvc := services.NewExecutionService(client)
+execSvc.ExecuteAllOperations(ctx, multisigID, pwr, authority)
 ```
 
-### 6. Execute Operations
-
-```go
-executionService.ExecuteAllOperations(
-    ctx,
-    multisigID,
-    proposalWithRoot,
-    authority,
-)
-```
-
-## Account Fetching
+## State Fetching
 
 Fetch on-chain account state:
 
@@ -227,13 +285,22 @@ import "mcm-go/pkg/state"
 
 fetcher := state.NewFetcher(rpcClient, programID)
 
-// Fetch individual accounts
 config, _ := fetcher.GetMultisigConfig(ctx, multisigID)
-metadata, _ := fetcher.GetRootMetadata(ctx, multisigID)
-
-// Fetch all state at once
-state, _ := fetcher.GetMultisigState(ctx, multisigID)
+rootAndOpCount, _ := fetcher.GetExpiringRootAndOpCount(ctx, multisigID)
+rootMetadata, _ := fetcher.GetRootMetadata(ctx, multisigID)
 ```
+
+## Architecture
+
+The SDK is organized in layers:
+
+1. **Bindings** (`pkg/bindings`) - Anchor-generated types from IDL
+2. **Core Utilities** (`pkg/pda`, `pkg/crypto`) - PDAs and Merkle trees
+3. **Proposal Layer** (`pkg/proposal`) - Proposal construction and cryptography
+4. **Instructions** (`pkg/instructions`) - MCM instruction builders
+5. **State** (`pkg/state`) - On-chain account fetchers
+6. **Services** (`pkg/services`) - High-level workflows
+7. **Client** (`pkg/client`, `pkg/tx`) - RPC and transaction handling
 
 ## Testing
 
@@ -241,28 +308,19 @@ state, _ := fetcher.GetMultisigState(ctx, multisigID)
 go test ./...
 ```
 
-## Architecture
+## Dependencies
 
-The SDK follows a layered architecture:
+- [solana-go](https://github.com/gagliardetto/solana-go) - Solana Go SDK
+- [anchor-go](https://github.com/gagliardetto/anchor-go) - Used to generate bindings from `mcm.json` IDL
 
-1. **Bindings Layer** (`bindings/`): Auto-generated Anchor code
-2. **Core Layer** (`pkg/pda`, `pkg/crypto`): Fundamental utilities
-3. **Proposal Layer** (`pkg/proposal`): Proposal construction
-4. **Instruction Layer** (`pkg/instructions`): Instruction builders
-5. **State Layer** (`pkg/state`): Account fetching
-6. **Service Layer** (`pkg/services`): High-level workflows
-7. **Client Layer** (`pkg/client`, `pkg/tx`): RPC and transaction handling
+## IDL Source
 
-## Contributing
+The `mcm.json` IDL is sourced from the [MCM Solana program](https://github.com/smartcontractkit/chainlink-ccip/blob/main/chains/solana/contracts/target/idl/mcm.json) and updated to align with Anchor >= 0.30.0.
 
-See [MIGRATION.md](./MIGRATION.md) for implementation details and architecture decisions.
+## Links
+
+- [MCM Solana Program](https://github.com/smartcontractkit/chainlink-ccip/tree/main/chains/solana/contracts/programs/mcm)
 
 ## License
 
 MIT
-
-## Links
-
-- [MCM Program Documentation](https://github.com/smartcontractkit/chainlink-mcm)
-- [Solana Documentation](https://docs.solana.com/)
-- [TypeScript SDK Reference](./mcm-sol-ts/)
