@@ -1,0 +1,59 @@
+// Package proposal provides types and utilities for creating and managing MCM proposals.
+package proposal
+
+import (
+	"mcm-go/pkg/crypto"
+
+	"github.com/gagliardetto/solana-go"
+)
+
+// RootMetadata contains metadata about a proposal root
+type RootMetadata struct {
+	ChainID              uint64
+	Multisig             solana.PublicKey
+	PreOpCount           uint64
+	PostOpCount          uint64
+	OverridePreviousRoot bool
+}
+
+// Proposal represents a complete MCM proposal
+type Proposal struct {
+	MultisigID   [32]byte
+	ValidUntil   uint32
+	Instructions []*solana.GenericInstruction
+	RootMetadata RootMetadata
+}
+
+// ProposalRoot contains the Merkle root and proofs for a proposal
+type ProposalRoot struct {
+	Root            [32]byte
+	MetadataProof   crypto.Proof
+	OperationProofs []crypto.Proof
+}
+
+// ProposalWithRoot combines a Proposal with its Merkle root and proofs
+// It embeds *Proposal as a pointer to share the same instance in memory
+type ProposalWithRoot struct {
+	*Proposal
+	ProposalRoot
+}
+
+// ProposalToSign extends ProposalWithRoot with the hash that signers need to sign
+type ProposalToSign struct {
+	*ProposalWithRoot
+	HashToSign [32]byte
+}
+
+// Validate checks if the proposal is valid
+func (p *Proposal) Validate() error {
+	if p.ValidUntil == 0 {
+		return ErrInvalidValidUntil
+	}
+	if len(p.Instructions) == 0 {
+		return ErrNoInstructions
+	}
+	if p.RootMetadata.PreOpCount > p.RootMetadata.PostOpCount {
+		return ErrInvalidOpCount
+	}
+	return nil
+}

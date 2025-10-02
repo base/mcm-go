@@ -1,0 +1,1581 @@
+{
+    "address": "55CNTEUq6cAa2sBA7bkDfJ2bb3uWs7Zh77vAF9H8TnJL",
+    "metadata": {
+        "name": "mcm",
+        "version": "0.1.1",
+        "spec": "0.1.0"
+    },
+    "docs": [
+        "A multi-signature contract system that supports signing many transactions targeting",
+        "multiple chains with a single set of signatures. This program manages multiple multisig",
+        "configurations through Program Derived Accounts (PDAs), each identified by a unique",
+        "multisig_id.",
+        "",
+        "Key Features:",
+        "- Multiple Configurations: A single deployed program instance can manage",
+        "multiple independent multisig configurations",
+        "- Hierarchical Signature Groups: Supports complex approval structures with",
+        "nested groups and customizable quorum requirements",
+        "- Merkle Tree Operations: Batches signed operations in Merkle trees for",
+        "efficient verification and execution",
+        "",
+        "Usage Flow:",
+        "1. Initialize multisig configuration with a unique ID",
+        "2. Set up signer hierarchy and group structure",
+        "3. Set a Merkle root with authenticated metadata and signatures",
+        "4. Execute operations by providing Merkle proofs"
+    ],
+    "instructions": [
+        {
+            "name": "initialize",
+            "docs": [
+                "Initialize a new multisig configuration.",
+                "",
+                "Creates the foundation for a new multisig instance by initializing the core configuration",
+                "PDAs and registering the multisig_id and chain_id. This is the first step in setting up",
+                "a new multisig configuration.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing the accounts required for initialization:",
+                "- `multisig_config`: PDA that will store the core configuration",
+                "- `root_metadata`: PDA that will store the current root's metadata",
+                "- `expiring_root_and_op_count`: PDA that tracks the current root and operation count",
+                "- `authority`: The deployer who becomes the initial owner",
+                "- `program_data`: Used to validate that the caller is the program's upgrade authority",
+                "- `chain_id`: Network identifier for the chain this configuration is targeting",
+                "- `multisig_id`: A unique, 32-byte identifier (left-padded) for this multisig instance",
+                "",
+                "# Access Control",
+                "",
+                "This instruction can only be called by the program's upgrade authority (typically the deployer).",
+                "",
+                "# Note",
+                "",
+                "After initialization, the owner can transfer ownership through the two-step",
+                "transfer_ownership/accept_ownership process."
+            ],
+            "discriminator": [
+                175,
+                175,
+                109,
+                31,
+                13,
+                152,
+                155,
+                237
+            ],
+            "accounts": [
+                {
+                    "name": "multisig_config",
+                    "writable": true
+                },
+                {
+                    "name": "authority",
+                    "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "system_program"
+                },
+                {
+                    "name": "program"
+                },
+                {
+                    "name": "program_data"
+                },
+                {
+                    "name": "root_metadata",
+                    "writable": true
+                },
+                {
+                    "name": "expiring_root_and_op_count",
+                    "writable": true
+                }
+            ],
+            "args": [
+                {
+                    "name": "chain_id",
+                    "type": "u64"
+                },
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "transfer_ownership",
+            "docs": [
+                "Propose a new owner for the multisig instance config.",
+                "",
+                "Only the current owner (admin) can propose a new owner.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing the configuration account.",
+                "- `_multisig_id`: The multisig identifier.",
+                "- `proposed_owner`: The public key of the proposed new owner."
+            ],
+            "discriminator": [
+                65,
+                177,
+                215,
+                73,
+                53,
+                45,
+                99,
+                47
+            ],
+            "accounts": [
+                {
+                    "name": "config",
+                    "writable": true
+                },
+                {
+                    "name": "authority",
+                    "signer": true
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "proposed_owner",
+                    "type": "pubkey"
+                }
+            ]
+        },
+        {
+            "name": "accept_ownership",
+            "docs": [
+                "Accept ownership of the multisig config.",
+                "",
+                "The proposed new owner must call this function to assume ownership.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing the configuration account.",
+                "- `_multisig_id`: The multisig identifier."
+            ],
+            "discriminator": [
+                172,
+                23,
+                43,
+                13,
+                238,
+                213,
+                85,
+                150
+            ],
+            "accounts": [
+                {
+                    "name": "config",
+                    "writable": true
+                },
+                {
+                    "name": "authority",
+                    "signer": true
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "set_config",
+            "docs": [
+                "Set up the configuration for the multisig instance.",
+                "",
+                "Validates and establishes the signer hierarchy, group structure, and quorum requirements.",
+                "If `clear_root` is true, it also invalidates the current Merkle root.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing the multisig configuration account.",
+                "- `multisig_id`: The unique identifier for this multisig instance.",
+                "- `signer_groups`: Vector assigning each signer to a specific group (must match signers length).",
+                "- `group_quorums`: Array defining the required signatures for each group. A group with quorum=0 is disabled.",
+                "- `group_parents`: Array defining the hierarchical relationship between groups, forming a tree structure.",
+                "- `clear_root`: If true, invalidates the current root to prevent further operations from being executed.",
+                "",
+                "# Example",
+                "",
+                "A group structure like this:",
+                "",
+                "```text",
+                "┌──────┐",
+                "┌─►│2-of-3│◄───────┐",
+                "│  └──────┘        │",
+                "│        ▲         │",
+                "│        │         │",
+                "┌──┴───┐ ┌──┴───┐ ┌───┴────┐",
+                "┌──►│1-of-2│ │2-of-2│ │signer A│",
+                "│   └──────┘ └──────┘ └────────┘",
+                "│       ▲      ▲  ▲",
+                "│       │      │  │",
+                "┌───────┴┐ ┌────┴───┐ ┌┴───────┐",
+                "│signer B│ │signer C│ │signer D│",
+                "└────────┘ └────────┘ └────────┘",
+                "```",
+                "",
+                "Would be configured with:",
+                "- group_quorums = [2, 1, 2, ...] (root: 2-of-3, group1: 1-of-2, group2: 2-of-2)",
+                "- group_parents = [0, 0, 0, ...] (all groups under root)"
+            ],
+            "discriminator": [
+                108,
+                158,
+                154,
+                175,
+                212,
+                98,
+                52,
+                66
+            ],
+            "accounts": [
+                {
+                    "name": "multisig_config",
+                    "writable": true
+                },
+                {
+                    "name": "config_signers",
+                    "writable": true
+                },
+                {
+                    "name": "root_metadata",
+                    "writable": true
+                },
+                {
+                    "name": "expiring_root_and_op_count",
+                    "writable": true
+                },
+                {
+                    "name": "authority",
+                    "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "system_program"
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "signer_groups",
+                    "type": "bytes"
+                },
+                {
+                    "name": "group_quorums",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "group_parents",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "clear_root",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "set_root",
+            "docs": [
+                "Set a new Merkle root that defines approved operations.",
+                "",
+                "This function updates the active Merkle root after verifying ECDSA signatures and validating",
+                "the provided metadata against a Merkle proof.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing required accounts.",
+                "- `multisig_id`: The multisig instance identifier.",
+                "- `root`: The new Merkle root to set.",
+                "- `valid_until`: timestamp until which the root remains valid.",
+                "- `metadata`: Structured input containing chain_id, multisig, and operation counters.",
+                "- `metadata_proof`: Merkle proof validating the metadata."
+            ],
+            "discriminator": [
+                183,
+                49,
+                10,
+                206,
+                168,
+                183,
+                131,
+                67
+            ],
+            "accounts": [
+                {
+                    "name": "root_signatures",
+                    "writable": true
+                },
+                {
+                    "name": "root_metadata",
+                    "writable": true
+                },
+                {
+                    "name": "seen_signed_hashes",
+                    "writable": true
+                },
+                {
+                    "name": "expiring_root_and_op_count",
+                    "writable": true
+                },
+                {
+                    "name": "multisig_config"
+                },
+                {
+                    "name": "authority",
+                    "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "system_program"
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "root",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "valid_until",
+                    "type": "u32"
+                },
+                {
+                    "name": "metadata",
+                    "type": {
+                        "defined": {
+                            "name": "RootMetadataInput"
+                        }
+                    }
+                },
+                {
+                    "name": "metadata_proof",
+                    "type": {
+                        "vec": {
+                            "array": [
+                                "u8",
+                                32
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "execute",
+            "docs": [
+                "Executes an operation after verifying it's authorized in the current Merkle root.",
+                "",
+                "This function:",
+                "1. Performs extensive validation checks on the operation",
+                "- Ensures the operation is within the allowed count range",
+                "- Verifies chain ID matches the configured chain",
+                "- Checks the root has not expired",
+                "- Validates the operation's nonce against current state",
+                "2. Verifies the operation's inclusion in the Merkle tree",
+                "3. Executes the cross-program invocation with the multisig signer PDA",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: Context containing operation accounts and signer information",
+                "- `multisig_id`: Identifier for the multisig instance",
+                "- `chain_id`: Network identifier that must match configuration",
+                "- `nonce`: Operation counter that must match current state",
+                "- `data`: Instruction data to be executed",
+                "- `proof`: Merkle proof for operation verification",
+                "",
+                "# Security Considerations",
+                "",
+                "This instruction implements secure privilege delegation through PDA signing.",
+                "The multisig's signer PDA becomes the authoritative signer for the operation,",
+                "allowing controlled execution of privileged actions while maintaining the",
+                "security guarantees of the Merkle root validation."
+            ],
+            "discriminator": [
+                130,
+                221,
+                242,
+                154,
+                13,
+                193,
+                189,
+                29
+            ],
+            "accounts": [
+                {
+                    "name": "multisig_config",
+                    "writable": true
+                },
+                {
+                    "name": "root_metadata"
+                },
+                {
+                    "name": "expiring_root_and_op_count",
+                    "writable": true
+                },
+                {
+                    "name": "to"
+                },
+                {
+                    "name": "multisig_signer"
+                },
+                {
+                    "name": "authority",
+                    "writable": true,
+                    "signer": true
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "chain_id",
+                    "type": "u64"
+                },
+                {
+                    "name": "nonce",
+                    "type": "u64"
+                },
+                {
+                    "name": "data",
+                    "type": "bytes"
+                },
+                {
+                    "name": "proof",
+                    "type": {
+                        "vec": {
+                            "array": [
+                                "u8",
+                                32
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "init_signers",
+            "docs": [
+                "Initialize the storage for signer addresses.",
+                "",
+                "Creates a temporary account to hold signer addresses during the multisig configuration process.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing required accounts.",
+                "- `multisig_id`: The multisig instance identifier.",
+                "- `total_signers`: The total number of signers to be added."
+            ],
+            "discriminator": [
+                102,
+                182,
+                129,
+                16,
+                138,
+                142,
+                223,
+                196
+            ],
+            "accounts": [
+                {
+                    "name": "multisig_config"
+                },
+                {
+                    "name": "config_signers",
+                    "writable": true
+                },
+                {
+                    "name": "authority",
+                    "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "system_program"
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "total_signers",
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "append_signers",
+            "docs": [
+                "Append a batch of signer addresses to the temporary storage.",
+                "",
+                "Allows adding multiple signer addresses in batches to overcome transaction size limits.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing required accounts.",
+                "- `multisig_id`: The multisig instance identifier.",
+                "- `signers_batch`: A batch of Ethereum addresses (20 bytes each) to be added as signers."
+            ],
+            "discriminator": [
+                238,
+                209,
+                251,
+                39,
+                41,
+                241,
+                146,
+                25
+            ],
+            "accounts": [
+                {
+                    "name": "multisig_config"
+                },
+                {
+                    "name": "config_signers",
+                    "writable": true
+                },
+                {
+                    "name": "authority",
+                    "writable": true,
+                    "signer": true
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "signers_batch",
+                    "type": {
+                        "vec": {
+                            "array": [
+                                "u8",
+                                20
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "clear_signers",
+            "docs": [
+                "Clear the temporary signer storage.",
+                "",
+                "Closes the account storing signer addresses, allowing it to be reinitialized if needed.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing required accounts.",
+                "- `multisig_id`: The multisig instance identifier."
+            ],
+            "discriminator": [
+                90,
+                140,
+                170,
+                146,
+                128,
+                75,
+                100,
+                175
+            ],
+            "accounts": [
+                {
+                    "name": "multisig_config"
+                },
+                {
+                    "name": "config_signers",
+                    "writable": true
+                },
+                {
+                    "name": "authority",
+                    "writable": true,
+                    "signer": true
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "finalize_signers",
+            "docs": [
+                "Finalize the signer configuration.",
+                "",
+                "Marks the signer list as complete and ready for incorporation into the multisig configuration.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing required accounts.",
+                "- `multisig_id`: The multisig instance identifier."
+            ],
+            "discriminator": [
+                49,
+                254,
+                154,
+                226,
+                137,
+                199,
+                120,
+                63
+            ],
+            "accounts": [
+                {
+                    "name": "multisig_config"
+                },
+                {
+                    "name": "config_signers",
+                    "writable": true
+                },
+                {
+                    "name": "authority",
+                    "writable": true,
+                    "signer": true
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "name": "init_signatures",
+            "docs": [
+                "Initialize storage for ECDSA signatures.",
+                "",
+                "Creates a temporary account to hold signatures that will validate a new Merkle root.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing required accounts.",
+                "- `multisig_id`: The multisig instance identifier.",
+                "- `root`: The new Merkle root these signatures will approve.",
+                "- `valid_until`: Timestamp until which the root will remain valid.",
+                "- `total_signatures`: The total number of signatures to be added."
+            ],
+            "discriminator": [
+                190,
+                120,
+                207,
+                36,
+                26,
+                58,
+                196,
+                13
+            ],
+            "accounts": [
+                {
+                    "name": "signatures",
+                    "writable": true
+                },
+                {
+                    "name": "authority",
+                    "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "system_program"
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "root",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "valid_until",
+                    "type": "u32"
+                },
+                {
+                    "name": "total_signatures",
+                    "type": "u8"
+                }
+            ]
+        },
+        {
+            "name": "append_signatures",
+            "docs": [
+                "Append a batch of ECDSA signatures to the temporary storage.",
+                "",
+                "Allows adding multiple signatures in batches to overcome transaction size limits.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing required accounts.",
+                "- `multisig_id`: The multisig instance identifier.",
+                "- `root`: The Merkle root being approved.",
+                "- `valid_until`: Timestamp until which the root will remain valid.",
+                "- `signatures_batch`: A batch of ECDSA signatures to be verified."
+            ],
+            "discriminator": [
+                195,
+                112,
+                164,
+                69,
+                37,
+                137,
+                198,
+                54
+            ],
+            "accounts": [
+                {
+                    "name": "signatures",
+                    "writable": true
+                },
+                {
+                    "name": "authority",
+                    "writable": true,
+                    "signer": true
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "root",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "valid_until",
+                    "type": "u32"
+                },
+                {
+                    "name": "signatures_batch",
+                    "type": {
+                        "vec": {
+                            "defined": {
+                                "name": "Signature"
+                            }
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "clear_signatures",
+            "docs": [
+                "Clear the temporary signature storage.",
+                "",
+                "Closes the account storing signatures, allowing it to be reinitialized if needed.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing required accounts.",
+                "- `multisig_id`: The multisig instance identifier.",
+                "- `root`: The Merkle root associated with the signatures.",
+                "- `valid_until`: Timestamp until which the root would remain valid."
+            ],
+            "discriminator": [
+                80,
+                0,
+                39,
+                255,
+                46,
+                165,
+                193,
+                109
+            ],
+            "accounts": [
+                {
+                    "name": "signatures",
+                    "writable": true
+                },
+                {
+                    "name": "authority",
+                    "writable": true,
+                    "signer": true
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "root",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "valid_until",
+                    "type": "u32"
+                }
+            ]
+        },
+        {
+            "name": "finalize_signatures",
+            "docs": [
+                "Finalize the signature configuration.",
+                "",
+                "Marks the signature list as finalized and ready for verification when setting a new root.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing required accounts.",
+                "- `multisig_id`: The multisig instance identifier.",
+                "- `root`: The Merkle root associated with the signatures.",
+                "- `valid_until`: Timestamp until which the root will remain valid."
+            ],
+            "discriminator": [
+                77,
+                138,
+                152,
+                199,
+                37,
+                141,
+                189,
+                159
+            ],
+            "accounts": [
+                {
+                    "name": "signatures",
+                    "writable": true
+                },
+                {
+                    "name": "authority",
+                    "writable": true,
+                    "signer": true
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "root",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "valid_until",
+                    "type": "u32"
+                }
+            ]
+        }
+    ],
+    "accounts": [
+        {
+            "name": "ConfigSigners",
+            "discriminator": [
+                147,
+                137,
+                80,
+                98,
+                50,
+                225,
+                190,
+                163
+            ]
+        },
+        {
+            "name": "MultisigConfig",
+            "discriminator": [
+                44,
+                62,
+                172,
+                225,
+                246,
+                3,
+                178,
+                33
+            ]
+        },
+        {
+            "name": "RootSignatures",
+            "discriminator": [
+                21,
+                186,
+                10,
+                33,
+                117,
+                215,
+                246,
+                76
+            ]
+        },
+        {
+            "name": "RootMetadata",
+            "discriminator": [
+                125,
+                211,
+                89,
+                150,
+                221,
+                6,
+                141,
+                205
+            ]
+        },
+        {
+            "name": "ExpiringRootAndOpCount",
+            "discriminator": [
+                196,
+                176,
+                71,
+                210,
+                134,
+                228,
+                202,
+                75
+            ]
+        },
+        {
+            "name": "SeenSignedHash",
+            "discriminator": [
+                229,
+                115,
+                10,
+                185,
+                39,
+                100,
+                210,
+                151
+            ]
+        }
+    ],
+    "events": [
+        {
+            "name": "NewRoot",
+            "discriminator": [
+                210,
+                25,
+                187,
+                118,
+                40,
+                42,
+                61,
+                119
+            ]
+        },
+        {
+            "name": "ConfigSet",
+            "discriminator": [
+                15,
+                104,
+                59,
+                16,
+                236,
+                241,
+                8,
+                6
+            ]
+        },
+        {
+            "name": "OpExecuted",
+            "discriminator": [
+                221,
+                15,
+                212,
+                29,
+                35,
+                252,
+                255,
+                78
+            ]
+        }
+    ],
+    "errors": [
+        {
+            "code": 6000,
+            "name": "Unauthorized",
+            "msg": "The signer is unauthorized"
+        }
+    ],
+    "types": [
+        {
+            "name": "Signature",
+            "docs": [
+                "ECDSA signature with components used in Ethereum signature verification."
+            ],
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "v",
+                        "type": "u8"
+                    },
+                    {
+                        "name": "r",
+                        "type": {
+                            "array": [
+                                "u8",
+                                32
+                            ]
+                        }
+                    },
+                    {
+                        "name": "s",
+                        "type": {
+                            "array": [
+                                "u8",
+                                32
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "McmSigner",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "evm_address",
+                        "type": {
+                            "array": [
+                                "u8",
+                                20
+                            ]
+                        }
+                    },
+                    {
+                        "name": "index",
+                        "type": "u8"
+                    },
+                    {
+                        "name": "group",
+                        "type": "u8"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "RootMetadataInput",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "chain_id",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "multisig",
+                        "type": "pubkey"
+                    },
+                    {
+                        "name": "pre_op_count",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "post_op_count",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "override_previous_root",
+                        "type": "bool"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "McmError",
+            "type": {
+                "kind": "enum",
+                "variants": [
+                    {
+                        "name": "InvalidInputs"
+                    },
+                    {
+                        "name": "Overflow"
+                    },
+                    {
+                        "name": "WrongMultiSig"
+                    },
+                    {
+                        "name": "WrongChainId"
+                    },
+                    {
+                        "name": "FailedEcdsaRecover"
+                    },
+                    {
+                        "name": "SignersNotFinalized"
+                    },
+                    {
+                        "name": "SignersAlreadyFinalized"
+                    },
+                    {
+                        "name": "SignaturesAlreadyFinalized"
+                    },
+                    {
+                        "name": "SignatureCountMismatch"
+                    },
+                    {
+                        "name": "TooManySignatures"
+                    },
+                    {
+                        "name": "SignaturesNotFinalized"
+                    },
+                    {
+                        "name": "MismatchedInputSignerVectorsLength"
+                    },
+                    {
+                        "name": "OutOfBoundsNumOfSigners"
+                    },
+                    {
+                        "name": "MismatchedInputGroupArraysLength"
+                    },
+                    {
+                        "name": "GroupTreeNotWellFormed"
+                    },
+                    {
+                        "name": "SignerInDisabledGroup"
+                    },
+                    {
+                        "name": "OutOfBoundsGroupQuorum"
+                    },
+                    {
+                        "name": "SignersAddressesMustBeStrictlyIncreasing"
+                    },
+                    {
+                        "name": "SignedHashAlreadySeen"
+                    },
+                    {
+                        "name": "InvalidSigner"
+                    },
+                    {
+                        "name": "MissingConfig"
+                    },
+                    {
+                        "name": "InsufficientSigners"
+                    },
+                    {
+                        "name": "ValidUntilHasAlreadyPassed"
+                    },
+                    {
+                        "name": "ProofCannotBeVerified"
+                    },
+                    {
+                        "name": "PendingOps"
+                    },
+                    {
+                        "name": "WrongPreOpCount"
+                    },
+                    {
+                        "name": "WrongPostOpCount"
+                    },
+                    {
+                        "name": "PostOpCountReached"
+                    },
+                    {
+                        "name": "RootExpired"
+                    },
+                    {
+                        "name": "WrongNonce"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "ConfigSigners",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "signer_addresses",
+                        "type": {
+                            "vec": {
+                                "array": [
+                                    "u8",
+                                    20
+                                ]
+                            }
+                        }
+                    },
+                    {
+                        "name": "total_signers",
+                        "type": "u8"
+                    },
+                    {
+                        "name": "is_finalized",
+                        "type": "bool"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "MultisigConfig",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "chain_id",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "multisig_id",
+                        "type": {
+                            "array": [
+                                "u8",
+                                32
+                            ]
+                        }
+                    },
+                    {
+                        "name": "owner",
+                        "type": "pubkey"
+                    },
+                    {
+                        "name": "proposed_owner",
+                        "type": "pubkey"
+                    },
+                    {
+                        "name": "group_quorums",
+                        "type": {
+                            "array": [
+                                "u8",
+                                32
+                            ]
+                        }
+                    },
+                    {
+                        "name": "group_parents",
+                        "type": {
+                            "array": [
+                                "u8",
+                                32
+                            ]
+                        }
+                    },
+                    {
+                        "name": "signers",
+                        "type": {
+                            "vec": {
+                                "defined": {
+                                    "name": "McmSigner"
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "RootSignatures",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "total_signatures",
+                        "type": "u8"
+                    },
+                    {
+                        "name": "is_finalized",
+                        "type": "bool"
+                    },
+                    {
+                        "name": "signatures",
+                        "type": {
+                            "vec": {
+                                "defined": {
+                                    "name": "Signature"
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "RootMetadata",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "chain_id",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "multisig",
+                        "type": "pubkey"
+                    },
+                    {
+                        "name": "pre_op_count",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "post_op_count",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "override_previous_root",
+                        "type": "bool"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "ExpiringRootAndOpCount",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "root",
+                        "type": {
+                            "array": [
+                                "u8",
+                                32
+                            ]
+                        }
+                    },
+                    {
+                        "name": "valid_until",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "op_count",
+                        "type": "u64"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "SeenSignedHash",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "seen",
+                        "type": "bool"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "NewRoot",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "root",
+                        "type": {
+                            "array": [
+                                "u8",
+                                32
+                            ]
+                        }
+                    },
+                    {
+                        "name": "valid_until",
+                        "type": "u32"
+                    },
+                    {
+                        "name": "metadata_chain_id",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "metadata_multisig",
+                        "type": "pubkey"
+                    },
+                    {
+                        "name": "metadata_pre_op_count",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "metadata_post_op_count",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "metadata_override_previous_root",
+                        "type": "bool"
+                    }
+                ]
+            }
+        },
+        {
+            "name": "ConfigSet",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "group_parents",
+                        "type": {
+                            "array": [
+                                "u8",
+                                32
+                            ]
+                        }
+                    },
+                    {
+                        "name": "group_quorums",
+                        "type": {
+                            "array": [
+                                "u8",
+                                32
+                            ]
+                        }
+                    },
+                    {
+                        "name": "is_root_cleared",
+                        "type": "bool"
+                    },
+                    {
+                        "name": "signers",
+                        "type": {
+                            "vec": {
+                                "defined": {
+                                    "name": "McmSigner"
+                                }
+                            }
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "name": "OpExecuted",
+            "type": {
+                "kind": "struct",
+                "fields": [
+                    {
+                        "name": "nonce",
+                        "type": "u64"
+                    },
+                    {
+                        "name": "to",
+                        "type": "pubkey"
+                    },
+                    {
+                        "name": "data",
+                        "type": "bytes"
+                    }
+                ]
+            }
+        }
+    ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "mcm-go",
+  "image": "mcr.microsoft.com/devcontainers/go:1-1.24-bookworm",
+  "runArgs": ["--name=mcm-go"],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "eamodio.gitlens",
+        "tamasfe.even-better-toml",
+        "Gruntfuggly.todo-tree",
+        "fill-labs.dependi",
+        "golang.Go",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}
