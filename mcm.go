@@ -166,7 +166,7 @@ var (
 var NewStateFetcher = state.NewFetcher
 
 // Transaction builder
-var NewTxBuilder = tx.New
+var NewTxBuilder = tx.NewTxBuilder
 
 // Version information
 const (

@@ -29,7 +29,6 @@ func NewProposalService(client *client.Client) *ProposalService {
 type SetRootParams struct {
 	MultisigID [32]byte
 	Proposal   *proposal.ProposalWithRoot
-	Authority  solana.PublicKey
 }
 
 // SetRoot sets a new Merkle root for the multisig
@@ -53,21 +52,16 @@ func (s *ProposalService) SetRoot(ctx context.Context, params SetRootParams) (so
 		ValidUntil:    params.Proposal.ValidUntil,
 		Metadata:      metadata,
 		MetadataProof: metadataProof,
-		Authority:     params.Authority,
+		Authority:     s.client.Payer.PublicKey(),
 		ProgramID:     s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build set root instruction: %w", err)
 	}
 
-	builder := tx.New(s.client.RPC, s.client.WS, s.client.GetPayer())
-	builder.AddInstruction(ix)
-
-	if s.client.DefaultPayer != nil {
-		builder.AddSigner(*s.client.DefaultPayer)
-	}
-
-	return builder.BuildSignAndSendWithConfirmation(ctx)
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+		AddInstruction(ix).
+		BuildSignAndSendWithConfirmation(ctx)
 }
 
 // CreateProposalFromChainParams contains parameters for creating a proposal from on-chain state

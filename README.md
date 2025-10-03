@@ -8,6 +8,25 @@ Go SDK for the Multi-Chain Multisig (MCM) Solana program.
 go get github.com/base/mcm-go
 ```
 
+## CLI Tool
+
+The SDK includes `mcmctl`, a command-line tool for managing MCM multisigs:
+
+```bash
+# Build the CLI
+go build -o mcmctl ./cmd/mcmctl
+
+# Initialize a multisig
+mcmctl multisig init --multisig-id <hex32> --chain-id 1
+
+# Manage signers
+mcmctl signers init --multisig-id <hex32> --total 10
+mcmctl signers append --multisig-id <hex32> --signers <addr1,addr2,...>
+mcmctl signers finalize --multisig-id <hex32>
+```
+
+See [cmd/mcmctl/README.md](cmd/mcmctl/README.md) for complete documentation.
+
 ## Quick Start
 
 ```go
@@ -21,10 +40,13 @@ import (
 )
 
 func main() {
+    payer := solana.MustPrivateKeyFromBase58("your-private-key")
+
     cfg := client.Config{
         RPCURL:    "https://api.devnet.solana.com",
         WSURL:     "wss://api.devnet.solana.com",
         ProgramID: solana.MustPublicKeyFromBase58("YourProgramID"),
+        Payer:     payer,
     }
 
     mcmClient, _ := client.New(cfg)
@@ -144,25 +166,25 @@ import "mcm-go/pkg/services"
 // Signers management
 signersSvc := services.NewSignersService(client)
 signersSvc.InitSigners(ctx, params)
-signersSvc.AppendSignersInBatches(ctx, multisigID, signers, batchSize, authority)
+signersSvc.AppendSignersInBatches(ctx, params)
 signersSvc.FinalizeSigners(ctx, params)
-signersSvc.SetConfig(ctx, setConfigParams)
+signersSvc.SetConfig(ctx, params)
 
 // Signatures management
 sigsSvc := services.NewSignaturesService(client)
 sigsSvc.InitSignatures(ctx, params)
-sigsSvc.AppendSignaturesInBatches(ctx, multisigID, root, validUntil, sigs, batchSize, authority)
+sigsSvc.AppendSignaturesInBatches(ctx, params)
 sigsSvc.FinalizeSignatures(ctx, params)
 
 // Proposal service
 proposalSvc := services.NewProposalService(client)
 p, _ := proposalSvc.CreateProposalFromChain(ctx, params)
-proposalSvc.SetRoot(ctx, setRootParams)
+proposalSvc.SetRoot(ctx, params)
 
 // Execution
 execSvc := services.NewExecutionService(client)
 execSvc.ExecuteOperation(ctx, params)
-execSvc.ExecuteAllOperations(ctx, multisigID, proposalWithRoot, authority)
+execSvc.ExecuteAllOperations(ctx, params)
 ```
 
 ### 5. Persistence
@@ -207,16 +229,18 @@ signersSvc := services.NewSignersService(client)
 signersSvc.InitSigners(ctx, services.InitSignersParams{
     MultisigID:   multisigID,
     TotalSigners: 10,
-    Authority:    authority,
 })
 
 // Add signers in batches (max 10 per transaction)
-signersSvc.AppendSignersInBatches(ctx, multisigID, signerAddresses, 10, authority)
+signersSvc.AppendSignersInBatches(ctx, services.AppendSignersInBatchesParams{
+    MultisigID: multisigID,
+    Signers:    signerAddresses,
+    BatchSize:  10,
+})
 
 // Finalize
 signersSvc.FinalizeSigners(ctx, services.FinalizeSignersParams{
     MultisigID: multisigID,
-    Authority:  authority,
 })
 ```
 
@@ -256,9 +280,24 @@ pts, _ := pwr.WithHashToSign()
 
 // Submit signatures on-chain
 sigsSvc := services.NewSignaturesService(client)
-sigsSvc.InitSignatures(ctx, params)
-sigsSvc.AppendSignaturesInBatches(ctx, multisigID, pwr.Root, validUntil, signatures, 5, authority)
-sigsSvc.FinalizeSignatures(ctx, params)
+sigsSvc.InitSignatures(ctx, services.InitSignaturesParams{
+    MultisigID:      multisigID,
+    Root:            pwr.Root,
+    ValidUntil:      validUntil,
+    TotalSignatures: uint8(len(signatures)),
+})
+sigsSvc.AppendSignaturesInBatches(ctx, services.AppendSignaturesInBatchesParams{
+    MultisigID: multisigID,
+    Root:       pwr.Root,
+    ValidUntil: validUntil,
+    Signatures: signatures,
+    BatchSize:  5,
+})
+sigsSvc.FinalizeSignatures(ctx, services.FinalizeSignaturesParams{
+    MultisigID: multisigID,
+    Root:       pwr.Root,
+    ValidUntil: validUntil,
+})
 ```
 
 ### 5. Set Root and Execute
@@ -268,12 +307,14 @@ sigsSvc.FinalizeSignatures(ctx, params)
 proposalSvc.SetRoot(ctx, services.SetRootParams{
     MultisigID: multisigID,
     Proposal:   pwr,
-    Authority:  authority,
 })
 
 // Execute operations
 execSvc := services.NewExecutionService(client)
-execSvc.ExecuteAllOperations(ctx, multisigID, pwr, authority)
+execSvc.ExecuteAllOperations(ctx, services.ExecuteAllOperationsParams{
+    MultisigID:       multisigID,
+    ProposalWithRoot: pwr,
+})
 ```
 
 ## State Fetching

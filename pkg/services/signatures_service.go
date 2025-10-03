@@ -28,7 +28,6 @@ type InitSignaturesParams struct {
 	Root            [32]byte
 	ValidUntil      uint32
 	TotalSignatures uint8
-	Authority       solana.PublicKey
 }
 
 // InitSignatures initializes the signature storage account
@@ -38,21 +37,16 @@ func (s *SignaturesService) InitSignatures(ctx context.Context, params InitSigna
 		Root:            params.Root,
 		ValidUntil:      params.ValidUntil,
 		TotalSignatures: params.TotalSignatures,
-		Authority:       params.Authority,
+		Authority:       s.client.Payer.PublicKey(),
 		ProgramID:       s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build init signatures instruction: %w", err)
 	}
 
-	builder := tx.New(s.client.RPC, s.client.WS, s.client.GetPayer())
-	builder.AddInstruction(ix)
-
-	if s.client.DefaultPayer != nil {
-		builder.AddSigner(*s.client.DefaultPayer)
-	}
-
-	return builder.BuildSignAndSendWithConfirmation(ctx)
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+		AddInstruction(ix).
+		BuildSignAndSendWithConfirmation(ctx)
 }
 
 // AppendSignaturesParams contains parameters for appending signatures
@@ -61,7 +55,6 @@ type AppendSignaturesParams struct {
 	Root            [32]byte
 	ValidUntil      uint32
 	SignaturesBatch []bindings.Signature
-	Authority       solana.PublicKey
 }
 
 // AppendSignatures appends a batch of signatures to the storage
@@ -71,21 +64,16 @@ func (s *SignaturesService) AppendSignatures(ctx context.Context, params AppendS
 		Root:            params.Root,
 		ValidUntil:      params.ValidUntil,
 		SignaturesBatch: params.SignaturesBatch,
-		Authority:       params.Authority,
+		Authority:       s.client.Payer.PublicKey(),
 		ProgramID:       s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build append signatures instruction: %w", err)
 	}
 
-	builder := tx.New(s.client.RPC, s.client.WS, s.client.GetPayer())
-	builder.AddInstruction(ix)
-
-	if s.client.DefaultPayer != nil {
-		builder.AddSigner(*s.client.DefaultPayer)
-	}
-
-	return builder.BuildSignAndSendWithConfirmation(ctx)
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+		AddInstruction(ix).
+		BuildSignAndSendWithConfirmation(ctx)
 }
 
 // AppendSignaturesInBatchesParams contains parameters for appending signatures in batches
@@ -95,7 +83,6 @@ type AppendSignaturesInBatchesParams struct {
 	ValidUntil uint32
 	Signatures []bindings.Signature
 	BatchSize  int
-	Authority  solana.PublicKey
 }
 
 // AppendSignaturesInBatches appends signatures in multiple batches
@@ -117,7 +104,6 @@ func (s *SignaturesService) AppendSignaturesInBatches(
 			Root:            params.Root,
 			ValidUntil:      params.ValidUntil,
 			SignaturesBatch: batch,
-			Authority:       params.Authority,
 		})
 		if err != nil {
 			return sigs, fmt.Errorf("failed to append signatures batch %d-%d: %w", i, end, err)
@@ -134,7 +120,6 @@ type FinalizeSignaturesParams struct {
 	MultisigID [32]byte
 	Root       [32]byte
 	ValidUntil uint32
-	Authority  solana.PublicKey
 }
 
 // FinalizeSignatures finalizes the signature configuration
@@ -143,21 +128,16 @@ func (s *SignaturesService) FinalizeSignatures(ctx context.Context, params Final
 		MultisigID: params.MultisigID,
 		Root:       params.Root,
 		ValidUntil: params.ValidUntil,
-		Authority:  params.Authority,
+		Authority:  s.client.Payer.PublicKey(),
 		ProgramID:  s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build finalize signatures instruction: %w", err)
 	}
 
-	builder := tx.New(s.client.RPC, s.client.WS, s.client.GetPayer())
-	builder.AddInstruction(ix)
-
-	if s.client.DefaultPayer != nil {
-		builder.AddSigner(*s.client.DefaultPayer)
-	}
-
-	return builder.BuildSignAndSendWithConfirmation(ctx)
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+		AddInstruction(ix).
+		BuildSignAndSendWithConfirmation(ctx)
 }
 
 // ClearSignaturesParams contains parameters for clearing signatures
@@ -165,7 +145,6 @@ type ClearSignaturesParams struct {
 	MultisigID [32]byte
 	Root       [32]byte
 	ValidUntil uint32
-	Authority  solana.PublicKey
 }
 
 // ClearSignatures clears all signatures from the storage
@@ -174,19 +153,14 @@ func (s *SignaturesService) ClearSignatures(ctx context.Context, params ClearSig
 		MultisigID: params.MultisigID,
 		Root:       params.Root,
 		ValidUntil: params.ValidUntil,
-		Authority:  params.Authority,
+		Authority:  s.client.Payer.PublicKey(),
 		ProgramID:  s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build clear signatures instruction: %w", err)
 	}
 
-	builder := tx.New(s.client.RPC, s.client.WS, s.client.GetPayer())
-	builder.AddInstruction(ix)
-
-	if s.client.DefaultPayer != nil {
-		builder.AddSigner(*s.client.DefaultPayer)
-	}
-
-	return builder.BuildSignAndSendWithConfirmation(ctx)
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+		AddInstruction(ix).
+		BuildSignAndSendWithConfirmation(ctx)
 }

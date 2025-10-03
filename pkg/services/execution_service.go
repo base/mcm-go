@@ -27,7 +27,6 @@ type ExecuteOperationParams struct {
 	MultisigID       [32]byte
 	ProposalWithRoot *proposal.ProposalWithRoot
 	OperationIndex   int
-	Authority        solana.PublicKey
 }
 
 // ExecuteOperation executes a single operation from a proposal
@@ -58,28 +57,22 @@ func (s *ExecutionService) ExecuteOperation(ctx context.Context, params ExecuteO
 		Data:              op.DataBytes,
 		Proof:             proofArray,
 		RemainingAccounts: op.AccountValues,
-		Authority:         params.Authority,
+		Authority:         s.client.Payer.PublicKey(),
 		ProgramID:         s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build execute instruction: %w", err)
 	}
 
-	builder := tx.New(s.client.RPC, s.client.WS, s.client.GetPayer())
-	builder.AddInstruction(ix)
-
-	if s.client.DefaultPayer != nil {
-		builder.AddSigner(*s.client.DefaultPayer)
-	}
-
-	return builder.BuildSignAndSendWithConfirmation(ctx)
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+		AddInstruction(ix).
+		BuildSignAndSendWithConfirmation(ctx)
 }
 
 // ExecuteAllOperationsParams contains parameters for executing all operations
 type ExecuteAllOperationsParams struct {
 	MultisigID       [32]byte
 	ProposalWithRoot *proposal.ProposalWithRoot
-	Authority        solana.PublicKey
 }
 
 // ExecuteAllOperations executes all operations in a proposal sequentially
@@ -91,7 +84,6 @@ func (s *ExecutionService) ExecuteAllOperations(ctx context.Context, params Exec
 			MultisigID:       params.MultisigID,
 			ProposalWithRoot: params.ProposalWithRoot,
 			OperationIndex:   i,
-			Authority:        params.Authority,
 		})
 		if err != nil {
 			return sigs, fmt.Errorf("failed to execute operation %d: %w", i, err)

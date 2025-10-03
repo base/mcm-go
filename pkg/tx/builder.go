@@ -17,16 +17,16 @@ type Builder struct {
 	ws           *ws.Client
 	instructions []solana.Instruction
 	signers      []solana.PrivateKey
-	payer        solana.PublicKey
+	payer        solana.PrivateKey
 }
 
-// New creates a new transaction builder
-func New(rpcClient *rpc.Client, wsClient *ws.Client, payer solana.PublicKey) *Builder {
+// NewTxBuilder creates a new transaction builder
+func NewTxBuilder(rpcClient *rpc.Client, wsClient *ws.Client, payer solana.PrivateKey) *Builder {
 	return &Builder{
 		rpc:          rpcClient,
 		ws:           wsClient,
 		instructions: make([]solana.Instruction, 0),
-		signers:      make([]solana.PrivateKey, 0),
+		signers:      []solana.PrivateKey{payer},
 		payer:        payer,
 	}
 }
@@ -37,15 +37,9 @@ func (b *Builder) AddInstruction(ix solana.Instruction) *Builder {
 	return b
 }
 
-// AddSigner adds a signer to the transaction
+// AddSigner adds an additional signer to the transaction (payer is already included)
 func (b *Builder) AddSigner(signer solana.PrivateKey) *Builder {
 	b.signers = append(b.signers, signer)
-	return b
-}
-
-// SetPayer sets the fee payer for the transaction
-func (b *Builder) SetPayer(payer solana.PublicKey) *Builder {
-	b.payer = payer
 	return b
 }
 
@@ -65,7 +59,7 @@ func (b *Builder) Build(ctx context.Context) (*solana.Transaction, error) {
 	tx, err := solana.NewTransaction(
 		b.instructions,
 		recent.Value.Blockhash,
-		solana.TransactionPayer(b.payer),
+		solana.TransactionPayer(b.payer.PublicKey()),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create transaction: %w", err)
@@ -155,9 +149,9 @@ func (b *Builder) Simulate(ctx context.Context) (*rpc.SimulateTransactionRespons
 	return result, nil
 }
 
-// Reset clears all instructions and signers
+// Reset clears all instructions
 func (b *Builder) Reset() *Builder {
 	b.instructions = make([]solana.Instruction, 0)
-	b.signers = make([]solana.PrivateKey, 0)
+	b.signers = []solana.PrivateKey{b.payer}
 	return b
 }
