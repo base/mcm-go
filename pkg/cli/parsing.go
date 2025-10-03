@@ -2,52 +2,23 @@ package cli
 
 import (
 	"bytes"
-	"encoding/hex"
 	"fmt"
 	"sort"
 	"strings"
+
+	"mcm-go/pkg/hex"
 )
 
-// ParseHex32 parses a hex string into a [32]byte array
+// ParseHex32 parses a hex string into a [32]byte array.
+// Deprecated: Use hex.Parse32 directly instead.
 func ParseHex32(s string) ([32]byte, error) {
-	var result [32]byte
-
-	// Remove 0x prefix if present
-	s = strings.TrimPrefix(s, "0x")
-
-	// Decode hex
-	data, err := hex.DecodeString(s)
-	if err != nil {
-		return result, fmt.Errorf("invalid hex string: %w", err)
-	}
-
-	if len(data) != 32 {
-		return result, fmt.Errorf("expected 32 bytes, got %d", len(data))
-	}
-
-	copy(result[:], data)
-	return result, nil
+	return hex.Parse32(s)
 }
 
-// ParseHex20 parses a hex string into a [20]byte array (EVM address)
+// ParseHex20 parses a hex string into a [20]byte array (EVM address).
+// Deprecated: Use hex.Parse20 directly instead.
 func ParseHex20(s string) ([20]byte, error) {
-	var result [20]byte
-
-	// Remove 0x prefix if present
-	s = strings.TrimPrefix(s, "0x")
-
-	// Decode hex
-	data, err := hex.DecodeString(s)
-	if err != nil {
-		return result, fmt.Errorf("invalid hex string: %w", err)
-	}
-
-	if len(data) != 20 {
-		return result, fmt.Errorf("expected 20 bytes (EVM address), got %d", len(data))
-	}
-
-	copy(result[:], data)
-	return result, nil
+	return hex.Parse20(s)
 }
 
 // ParseAndSortSigners parses a comma-separated list of hex signers,

@@ -20,8 +20,13 @@ func TestParseHex32(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "valid hex with prefix",
+			name:    "valid hex with lowercase 0x prefix",
 			input:   "0x0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+			wantErr: false,
+		},
+		{
+			name:    "valid hex with uppercase 0X prefix",
+			input:   "0X0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF",
 			wantErr: false,
 		},
 		{
@@ -61,8 +66,13 @@ func TestParseHex20(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "valid EVM address with prefix",
+			name:    "valid EVM address with lowercase 0x prefix",
 			input:   "0x1234567890abcdef1234567890abcdef12345678",
+			wantErr: false,
+		},
+		{
+			name:    "valid EVM address with uppercase 0X prefix",
+			input:   "0X1234567890ABCDEF1234567890ABCDEF12345678",
 			wantErr: false,
 		},
 		{

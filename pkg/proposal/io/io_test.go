@@ -1,10 +1,12 @@
 package io
 
 import (
+	"encoding/hex"
 	"os"
 	"path/filepath"
 	"testing"
 
+	hexutil "mcm-go/pkg/hex"
 	"mcm-go/pkg/proposal"
 
 	"github.com/gagliardetto/solana-go"
@@ -106,5 +108,67 @@ func TestLoadNonexistentFile(t *testing.T) {
 	_, err := LoadProposal("/nonexistent/file.json")
 	if err == nil {
 		t.Error("Expected error for nonexistent file, got nil")
+	}
+}
+
+func TestDecodeHexWith0xPrefix(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		wantHex string
+		wantErr bool
+	}{
+		{
+			name:    "without 0x prefix",
+			input:   "deadbeef",
+			wantHex: "deadbeef",
+			wantErr: false,
+		},
+		{
+			name:    "with lowercase 0x prefix",
+			input:   "0xdeadbeef",
+			wantHex: "deadbeef",
+			wantErr: false,
+		},
+		{
+			name:    "with uppercase 0X prefix",
+			input:   "0XDEADBEEF",
+			wantHex: "deadbeef",
+			wantErr: false,
+		},
+		{
+			name:    "32 bytes without prefix",
+			input:   "0000000000000000000000000000000000000000000000000000000000000000",
+			wantHex: "0000000000000000000000000000000000000000000000000000000000000000",
+			wantErr: false,
+		},
+		{
+			name:    "32 bytes with prefix",
+			input:   "0x0000000000000000000000000000000000000000000000000000000000000000",
+			wantHex: "0000000000000000000000000000000000000000000000000000000000000000",
+			wantErr: false,
+		},
+		{
+			name:    "invalid hex",
+			input:   "0xzzzz",
+			wantHex: "",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := hexutil.Decode(tt.input)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("decodeHex() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				gotHex := hex.EncodeToString(got)
+				if gotHex != tt.wantHex {
+					t.Errorf("decodeHex() = %v, want %v", gotHex, tt.wantHex)
+				}
+			}
+		})
 	}
 }

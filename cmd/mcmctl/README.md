@@ -10,7 +10,9 @@ go build -o mcmctl ./cmd/mcmctl
 
 ## Configuration
 
-### Global Flags
+### Blockchain Flags (for `multisig` and `signers` commands)
+
+These flags are required for commands that interact with the Solana blockchain:
 
 | Flag | Environment Variable | Description | Default |
 |------|---------------------|-------------|---------|
@@ -18,6 +20,8 @@ go build -o mcmctl ./cmd/mcmctl
 | `--ws` | `MCM_WS_URL` | WebSocket endpoint URL or network alias | Required |
 | `--program-id, -p` | `MCM_PROGRAM_ID` | MCM program ID (base58) | Required |
 | `--authority, -a` | `MCM_AUTHORITY` | Path to authority keypair file (also used as transaction payer) | `~/.config/solana/id.json` |
+
+**Note:** `proposal` commands that work offline (like `proposal sign`) do not require these flags.
 
 ### Network Aliases
 
@@ -134,6 +138,124 @@ mcmctl signers finalize \
   --multisig-id 6d792d6d756c74697369672d303031000000000000000000000000000000000000
 ```
 
+#### `signers set-config`
+
+Set the multisig configuration (signer groups and quorums).
+
+```bash
+mcmctl signers set-config \
+  --multisig-id <hex32> \
+  --signer-groups <group0,group1,...> \
+  --group-quorums <quorum0,quorum1,...> \
+  --group-parents <parent0,parent1,...> \
+  [--clear-root]
+```
+
+**Features:**
+- Automatically pads `--group-quorums` and `--group-parents` to 32 elements with zeros
+- Validates signer group hierarchy and quorum requirements
+- Optional `--clear-root` flag to invalidate the current Merkle root
+
+**Simple Example (1 signer in root group):**
+
+```bash
+mcmctl signers set-config \
+  --multisig-id 6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --signer-groups 0 \
+  --group-quorums 1 \
+  --group-parents 0 \
+  --clear-root
+```
+
+**Advanced Example (3 signers in hierarchical groups):**
+
+```bash
+# Group structure:
+#   Group 0 (root): 2-of-3 quorum
+#   Group 1: 1-of-2 quorum, parent = Group 0
+#   Group 2: 2-of-2 quorum, parent = Group 0
+# Signers: 2 in Group 1, 2 in Group 2, 1 in Group 0
+
+mcmctl signers set-config \
+  --multisig-id 6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --signer-groups 1,1,2,2,0 \
+  --group-quorums 2,1,2 \
+  --group-parents 0,0,0
+```
+
+### Proposal Operations
+
+#### `proposal sign`
+
+Load a proposal from a JSON file and display the hash that signers need to sign (offline operation).
+
+```bash
+mcmctl proposal sign --file <path>
+```
+
+**Features:**
+- Works completely offline (no blockchain connection needed)
+- Computes the Merkle root from the proposal
+- Displays the hash to sign: `keccak256(root || validUntil)`
+- Shows proposal metadata for verification
+
+**Example:**
+
+```bash
+mcmctl proposal sign --file my_proposal.json
+```
+
+**Example Output:**
+
+```
+Proposal loaded successfully
+  Multisig ID: 0x0000000000000000000000000000000000000000000000000000000000000000
+  Valid Until: 1800000000
+  Instructions: 1
+  Chain ID: 0
+  Pre Op Count: 0
+  Post Op Count: 1
+  Override Previous Root: false
+
+Merkle Root: 0x92cb93881a2ea83145908fe515b581751f900d5f8f61f9c026fdc8cebd5e402c
+
+Hash to Sign (keccak256(root || validUntil)):
+0x5be3ca56ef2891fb5f2aecbf0f826664ec0db9eddfe3cf5103cf3a9f4fc7acdb
+```
+
+**Proposal JSON Format:**
+
+```json
+{
+  "multisigId": "0000000000000000000000000000000000000000000000000000000000000000",
+  "validUntil": 1800000000,
+  "rootMetadata": {
+    "chainId": 0,
+    "multisig": "11111111111111111111111111111112",
+    "preOpCount": 0,
+    "postOpCount": 1,
+    "overridePreviousRoot": false
+  },
+  "instructions": [
+    {
+      "programId": "11111111111111111111111111111111",
+      "accounts": [
+        {
+          "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ],
+      "data": "deadbeef"
+    }
+  ]
+}
+```
+
+**Note:** Hex fields (`multisigId` and `data`) support both formats:
+- With `0x` prefix: `"0xdeadbeef"` or `"0x0000..."`
+- Without prefix: `"deadbeef"` or `"0000..."`
+
 ## Complete Workflow Example
 
 ```bash
@@ -141,6 +263,7 @@ mcmctl signers finalize \
 export MCM_RPC_URL="devnet"
 export MCM_WS_URL="devnet"
 export MCM_AUTHORITY="~/.config/solana/id.json"
+export MCM_PROGRAM_ID="YourProgramID"
 
 # 2. Initialize multisig
 mcmctl multisig init \
@@ -160,6 +283,14 @@ mcmctl signers append \
 # 5. Finalize signers
 mcmctl signers finalize \
   --multisig-id 6d792d6d756c74697369672d303031000000000000000000000000000000000000
+
+# 6. Set configuration (simple: all 3 signers in root group, 2-of-3 quorum)
+mcmctl signers set-config \
+  --multisig-id 6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --signer-groups 0,0,0 \
+  --group-quorums 2 \
+  --group-parents 0 \
+  --clear-root
 ```
 
 ## Error Handling

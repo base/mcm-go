@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	hexutil "mcm-go/pkg/hex"
 	"mcm-go/pkg/proposal"
 
 	"github.com/gagliardetto/solana-go"
@@ -81,9 +82,9 @@ func toProposalJSON(p *proposal.Proposal) (*proposalJSON, error) {
 
 // fromProposalJSON converts a JSON DTO to a Proposal
 func fromProposalJSON(pj *proposalJSON) (*proposal.Proposal, error) {
-	multisigIDBytes, err := hex.DecodeString(pj.MultisigID)
+	multisigIDBytes, err := hexutil.Decode(pj.MultisigID)
 	if err != nil || len(multisigIDBytes) != 32 {
-		return nil, fmt.Errorf("invalid multisigId: must be 32-byte hex")
+		return nil, fmt.Errorf("invalid multisigId: must be 32-byte hex (with or without 0x prefix)")
 	}
 	var multisigID [32]byte
 	copy(multisigID[:], multisigIDBytes)
@@ -100,7 +101,7 @@ func fromProposalJSON(pj *proposalJSON) (*proposal.Proposal, error) {
 			return nil, fmt.Errorf("instruction %d: invalid programId: %w", i, err)
 		}
 
-		dataBytes, err := hex.DecodeString(ixJSON.Data)
+		dataBytes, err := hexutil.Decode(ixJSON.Data)
 		if err != nil {
 			return nil, fmt.Errorf("instruction %d: invalid data hex: %w", i, err)
 		}

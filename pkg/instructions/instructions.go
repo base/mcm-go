@@ -40,7 +40,7 @@ func Initialize(params InitializeParams) (solana.Instruction, error) {
 		return nil, fmt.Errorf("failed to derive program data PDA: %w", err)
 	}
 
-	return bindings.NewInitializeInstruction(
+	ix, err := bindings.NewInitializeInstruction(
 		params.ChainID,
 		params.MultisigID,
 		multisigConfig,
@@ -51,6 +51,11 @@ func Initialize(params InitializeParams) (solana.Instruction, error) {
 		rootMetadata,
 		expiringRootAndOpCount,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	return setProgramID(ix, params.ProgramID), nil
 }
 
 // SetConfigParams contains parameters for the SetConfig instruction
@@ -86,7 +91,7 @@ func SetConfig(params SetConfigParams) (solana.Instruction, error) {
 		return nil, fmt.Errorf("failed to derive expiring root and op count PDA: %w", err)
 	}
 
-	return bindings.NewSetConfigInstruction(
+	ix, err := bindings.NewSetConfigInstruction(
 		params.MultisigID,
 		params.SignerGroups,
 		params.GroupQuorums,
@@ -99,6 +104,11 @@ func SetConfig(params SetConfigParams) (solana.Instruction, error) {
 		params.Authority,
 		solana.SystemProgramID,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	return setProgramID(ix, params.ProgramID), nil
 }
 
 // SetRootParams contains parameters for the SetRoot instruction
@@ -150,7 +160,7 @@ func SetRoot(params SetRootParams) (solana.Instruction, error) {
 		return nil, fmt.Errorf("failed to derive multisig config PDA: %w", err)
 	}
 
-	return bindings.NewSetRootInstruction(
+	ix, err := bindings.NewSetRootInstruction(
 		params.MultisigID,
 		params.Root,
 		params.ValidUntil,
@@ -164,6 +174,11 @@ func SetRoot(params SetRootParams) (solana.Instruction, error) {
 		params.Authority,
 		solana.SystemProgramID,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	return setProgramID(ix, params.ProgramID), nil
 }
 
 // ExecuteParams contains parameters for the Execute instruction
@@ -225,7 +240,7 @@ func Execute(params ExecuteParams) (solana.Instruction, error) {
 		ixImpl.AccountValues = append(ixImpl.AccountValues, params.RemainingAccounts...)
 	}
 
-	return ix, nil
+	return setProgramID(ix, params.ProgramID), nil
 }
 
 // InitSignersParams contains parameters for the InitSigners instruction
@@ -248,7 +263,7 @@ func InitSigners(params InitSignersParams) (solana.Instruction, error) {
 		return nil, fmt.Errorf("failed to derive config signers PDA: %w", err)
 	}
 
-	return bindings.NewInitSignersInstruction(
+	ix, err := bindings.NewInitSignersInstruction(
 		params.MultisigID,
 		params.TotalSigners,
 		multisigConfig,
@@ -256,6 +271,11 @@ func InitSigners(params InitSignersParams) (solana.Instruction, error) {
 		params.Authority,
 		solana.SystemProgramID,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	return setProgramID(ix, params.ProgramID), nil
 }
 
 // AppendSignersParams contains parameters for the AppendSigners instruction
@@ -278,13 +298,18 @@ func AppendSigners(params AppendSignersParams) (solana.Instruction, error) {
 		return nil, fmt.Errorf("failed to derive config signers PDA: %w", err)
 	}
 
-	return bindings.NewAppendSignersInstruction(
+	ix, err := bindings.NewAppendSignersInstruction(
 		params.MultisigID,
 		params.SignersBatch,
 		multisigConfig,
 		configSigners,
 		params.Authority,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	return setProgramID(ix, params.ProgramID), nil
 }
 
 // FinalizeSignersParams contains parameters for the FinalizeSigners instruction
@@ -306,12 +331,17 @@ func FinalizeSigners(params FinalizeSignersParams) (solana.Instruction, error) {
 		return nil, fmt.Errorf("failed to derive config signers PDA: %w", err)
 	}
 
-	return bindings.NewFinalizeSignersInstruction(
+	ix, err := bindings.NewFinalizeSignersInstruction(
 		params.MultisigID,
 		multisigConfig,
 		configSigners,
 		params.Authority,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	return setProgramID(ix, params.ProgramID), nil
 }
 
 // InitSignaturesParams contains parameters for the InitSignatures instruction
@@ -337,7 +367,7 @@ func InitSignatures(params InitSignaturesParams) (solana.Instruction, error) {
 		return nil, fmt.Errorf("failed to derive signatures PDA: %w", err)
 	}
 
-	return bindings.NewInitSignaturesInstruction(
+	ix, err := bindings.NewInitSignaturesInstruction(
 		params.MultisigID,
 		params.Root,
 		params.ValidUntil,
@@ -346,6 +376,11 @@ func InitSignatures(params InitSignaturesParams) (solana.Instruction, error) {
 		params.Authority,
 		solana.SystemProgramID,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	return setProgramID(ix, params.ProgramID), nil
 }
 
 // AppendSignaturesParams contains parameters for the AppendSignatures instruction
@@ -371,7 +406,7 @@ func AppendSignatures(params AppendSignaturesParams) (solana.Instruction, error)
 		return nil, fmt.Errorf("failed to derive signatures PDA: %w", err)
 	}
 
-	return bindings.NewAppendSignaturesInstruction(
+	ix, err := bindings.NewAppendSignaturesInstruction(
 		params.MultisigID,
 		params.Root,
 		params.ValidUntil,
@@ -379,6 +414,11 @@ func AppendSignatures(params AppendSignaturesParams) (solana.Instruction, error)
 		signatures,
 		params.Authority,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	return setProgramID(ix, params.ProgramID), nil
 }
 
 // FinalizeSignaturesParams contains parameters for the FinalizeSignatures instruction
@@ -403,13 +443,18 @@ func FinalizeSignatures(params FinalizeSignaturesParams) (solana.Instruction, er
 		return nil, fmt.Errorf("failed to derive signatures PDA: %w", err)
 	}
 
-	return bindings.NewFinalizeSignaturesInstruction(
+	ix, err := bindings.NewFinalizeSignaturesInstruction(
 		params.MultisigID,
 		params.Root,
 		params.ValidUntil,
 		signatures,
 		params.Authority,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	return setProgramID(ix, params.ProgramID), nil
 }
 
 // ClearSignaturesParams contains parameters for the ClearSignatures instruction
@@ -434,13 +479,18 @@ func ClearSignatures(params ClearSignaturesParams) (solana.Instruction, error) {
 		return nil, fmt.Errorf("failed to derive signatures PDA: %w", err)
 	}
 
-	return bindings.NewClearSignaturesInstruction(
+	ix, err := bindings.NewClearSignaturesInstruction(
 		params.MultisigID,
 		params.Root,
 		params.ValidUntil,
 		signatures,
 		params.Authority,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	return setProgramID(ix, params.ProgramID), nil
 }
 
 // ClearSignersParams contains parameters for the ClearSigners instruction
@@ -462,10 +512,24 @@ func ClearSigners(params ClearSignersParams) (solana.Instruction, error) {
 		return nil, fmt.Errorf("failed to derive config signers PDA: %w", err)
 	}
 
-	return bindings.NewClearSignersInstruction(
+	ix, err := bindings.NewClearSignersInstruction(
 		params.MultisigID,
 		multisigConfig,
 		configSigners,
 		params.Authority,
 	)
+	if err != nil {
+		return nil, err
+	}
+
+	return setProgramID(ix, params.ProgramID), nil
+}
+
+// setProgramID overrides the ProgramID in the instruction to use the user-configured value
+// instead of the hardcoded value from bindings.
+func setProgramID(ix solana.Instruction, programID solana.PublicKey) solana.Instruction {
+	if genericIx, ok := ix.(*solana.GenericInstruction); ok {
+		genericIx.ProgID = programID
+	}
+	return ix
 }
