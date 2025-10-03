@@ -10,7 +10,7 @@ go build -o mcmctl ./cmd/mcmctl
 
 ## Configuration
 
-### Blockchain Flags (for `multisig` and `signers` commands)
+### Transaction Flags (for `multisig`, `signers`, and `signatures` commands)
 
 These flags are required for commands that interact with the Solana blockchain:
 
@@ -255,6 +255,99 @@ Hash to Sign (keccak256(root || validUntil)):
 **Note:** Hex fields (`multisigId` and `data`) support both formats:
 - With `0x` prefix: `"0xdeadbeef"` or `"0x0000..."`
 - Without prefix: `"deadbeef"` or `"0000..."`
+
+### Signature Management
+
+These commands manage ECDSA signatures for setting new Merkle roots.
+
+#### `signatures init`
+
+Initialize signature storage for a new root.
+
+```bash
+mcmctl signatures init \
+  --multisig-id <hex32> \
+  --root <hex32> \
+  --valid-until <timestamp> \
+  --total <uint8>
+```
+
+**Example:**
+
+```bash
+mcmctl signatures init \
+  --multisig-id 6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --root 92cb93881a2ea83145908fe515b581751f900d5f8f61f9c026fdc8cebd5e402c \
+  --valid-until 1800000000 \
+  --total 5
+```
+
+#### `signatures append`
+
+Append ECDSA signatures to storage.
+
+```bash
+mcmctl signatures append \
+  --multisig-id <hex32> \
+  --root <hex32> \
+  --valid-until <timestamp> \
+  --signatures <v:r:s,v:r:s,...>
+```
+
+**Signature Format:** Each signature must be in format `v:r:s` where:
+- `v`: Recovery ID (0-3, hex format)
+- `r`: 32-byte value (hex, with or without 0x prefix)
+- `s`: 32-byte value (hex, with or without 0x prefix)
+
+**Example:**
+
+```bash
+mcmctl signatures append \
+  --multisig-id 6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --root 92cb93881a2ea83145908fe515b581751f900d5f8f61f9c026fdc8cebd5e402c \
+  --valid-until 1800000000 \
+  --signatures "1b:1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef:fedcba0987654321fedcba0987654321fedcba0987654321fedcba0987654321"
+```
+
+#### `signatures finalize`
+
+Finalize signatures (no more additions allowed).
+
+```bash
+mcmctl signatures finalize \
+  --multisig-id <hex32> \
+  --root <hex32> \
+  --valid-until <timestamp>
+```
+
+**Example:**
+
+```bash
+mcmctl signatures finalize \
+  --multisig-id 6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --root 92cb93881a2ea83145908fe515b581751f900d5f8f61f9c026fdc8cebd5e402c \
+  --valid-until 1800000000
+```
+
+#### `signatures clear`
+
+Clear signature storage (allows reinitializing with different parameters).
+
+```bash
+mcmctl signatures clear \
+  --multisig-id <hex32> \
+  --root <hex32> \
+  --valid-until <timestamp>
+```
+
+**Example:**
+
+```bash
+mcmctl signatures clear \
+  --multisig-id 6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --root 92cb93881a2ea83145908fe515b581751f900d5f8f61f9c026fdc8cebd5e402c \
+  --valid-until 1800000000
+```
 
 ## Complete Workflow Example
 

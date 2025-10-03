@@ -113,6 +113,25 @@ func (s *SignersService) FinalizeSigners(ctx context.Context, params FinalizeSig
 		BuildSignAndSendWithConfirmation(ctx)
 }
 
+type ClearSignersParams struct {
+	MultisigID [32]byte
+}
+
+func (s *SignersService) ClearSigners(ctx context.Context, params ClearSignersParams) (solana.Signature, error) {
+	ix, err := instructions.ClearSigners(instructions.ClearSignersParams{
+		MultisigID: params.MultisigID,
+		Authority:  s.client.Payer.PublicKey(),
+		ProgramID:  s.client.ProgramID,
+	})
+	if err != nil {
+		return solana.Signature{}, fmt.Errorf("failed to build clear signers instruction: %w", err)
+	}
+
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+		AddInstruction(ix).
+		BuildSignAndSendWithConfirmation(ctx)
+}
+
 type SetConfigParams struct {
 	MultisigID   [32]byte
 	SignerGroups []byte
@@ -133,25 +152,6 @@ func (s *SignersService) SetConfig(ctx context.Context, params SetConfigParams) 
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build set config instruction: %w", err)
-	}
-
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
-		AddInstruction(ix).
-		BuildSignAndSendWithConfirmation(ctx)
-}
-
-type ClearSignersParams struct {
-	MultisigID [32]byte
-}
-
-func (s *SignersService) ClearSigners(ctx context.Context, params ClearSignersParams) (solana.Signature, error) {
-	ix, err := instructions.ClearSigners(instructions.ClearSignersParams{
-		MultisigID: params.MultisigID,
-		Authority:  s.client.Payer.PublicKey(),
-		ProgramID:  s.client.ProgramID,
-	})
-	if err != nil {
-		return solana.Signature{}, fmt.Errorf("failed to build clear signers instruction: %w", err)
 	}
 
 	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).

@@ -16,6 +16,11 @@ The SDK includes `mcmctl`, a command-line tool for managing MCM multisigs:
 # Build the CLI
 go build -o mcmctl ./cmd/mcmctl
 
+# Set environment variables
+export MCM_RPC_URL="devnet"
+export MCM_WS_URL="devnet"
+export MCM_PROGRAM_ID="YourProgramID"
+
 # Initialize a multisig
 mcmctl multisig init --multisig-id <hex32> --chain-id 1
 
@@ -23,6 +28,7 @@ mcmctl multisig init --multisig-id <hex32> --chain-id 1
 mcmctl signers init --multisig-id <hex32> --total 10
 mcmctl signers append --multisig-id <hex32> --signers <addr1,addr2,...>
 mcmctl signers finalize --multisig-id <hex32>
+mcmctl signers set-config --multisig-id <hex32> --signer-groups <groups> --group-quorums <quorums> --group-parents <parents>
 ```
 
 See [cmd/mcmctl/README.md](cmd/mcmctl/README.md) for complete documentation.
@@ -36,26 +42,33 @@ import (
     "context"
     "github.com/gagliardetto/solana-go"
     "mcm-go/pkg/client"
+    "mcm-go/pkg/proposal"
     "mcm-go/pkg/services"
 )
 
 func main() {
+    // Setup client
     payer := solana.MustPrivateKeyFromBase58("your-private-key")
+    programID := solana.MustPublicKeyFromBase58("YourProgramID")
 
     cfg := client.Config{
         RPCURL:    "https://api.devnet.solana.com",
         WSURL:     "wss://api.devnet.solana.com",
-        ProgramID: solana.MustPublicKeyFromBase58("YourProgramID"),
+        ProgramID: programID,
         Payer:     payer,
     }
 
     mcmClient, _ := client.New(cfg)
     defer mcmClient.Close()
 
-    proposalSvc := services.NewProposalService(mcmClient)
-
     // Create proposal from on-chain state
+    var multisigID [32]byte // Your multisig ID
+    var validUntil uint32 = 1800000000
+    var instructions []proposal.MCMInstruction // Your instructions
+
+    proposalSvc := services.NewProposalService(mcmClient)
     ctx := context.Background()
+
     p, _ := proposalSvc.CreateProposalFromChain(ctx, services.CreateProposalFromChainParams{
         MultisigID:           multisigID,
         ValidUntil:           validUntil,
@@ -71,10 +84,16 @@ func main() {
 }
 ```
 
-## Examples
+## CLI Examples
 
-- [**basic_usage**](examples/basic_usage/main.go) - Complete workflow: create proposal from chain, compute Merkle root, prepare hash for signing
-- [**persistence**](examples/persistence/main.go) - Save/load proposals to/from JSON files
+The `cmd/mcmctl` directory provides a complete command-line interface demonstrating SDK usage:
+
+- **Multisig operations** - Initialize multisig accounts on Solana
+- **Signers management** - Configure signer addresses and groups
+- **Signatures management** - Submit ECDSA signatures for proposal approval
+- **Proposal operations** - Offline proposal signing and hash computation
+
+See [cmd/mcmctl/README.md](cmd/mcmctl/README.md) for detailed usage examples.
 
 ## Package Structure
 
@@ -95,7 +114,7 @@ mcm-go/
 │   ├── state/         # On-chain account fetchers
 │   ├── services/      # High-level services (ProposalService, SignersService, etc.)
 │   └── tx/            # Transaction builder and submission utilities
-├── examples/          # Usage examples
+├── cmd/mcmctl/        # CLI demonstrating SDK usage
 └── mcm.json          # MCM program IDL (Anchor >= 0.30.0)
 ```
 
