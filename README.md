@@ -329,21 +329,33 @@ proposalSvc.SetRoot(ctx, services.SetRootParams{
 })
 
 // Execute all operations
-allIndices := make([]int, len(pwr.Instructions))
-for i := range allIndices {
-    allIndices[i] = i
-}
 proposalSvc.Execute(ctx, services.ExecuteParams{
     MultisigID:       multisigID,
     ProposalWithRoot: pwr,
-    OperationIndices: allIndices,
+    StartIndex:       0,
+    OperationCount:   len(pwr.Instructions),
 })
 
-// Or execute specific operations
+// Execute first operation
 proposalSvc.Execute(ctx, services.ExecuteParams{
     MultisigID:       multisigID,
     ProposalWithRoot: pwr,
-    OperationIndices: []int{0, 2}, // Execute operations 0 and 2
+    StartIndex:       0,
+    OperationCount:   1,
+})
+// Execute next operation
+proposalSvc.Execute(ctx, services.ExecuteParams{
+    MultisigID:       multisigID,
+    ProposalWithRoot: pwr,
+    StartIndex:       1,
+    OperationCount:   1,
+})
+// Execute first two operations together
+proposalSvc.Execute(ctx, services.ExecuteParams{
+    MultisigID:       multisigID,
+    ProposalWithRoot: pwr,
+    StartIndex:       0,
+    OperationCount:   2,
 })
 ```
 

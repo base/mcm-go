@@ -134,26 +134,26 @@ func (s *ProposalService) CreateProposalFromChain(
 type ExecuteParams struct {
 	MultisigID       [32]byte
 	ProposalWithRoot *proposal.ProposalWithRoot
-	OperationIndices []int
+	StartIndex       uint
+	OperationCount   uint
 }
 
 // Execute executes one or more operations from a proposal
 func (s *ProposalService) Execute(ctx context.Context, params ExecuteParams) ([]solana.Signature, error) {
-	if len(params.OperationIndices) == 0 {
-		return nil, fmt.Errorf("no operation indices provided")
+	if params.OperationCount == 0 {
+		return nil, fmt.Errorf("operation count must be positive")
 	}
 
-	sigs := make([]solana.Signature, 0, len(params.OperationIndices))
+	endIndex := params.StartIndex + params.OperationCount
+	if endIndex > uint(len(params.ProposalWithRoot.Instructions)) {
+		return nil, fmt.Errorf("operation range [%d:%d) exceeds instruction count %d",
+			params.StartIndex, endIndex, len(params.ProposalWithRoot.Instructions))
+	}
 
-	for _, idx := range params.OperationIndices {
-		// Validate index
-		if idx < 0 || idx >= len(params.ProposalWithRoot.Instructions) {
-			return sigs, fmt.Errorf("operation index %d out of range (0-%d)", idx, len(params.ProposalWithRoot.Instructions)-1)
-		}
+	sigs := make([]solana.Signature, 0, params.OperationCount)
 
-		if idx >= len(params.ProposalWithRoot.OperationProofs) {
-			return sigs, fmt.Errorf("operation proof index %d out of range", idx)
-		}
+	for i := uint(0); i < params.OperationCount; i++ {
+		idx := params.StartIndex + i
 
 		op := params.ProposalWithRoot.Instructions[idx]
 		proof := params.ProposalWithRoot.OperationProofs[idx]

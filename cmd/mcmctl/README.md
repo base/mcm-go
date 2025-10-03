@@ -262,14 +262,18 @@ signature: 5j7s...
 Execute operations from a proposal.
 
 ```bash
-mcmctl proposal execute --file <path> [--operation-index <index>]
+mcmctl proposal execute --file <path> --operation-count <count> [--start-index <index>]
 ```
+
+**Flags:**
+- `--operation-count, -n` : Number of operations to execute (required)
+- `--start-index, -s` : Index of first operation to execute (default: 0)
 
 **Features:**
 
 - Loads proposal from JSON file
 - Computes Merkle root and operation proofs
-- Executes a single operation or all operations sequentially
+- Executes operations sequentially starting from start-index
 - Requires transaction flags (--rpc, --ws, --program-id, --authority)
 
 **Example (execute single operation):**
@@ -277,24 +281,27 @@ mcmctl proposal execute --file <path> [--operation-index <index>]
 ```bash
 mcmctl proposal execute \
   --file my_proposal.json \
-  --operation-index 0
+  --operation-count 1
 ```
 
-**Example (execute all operations):**
+**Example (execute operations 1 and 2):**
 
 ```bash
 mcmctl proposal execute \
-  --file my_proposal.json
+  --file my_proposal.json \
+  --start-index 1 \
+  --operation-count 2
 ```
 
-**Example Output (single operation):**
+**Example (execute all 3 operations):**
 
-```
-Operation 0 executed successfully
-signature: 5j7s...
+```bash
+mcmctl proposal execute \
+  --file my_proposal.json \
+  --operation-count 3
 ```
 
-**Example Output (all operations):**
+**Example Output:**
 
 ```
 Executed 3 operation(s) successfully

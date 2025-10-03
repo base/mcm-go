@@ -22,16 +22,23 @@ func ExecuteCommand() *ucli.Command {
 				Usage:    "Path to proposal JSON file",
 				Required: true,
 			},
-			&ucli.IntFlag{
-				Name:    "operation-index",
-				Aliases: []string{"i"},
-				Usage:   "Operation index to execute (omit to execute all operations)",
-				Value:   -1,
+			&ucli.UintFlag{
+				Name:    "start-index",
+				Aliases: []string{"s"},
+				Usage:   "Index of first operation to execute",
+				Value:   0,
+			},
+			&ucli.UintFlag{
+				Name:     "operation-count",
+				Aliases:  []string{"n"},
+				Usage:    "Number of operations to execute",
+				Required: true,
 			},
 		),
 		Action: func(c *ucli.Context) error {
 			filePath := c.String("file")
-			operationIndex := c.Int("operation-index")
+			startIndex := c.Uint("start-index")
+			operationCount := c.Uint("operation-count")
 
 			pwr, err := util.LoadProposalWithRoot(filePath)
 			if err != nil {
@@ -46,37 +53,20 @@ func ExecuteCommand() *ucli.Command {
 
 			proposalSvc := services.NewProposalService(mcmClient)
 
-			var operationIndices []int
-			if operationIndex >= 0 {
-				operationIndices = []int{operationIndex}
-			} else {
-				operationIndices = make([]int, len(pwr.Instructions))
-				for i := range operationIndices {
-					operationIndices[i] = i
-				}
-			}
-
 			sigs, err := proposalSvc.Execute(c.Context, services.ExecuteParams{
 				MultisigID:       pwr.MultisigID,
 				ProposalWithRoot: pwr,
-				OperationIndices: operationIndices,
+				StartIndex:       startIndex,
+				OperationCount:   operationCount,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to execute operations: %w", err)
 			}
 
-			if len(sigs) == 1 && operationIndex >= 0 {
-				fmt.Printf("Operation %d executed successfully\n", operationIndex)
-				fmt.Printf("signature: %s\n", sigs[0])
-			} else {
-				fmt.Printf("Executed %d operation(s) successfully\n", len(sigs))
-				for i, sig := range sigs {
-					if operationIndex >= 0 {
-						fmt.Printf("  operation %d: %s\n", operationIndex, sig)
-					} else {
-						fmt.Printf("  operation %d: %s\n", i, sig)
-					}
-				}
+			fmt.Printf("Executed %d operation(s) successfully\n", len(sigs))
+			for i, sig := range sigs {
+				opIdx := startIndex + uint(i)
+				fmt.Printf("  operation %d: %s\n", opIdx, sig)
 			}
 
 			return nil
