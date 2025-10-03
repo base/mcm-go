@@ -21,7 +21,7 @@ These flags are required for commands that interact with the Solana blockchain:
 | `--program-id, -p` | `MCM_PROGRAM_ID` | MCM program ID (base58) | Required |
 | `--authority, -a` | `MCM_AUTHORITY` | Path to authority keypair file (also used as transaction payer) | `~/.config/solana/id.json` |
 
-**Note:** `proposal` commands that work offline (like `proposal sign`) do not require these flags.
+**Note:** `proposal` commands that work offline (like `proposal hash`) do not require these flags.
 
 ### Network Aliases
 
@@ -185,12 +185,12 @@ mcmctl signers set-config \
 
 ### Proposal Operations
 
-#### `proposal sign`
+#### `proposal hash`
 
-Load a proposal from a JSON file and display the hash that signers need to sign (offline operation).
+Compute the hash to sign for a proposal (offline operation).
 
 ```bash
-mcmctl proposal sign --file <path>
+mcmctl proposal hash --file <path>
 ```
 
 **Features:**
@@ -202,7 +202,7 @@ mcmctl proposal sign --file <path>
 **Example:**
 
 ```bash
-mcmctl proposal sign --file my_proposal.json
+mcmctl proposal hash --file my_proposal.json
 ```
 
 **Example Output:**
@@ -220,7 +220,40 @@ Proposal loaded successfully
 Merkle Root: 0x92cb93881a2ea83145908fe515b581751f900d5f8f61f9c026fdc8cebd5e402c
 
 Hash to Sign (keccak256(root || validUntil)):
+vvvvvvvv
 0x5be3ca56ef2891fb5f2aecbf0f826664ec0db9eddfe3cf5103cf3a9f4fc7acdb
+^^^^^^^^
+```
+
+#### `proposal set-root`
+
+Load a proposal and set its Merkle root on-chain.
+
+```bash
+mcmctl proposal set-root --file <path>
+```
+
+**Features:**
+- Loads proposal from JSON file
+- Computes Merkle root and metadata proof
+- Submits SetRoot transaction to Solana
+- Requires transaction flags (--rpc, --ws, --program-id, --authority)
+
+**Example:**
+
+```bash
+mcmctl proposal set-root \
+  --file my_proposal.json
+```
+
+**Example Output:**
+
+```
+Root set successfully
+  Multisig ID: 0x0000000000000000000000000000000000000000000000000000000000000000
+  Root: 0x92cb93881a2ea83145908fe515b581751f900d5f8f61f9c026fdc8cebd5e402c
+  Valid Until: 1800000000
+signature: 5j7s...
 ```
 
 **Proposal JSON Format:**

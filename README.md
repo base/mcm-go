@@ -91,7 +91,7 @@ The `cmd/mcmctl` directory provides a complete command-line interface demonstrat
 - **Multisig operations** - Initialize multisig accounts on Solana
 - **Signers management** - Configure signer addresses and groups
 - **Signatures management** - Submit ECDSA signatures for proposal approval
-- **Proposal operations** - Offline proposal signing and hash computation
+- **Proposal operations** - Compute hash for signing and set roots on-chain
 
 See [cmd/mcmctl/README.md](cmd/mcmctl/README.md) for detailed usage examples.
 

@@ -10,7 +10,8 @@ func Command() *ucli.Command {
 		Name:  "proposal",
 		Usage: "Proposal operations (offline and online)",
 		Subcommands: []*ucli.Command{
-			SignCommand(),
+			HashCommand(),
+			SetRootCommand(),
 		},
 	}
 }

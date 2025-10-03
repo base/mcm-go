@@ -9,11 +9,11 @@ import (
 	ucli "github.com/urfave/cli/v2"
 )
 
-// SignCommand returns the proposal sign command
-func SignCommand() *ucli.Command {
+// HashCommand returns the proposal hash command
+func HashCommand() *ucli.Command {
 	return &ucli.Command{
-		Name:  "sign",
-		Usage: "Load a proposal and display the hash to sign (offline operation)",
+		Name:  "hash",
+		Usage: "Compute the hash to sign for a proposal (offline operation)",
 		Flags: []ucli.Flag{
 			&ucli.StringFlag{
 				Name:     "file",
@@ -56,7 +56,9 @@ func SignCommand() *ucli.Command {
 			fmt.Printf("Merkle Root: 0x%x\n", pts.Root)
 			fmt.Printf("\n")
 			fmt.Printf("Hash to Sign (keccak256(root || validUntil)):\n")
+			fmt.Print("vvvvvvvv\n")
 			fmt.Printf("0x%s\n", hex.EncodeToString(pts.HashToSign[:]))
+			fmt.Println("^^^^^^^^")
 
 			return nil
 		},
