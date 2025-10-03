@@ -10,7 +10,6 @@ import (
 	"mcm-go/pkg/tx"
 
 	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
 )
 
 // ExecutionService handles operation execution
@@ -73,7 +72,7 @@ func (s *ExecutionService) ExecuteOperation(ctx context.Context, params ExecuteO
 		builder.AddSigner(*s.client.DefaultPayer)
 	}
 
-	return builder.BuildSignAndSendWithConfirmation(ctx, rpc.CommitmentConfirmed)
+	return builder.BuildSignAndSendWithConfirmation(ctx)
 }
 
 // ExecuteAllOperationsParams contains parameters for executing all operations

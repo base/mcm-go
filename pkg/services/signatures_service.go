@@ -10,7 +10,6 @@ import (
 	"mcm-go/pkg/tx"
 
 	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
 )
 
 // SignaturesService handles signature management operations
@@ -53,7 +52,7 @@ func (s *SignaturesService) InitSignatures(ctx context.Context, params InitSigna
 		builder.AddSigner(*s.client.DefaultPayer)
 	}
 
-	return builder.BuildSignAndSendWithConfirmation(ctx, rpc.CommitmentConfirmed)
+	return builder.BuildSignAndSendWithConfirmation(ctx)
 }
 
 // AppendSignaturesParams contains parameters for appending signatures
@@ -86,7 +85,7 @@ func (s *SignaturesService) AppendSignatures(ctx context.Context, params AppendS
 		builder.AddSigner(*s.client.DefaultPayer)
 	}
 
-	return builder.BuildSignAndSendWithConfirmation(ctx, rpc.CommitmentConfirmed)
+	return builder.BuildSignAndSendWithConfirmation(ctx)
 }
 
 // AppendSignaturesInBatchesParams contains parameters for appending signatures in batches
@@ -158,7 +157,7 @@ func (s *SignaturesService) FinalizeSignatures(ctx context.Context, params Final
 		builder.AddSigner(*s.client.DefaultPayer)
 	}
 
-	return builder.BuildSignAndSendWithConfirmation(ctx, rpc.CommitmentConfirmed)
+	return builder.BuildSignAndSendWithConfirmation(ctx)
 }
 
 // ClearSignaturesParams contains parameters for clearing signatures
@@ -189,5 +188,5 @@ func (s *SignaturesService) ClearSignatures(ctx context.Context, params ClearSig
 		builder.AddSigner(*s.client.DefaultPayer)
 	}
 
-	return builder.BuildSignAndSendWithConfirmation(ctx, rpc.CommitmentConfirmed)
+	return builder.BuildSignAndSendWithConfirmation(ctx)
 }

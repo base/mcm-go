@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
 	"mcm-go/pkg/client"
 	"mcm-go/pkg/instructions"
 	"mcm-go/pkg/tx"
@@ -48,7 +47,7 @@ func (s *SignersService) InitSigners(ctx context.Context, params InitSignersPara
 		builder.AddSigner(*s.client.DefaultPayer)
 	}
 
-	return builder.BuildSignAndSendWithConfirmation(ctx, rpc.CommitmentConfirmed)
+	return builder.BuildSignAndSendWithConfirmation(ctx)
 }
 
 // AppendSignersParams contains parameters for appending signers
@@ -77,7 +76,7 @@ func (s *SignersService) AppendSigners(ctx context.Context, params AppendSigners
 		builder.AddSigner(*s.client.DefaultPayer)
 	}
 
-	return builder.BuildSignAndSendWithConfirmation(ctx, rpc.CommitmentConfirmed)
+	return builder.BuildSignAndSendWithConfirmation(ctx)
 }
 
 // AppendSignersInBatchesParams contains parameters for appending signers in batches
@@ -141,7 +140,7 @@ func (s *SignersService) FinalizeSigners(ctx context.Context, params FinalizeSig
 		builder.AddSigner(*s.client.DefaultPayer)
 	}
 
-	return builder.BuildSignAndSendWithConfirmation(ctx, rpc.CommitmentConfirmed)
+	return builder.BuildSignAndSendWithConfirmation(ctx)
 }
 
 // SetConfigParams contains parameters for setting config
@@ -176,7 +175,7 @@ func (s *SignersService) SetConfig(ctx context.Context, params SetConfigParams) 
 		builder.AddSigner(*s.client.DefaultPayer)
 	}
 
-	return builder.BuildSignAndSendWithConfirmation(ctx, rpc.CommitmentConfirmed)
+	return builder.BuildSignAndSendWithConfirmation(ctx)
 }
 
 // ClearSignersParams contains parameters for clearing signers
@@ -203,5 +202,5 @@ func (s *SignersService) ClearSigners(ctx context.Context, params ClearSignersPa
 		builder.AddSigner(*s.client.DefaultPayer)
 	}
 
-	return builder.BuildSignAndSendWithConfirmation(ctx, rpc.CommitmentConfirmed)
+	return builder.BuildSignAndSendWithConfirmation(ctx)
 }

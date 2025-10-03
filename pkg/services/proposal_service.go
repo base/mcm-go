@@ -13,7 +13,6 @@ import (
 	"mcm-go/pkg/tx"
 
 	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
 )
 
 // ProposalService handles proposal creation and root setting operations
@@ -68,7 +67,7 @@ func (s *ProposalService) SetRoot(ctx context.Context, params SetRootParams) (so
 		builder.AddSigner(*s.client.DefaultPayer)
 	}
 
-	return builder.BuildSignAndSendWithConfirmation(ctx, rpc.CommitmentConfirmed)
+	return builder.BuildSignAndSendWithConfirmation(ctx)
 }
 
 // CreateProposalFromChainParams contains parameters for creating a proposal from on-chain state

@@ -117,10 +117,7 @@ func (b *Builder) BuildSignAndSend(ctx context.Context) (solana.Signature, error
 }
 
 // BuildSignAndSendWithConfirmation creates, signs, sends, and confirms a transaction
-func (b *Builder) BuildSignAndSendWithConfirmation(
-	ctx context.Context,
-	commitment rpc.CommitmentType,
-) (solana.Signature, error) {
+func (b *Builder) BuildSignAndSendWithConfirmation(ctx context.Context) (solana.Signature, error) {
 	tx, err := b.BuildAndSign(ctx)
 	if err != nil {
 		return solana.Signature{}, err
