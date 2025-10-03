@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	hexutil "mcm-go/pkg/hex"
@@ -87,6 +88,23 @@ func TestSaveLoadProposal(t *testing.T) {
 	if !loaded.RootMetadata.Multisig.Equals(original.RootMetadata.Multisig) {
 		t.Errorf("Multisig mismatch")
 	}
+
+	// Verify that the JSON file contains 0x prefixes
+	jsonData, err := os.ReadFile(filePath)
+	if err != nil {
+		t.Fatalf("Failed to read JSON file: %v", err)
+	}
+	jsonStr := string(jsonData)
+
+	// Check that multisigId has 0x prefix (account for JSON formatting with spaces)
+	if !strings.Contains(jsonStr, `"multisigId": "0x`) && !strings.Contains(jsonStr, `"multisigId":"0x`) {
+		t.Errorf("JSON multisigId should have 0x prefix. JSON content:\n%s", jsonStr)
+	}
+
+	// Check that instruction data has 0x prefix (account for JSON formatting with spaces)
+	if !strings.Contains(jsonStr, `"data": "0x`) && !strings.Contains(jsonStr, `"data":"0x`) {
+		t.Errorf("JSON instruction data should have 0x prefix. JSON content:\n%s", jsonStr)
+	}
 }
 
 func TestLoadInvalidJSON(t *testing.T) {
@@ -119,10 +137,9 @@ func TestDecodeHexWith0xPrefix(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "without 0x prefix",
+			name:    "without 0x prefix should fail",
 			input:   "deadbeef",
-			wantHex: "deadbeef",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "with lowercase 0x prefix",
@@ -131,16 +148,14 @@ func TestDecodeHexWith0xPrefix(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "with uppercase 0X prefix",
+			name:    "with uppercase 0X prefix should fail",
 			input:   "0XDEADBEEF",
-			wantHex: "deadbeef",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
-			name:    "32 bytes without prefix",
+			name:    "32 bytes without prefix should fail",
 			input:   "0000000000000000000000000000000000000000000000000000000000000000",
-			wantHex: "0000000000000000000000000000000000000000000000000000000000000000",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "32 bytes with prefix",

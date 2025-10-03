@@ -69,23 +69,19 @@ type (
 	SignersService    = services.SignersService
 	SignaturesService = services.SignaturesService
 	ProposalService   = services.ProposalService
-	ExecutionService  = services.ExecutionService
 )
 
 // Service parameter types
 type (
-	InitSignersParams               = services.InitSignersParams
-	AppendSignersParams             = services.AppendSignersParams
-	AppendSignersInBatchesParams    = services.AppendSignersInBatchesParams
-	FinalizeSignersParams           = services.FinalizeSignersParams
-	InitSignaturesParams            = services.InitSignaturesParams
-	AppendSignaturesParams          = services.AppendSignaturesParams
-	AppendSignaturesInBatchesParams = services.AppendSignaturesInBatchesParams
-	FinalizeSignaturesParams        = services.FinalizeSignaturesParams
-	SetRootParams                   = services.SetRootParams
-	CreateProposalFromChainParams   = services.CreateProposalFromChainParams
-	ExecuteOperationParams          = services.ExecuteOperationParams
-	ExecuteAllOperationsParams      = services.ExecuteAllOperationsParams
+	InitSignersParams             = services.InitSignersParams
+	AppendSignersParams           = services.AppendSignersParams
+	FinalizeSignersParams         = services.FinalizeSignersParams
+	InitSignaturesParams          = services.InitSignaturesParams
+	AppendSignaturesParams        = services.AppendSignaturesParams
+	FinalizeSignaturesParams      = services.FinalizeSignaturesParams
+	SetRootParams                 = services.SetRootParams
+	CreateProposalFromChainParams = services.CreateProposalFromChainParams
+	ExecuteParams                 = services.ExecuteParams
 )
 
 // State types
@@ -159,7 +155,6 @@ var (
 	NewSignersService    = services.NewSignersService
 	NewSignaturesService = services.NewSignaturesService
 	NewProposalService   = services.NewProposalService
-	NewExecutionService  = services.NewExecutionService
 )
 
 // State fetchers

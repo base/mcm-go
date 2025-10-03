@@ -129,3 +129,62 @@ func (s *ProposalService) CreateProposalFromChain(
 
 	return builder.Build()
 }
+
+// ExecuteParams contains parameters for executing operations
+type ExecuteParams struct {
+	MultisigID       [32]byte
+	ProposalWithRoot *proposal.ProposalWithRoot
+	OperationIndices []int
+}
+
+// Execute executes one or more operations from a proposal
+func (s *ProposalService) Execute(ctx context.Context, params ExecuteParams) ([]solana.Signature, error) {
+	if len(params.OperationIndices) == 0 {
+		return nil, fmt.Errorf("no operation indices provided")
+	}
+
+	sigs := make([]solana.Signature, 0, len(params.OperationIndices))
+
+	for _, idx := range params.OperationIndices {
+		// Validate index
+		if idx < 0 || idx >= len(params.ProposalWithRoot.Instructions) {
+			return sigs, fmt.Errorf("operation index %d out of range (0-%d)", idx, len(params.ProposalWithRoot.Instructions)-1)
+		}
+
+		if idx >= len(params.ProposalWithRoot.OperationProofs) {
+			return sigs, fmt.Errorf("operation proof index %d out of range", idx)
+		}
+
+		op := params.ProposalWithRoot.Instructions[idx]
+		proof := params.ProposalWithRoot.OperationProofs[idx]
+
+		// Calculate nonce (preOpCount + index)
+		nonce := params.ProposalWithRoot.RootMetadata.PreOpCount + uint64(idx)
+
+		ix, err := instructions.Execute(instructions.ExecuteParams{
+			MultisigID:        params.MultisigID,
+			ChainID:           params.ProposalWithRoot.RootMetadata.ChainID,
+			Nonce:             nonce,
+			To:                op.ProgID,
+			Data:              op.DataBytes,
+			Proof:             proof,
+			RemainingAccounts: op.AccountValues,
+			Authority:         s.client.Payer.PublicKey(),
+			ProgramID:         s.client.ProgramID,
+		})
+		if err != nil {
+			return sigs, fmt.Errorf("failed to build execute instruction for operation %d: %w", idx, err)
+		}
+
+		sig, err := tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+			AddInstruction(ix).
+			BuildSignAndSendWithConfirmation(ctx)
+		if err != nil {
+			return sigs, fmt.Errorf("failed to execute operation %d: %w", idx, err)
+		}
+
+		sigs = append(sigs, sig)
+	}
+
+	return sigs, nil
+}

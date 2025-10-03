@@ -4,6 +4,8 @@ import (
 	"encoding/hex"
 	"testing"
 
+	hexPkg "mcm-go/pkg/hex"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -15,9 +17,9 @@ func TestParseHex32(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "valid hex without prefix",
+			name:    "valid hex without prefix should fail",
 			input:   "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "valid hex with lowercase 0x prefix",
@@ -25,25 +27,25 @@ func TestParseHex32(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "valid hex with uppercase 0X prefix",
+			name:    "valid hex with uppercase 0X prefix should fail",
 			input:   "0X0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "too short",
-			input:   "0123456789abcdef",
+			input:   "0x0123456789abcdef",
 			wantErr: true,
 		},
 		{
 			name:    "invalid hex",
-			input:   "xyz",
+			input:   "0xxyz",
 			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := ParseHex32(tt.input)
+			result, err := hexPkg.Parse32(tt.input)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -61,9 +63,9 @@ func TestParseHex20(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "valid EVM address without prefix",
+			name:    "valid EVM address without prefix should fail",
 			input:   "1234567890abcdef1234567890abcdef12345678",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "valid EVM address with lowercase 0x prefix",
@@ -71,25 +73,25 @@ func TestParseHex20(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "valid EVM address with uppercase 0X prefix",
+			name:    "valid EVM address with uppercase 0X prefix should fail",
 			input:   "0X1234567890ABCDEF1234567890ABCDEF12345678",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "too short",
-			input:   "1234567890",
+			input:   "0x1234567890",
 			wantErr: true,
 		},
 		{
 			name:    "too long",
-			input:   "1234567890abcdef1234567890abcdef1234567890",
+			input:   "0x1234567890abcdef1234567890abcdef1234567890",
 			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result, err := ParseHex20(tt.input)
+			result, err := hexPkg.Parse20(tt.input)
 			if tt.wantErr {
 				assert.Error(t, err)
 			} else {
@@ -134,10 +136,11 @@ func TestParseAndSortSigners(t *testing.T) {
 		assert.Error(t, err)
 	})
 
-	t.Run("invalid hex", func(t *testing.T) {
-		input := "invalid,0x1111111111111111111111111111111111111111"
+	t.Run("invalid hex without prefix", func(t *testing.T) {
+		input := "1111111111111111111111111111111111111111,0x2222222222222222222222222222222222222222"
 		_, _, err := ParseAndSortSigners(input)
 		assert.Error(t, err)
+		assert.Contains(t, err.Error(), "0x")
 	})
 
 	t.Run("handles whitespace", func(t *testing.T) {

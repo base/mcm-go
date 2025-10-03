@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	proposalIO "mcm-go/pkg/proposal/io"
+	"mcm-go/cmd/mcmctl/util"
 
 	ucli "github.com/urfave/cli/v2"
 )
@@ -25,19 +25,11 @@ func HashCommand() *ucli.Command {
 		Action: func(c *ucli.Context) error {
 			filePath := c.String("file")
 
-			// Load proposal from file
-			p, err := proposalIO.LoadProposal(filePath)
+			pwr, err := util.LoadProposalWithRoot(filePath)
 			if err != nil {
-				return fmt.Errorf("failed to load proposal: %w", err)
+				return err
 			}
 
-			// Compute root and proofs
-			pwr, err := p.WithRoot()
-			if err != nil {
-				return fmt.Errorf("failed to compute Merkle root: %w", err)
-			}
-
-			// Compute hash to sign
 			pts, err := pwr.WithHashToSign()
 			if err != nil {
 				return fmt.Errorf("failed to compute hash to sign: %w", err)

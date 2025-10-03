@@ -3,7 +3,8 @@ package signatures
 import (
 	"fmt"
 
-	"mcm-go/pkg/cli"
+	"mcm-go/cmd/mcmctl/flags"
+	"mcm-go/cmd/mcmctl/util"
 	"mcm-go/pkg/services"
 
 	ucli "github.com/urfave/cli/v2"
@@ -14,20 +15,11 @@ func InitCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "init",
 		Usage: "Initialize signatures storage for a new root",
-		Flags: []ucli.Flag{
+		Flags: append(flags.TransactionFlags(),
 			&ucli.StringFlag{
-				Name:     "multisig-id",
-				Usage:    "Multisig identifier (32 bytes hex)",
-				Required: true,
-			},
-			&ucli.StringFlag{
-				Name:     "root",
-				Usage:    "Merkle root (32 bytes hex)",
-				Required: true,
-			},
-			&ucli.Uint64Flag{
-				Name:     "valid-until",
-				Usage:    "Unix timestamp until which the root is valid",
+				Name:     "file",
+				Aliases:  []string{"f"},
+				Usage:    "Path to proposal JSON file",
 				Required: true,
 			},
 			&ucli.IntFlag{
@@ -35,24 +27,16 @@ func InitCommand() *ucli.Command {
 				Usage:    "Total number of signatures",
 				Required: true,
 			},
-		},
+		),
 		Action: func(c *ucli.Context) error {
-			svc, err := loadSignaturesService(c)
+			filePath := c.String("file")
+
+			pwr, err := util.LoadProposalWithRoot(filePath)
 			if err != nil {
 				return err
 			}
 
-			multisigID, err := cli.ParseHex32(c.String("multisig-id"))
-			if err != nil {
-				return fmt.Errorf("invalid multisig-id: %w", err)
-			}
-
-			root, err := cli.ParseHex32(c.String("root"))
-			if err != nil {
-				return fmt.Errorf("invalid root: %w", err)
-			}
-
-			validUntil, err := parseValidUntil(c.Uint64("valid-until"))
+			svc, err := loadSignaturesService(c)
 			if err != nil {
 				return err
 			}
@@ -63,9 +47,9 @@ func InitCommand() *ucli.Command {
 			}
 
 			sig, err := svc.InitSignatures(c.Context, services.InitSignaturesParams{
-				MultisigID:      multisigID,
-				Root:            root,
-				ValidUntil:      validUntil,
+				MultisigID:      pwr.MultisigID,
+				Root:            pwr.Root,
+				ValidUntil:      pwr.ValidUntil,
 				TotalSignatures: uint8(total),
 			})
 			if err != nil {

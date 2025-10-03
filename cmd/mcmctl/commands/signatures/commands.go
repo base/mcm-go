@@ -1,7 +1,8 @@
 package signatures
 
 import (
-	"mcm-go/cmd/mcmctl/flags"
+	"mcm-go/cmd/mcmctl/util"
+	"mcm-go/pkg/services"
 
 	ucli "github.com/urfave/cli/v2"
 )
@@ -11,7 +12,6 @@ func Command() *ucli.Command {
 	return &ucli.Command{
 		Name:  "signatures",
 		Usage: "Signature management for setting roots",
-		Flags: flags.TransactionFlags(),
 		Subcommands: []*ucli.Command{
 			InitCommand(),
 			AppendCommand(),
@@ -19,4 +19,14 @@ func Command() *ucli.Command {
 			ClearCommand(),
 		},
 	}
+}
+
+// loadSignaturesService loads the signatures service from CLI flags
+func loadSignaturesService(c *ucli.Context) (*services.SignaturesService, error) {
+	mcmClient, err := util.LoadClient(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return services.NewSignaturesService(mcmClient), nil
 }

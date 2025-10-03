@@ -1,7 +1,8 @@
 package signers
 
 import (
-	"mcm-go/cmd/mcmctl/flags"
+	"mcm-go/cmd/mcmctl/util"
+	"mcm-go/pkg/services"
 
 	ucli "github.com/urfave/cli/v2"
 )
@@ -11,7 +12,6 @@ func Command() *ucli.Command {
 	return &ucli.Command{
 		Name:  "signers",
 		Usage: "Signers management",
-		Flags: flags.TransactionFlags(),
 		Subcommands: []*ucli.Command{
 			InitCommand(),
 			AppendCommand(),
@@ -19,4 +19,14 @@ func Command() *ucli.Command {
 			SetConfigCommand(),
 		},
 	}
+}
+
+// loadSignersService loads the signers service from CLI flags
+func loadSignersService(c *ucli.Context) (*services.SignersService, error) {
+	mcmClient, err := util.LoadClient(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return services.NewSignersService(mcmClient), nil
 }

@@ -61,39 +61,6 @@ func (s *SignersService) AppendSigners(ctx context.Context, params AppendSigners
 		BuildSignAndSendWithConfirmation(ctx)
 }
 
-type AppendSignersInBatchesParams struct {
-	MultisigID [32]byte
-	Signers    [][20]uint8
-	BatchSize  int
-}
-
-func (s *SignersService) AppendSignersInBatches(
-	ctx context.Context,
-	params AppendSignersInBatchesParams,
-) ([]solana.Signature, error) {
-	sigs := make([]solana.Signature, 0)
-
-	for i := 0; i < len(params.Signers); i += params.BatchSize {
-		end := i + params.BatchSize
-		if end > len(params.Signers) {
-			end = len(params.Signers)
-		}
-
-		batch := params.Signers[i:end]
-		sig, err := s.AppendSigners(ctx, AppendSignersParams{
-			MultisigID:   params.MultisigID,
-			SignersBatch: batch,
-		})
-		if err != nil {
-			return sigs, fmt.Errorf("failed to append batch %d-%d: %w", i, end, err)
-		}
-
-		sigs = append(sigs, sig)
-	}
-
-	return sigs, nil
-}
-
 type FinalizeSignersParams struct {
 	MultisigID [32]byte
 }

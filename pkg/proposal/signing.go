@@ -24,12 +24,10 @@ func (pwr *ProposalWithRoot) WithHashToSign() (*ProposalToSign, error) {
 // computeHashToSign computes the hash that signers need to sign
 func computeHashToSign(root [32]byte, validUntil uint32) [32]byte {
 	// Hash to sign: keccak256(root || validUntil)
-	data := make([]byte, 0, 32+4)
-	data = append(data, root[:]...)
-
-	validUntilBytes := make([]byte, 4)
-	binary.LittleEndian.PutUint32(validUntilBytes, validUntil)
-	data = append(data, validUntilBytes...)
+	// validUntil is left-padded to 32 bytes in big-endian for EVM compatibility
+	data := make([]byte, 64) // 32 bytes root + 32 bytes validUntil
+	copy(data[:32], root[:])
+	binary.BigEndian.PutUint32(data[60:], validUntil) // offset 60 = 32 + 28
 
 	return crypto.Keccak256Hash(data)
 }

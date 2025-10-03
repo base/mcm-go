@@ -4,22 +4,11 @@ import (
 	"bytes"
 	"fmt"
 	"sort"
+	"strconv"
 	"strings"
 
 	"mcm-go/pkg/hex"
 )
-
-// ParseHex32 parses a hex string into a [32]byte array.
-// Deprecated: Use hex.Parse32 directly instead.
-func ParseHex32(s string) ([32]byte, error) {
-	return hex.Parse32(s)
-}
-
-// ParseHex20 parses a hex string into a [20]byte array (EVM address).
-// Deprecated: Use hex.Parse20 directly instead.
-func ParseHex20(s string) ([20]byte, error) {
-	return hex.Parse20(s)
-}
 
 // ParseAndSortSigners parses a comma-separated list of hex signers,
 // validates them, sorts them in strictly increasing order, and checks for duplicates.
@@ -39,7 +28,7 @@ func ParseAndSortSigners(signersStr string) ([][20]uint8, bool, error) {
 			continue
 		}
 
-		signer, err := ParseHex20(part)
+		signer, err := hex.Parse20(part)
 		if err != nil {
 			return nil, false, fmt.Errorf("invalid signer at index %d: %w", i, err)
 		}
@@ -79,4 +68,51 @@ func ParseAndSortSigners(signersStr string) ([][20]uint8, bool, error) {
 	}
 
 	return signers, sorted, nil
+}
+
+// ParseUint8Slice parses a comma-separated string into []uint8
+func ParseUint8Slice(s string) ([]byte, error) {
+	if s == "" {
+		return nil, fmt.Errorf("empty input")
+	}
+
+	parts := strings.Split(s, ",")
+	result := make([]byte, len(parts))
+
+	for i, part := range parts {
+		part = strings.TrimSpace(part)
+		val, err := strconv.ParseUint(part, 10, 8)
+		if err != nil {
+			return nil, fmt.Errorf("invalid value at index %d: %s", i, part)
+		}
+		result[i] = uint8(val)
+	}
+
+	return result, nil
+}
+
+// ParseAndPadUint8Array32 parses a comma-separated string and pads it to exactly 32 elements with zeros
+func ParseAndPadUint8Array32(s string) ([32]uint8, error) {
+	var result [32]uint8
+
+	if s == "" {
+		return result, fmt.Errorf("empty input")
+	}
+
+	parts := strings.Split(s, ",")
+	if len(parts) > 32 {
+		return result, fmt.Errorf("too many values: got %d, max 32", len(parts))
+	}
+
+	for i, part := range parts {
+		part = strings.TrimSpace(part)
+		val, err := strconv.ParseUint(part, 10, 8)
+		if err != nil {
+			return result, fmt.Errorf("invalid value at index %d: %s", i, part)
+		}
+		result[i] = uint8(val)
+	}
+
+	// Remaining elements are already 0 due to zero-initialization
+	return result, nil
 }

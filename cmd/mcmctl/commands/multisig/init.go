@@ -3,8 +3,9 @@ package multisig
 import (
 	"fmt"
 
-	"mcm-go/pkg/cli"
-	"mcm-go/pkg/client"
+	"mcm-go/cmd/mcmctl/flags"
+	"mcm-go/cmd/mcmctl/util"
+	"mcm-go/pkg/hex"
 	"mcm-go/pkg/instructions"
 	"mcm-go/pkg/tx"
 
@@ -16,7 +17,7 @@ func InitCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "init",
 		Usage: "Initialize a new multisig",
-		Flags: []ucli.Flag{
+		Flags: append(flags.TransactionFlags(),
 			&ucli.StringFlag{
 				Name:     "multisig-id",
 				Usage:    "Multisig identifier (32 bytes hex)",
@@ -27,16 +28,16 @@ func InitCommand() *ucli.Command {
 				Usage:    "Chain ID (uint64)",
 				Required: true,
 			},
-		},
+		),
 		Action: func(c *ucli.Context) error {
 			// Load client
-			mcmClient, err := loadClient(c)
+			mcmClient, err := util.LoadClient(c)
 			if err != nil {
 				return err
 			}
+			defer mcmClient.Close()
 
-			// Parse multisig ID
-			multisigID, err := cli.ParseHex32(c.String("multisig-id"))
+			multisigID, err := hex.Parse32(c.String("multisig-id"))
 			if err != nil {
 				return fmt.Errorf("invalid multisig-id: %w", err)
 			}
@@ -65,19 +66,4 @@ func InitCommand() *ucli.Command {
 			return nil
 		},
 	}
-}
-
-// loadClient loads the MCM client from CLI flags
-func loadClient(c *ucli.Context) (*client.Client, error) {
-	cfg, err := cli.LoadConfig(cli.ConfigParams{
-		RPCUrl:      c.String("rpc"),
-		WSUrl:       c.String("ws"),
-		ProgramID:   c.String("program-id"),
-		KeypairPath: c.String("authority"),
-	})
-	if err != nil {
-		return nil, fmt.Errorf("failed to load config: %w", err)
-	}
-
-	return client.New(*cfg)
 }

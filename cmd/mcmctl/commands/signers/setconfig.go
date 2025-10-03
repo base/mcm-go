@@ -3,7 +3,9 @@ package signers
 import (
 	"fmt"
 
+	"mcm-go/cmd/mcmctl/flags"
 	"mcm-go/pkg/cli"
+	"mcm-go/pkg/hex"
 	"mcm-go/pkg/services"
 
 	ucli "github.com/urfave/cli/v2"
@@ -14,7 +16,7 @@ func SetConfigCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "set-config",
 		Usage: "Set the multisig configuration (signer groups and quorums)",
-		Flags: []ucli.Flag{
+		Flags: append(flags.TransactionFlags(),
 			&ucli.StringFlag{
 				Name:     "multisig-id",
 				Usage:    "Multisig identifier (32 bytes hex)",
@@ -40,32 +42,32 @@ func SetConfigCommand() *ucli.Command {
 				Usage: "Clear the current Merkle root (invalidates pending operations)",
 				Value: false,
 			},
-		},
+		),
 		Action: func(c *ucli.Context) error {
 			svc, err := loadSignersService(c)
 			if err != nil {
 				return err
 			}
 
-			multisigID, err := cli.ParseHex32(c.String("multisig-id"))
+			multisigID, err := hex.Parse32(c.String("multisig-id"))
 			if err != nil {
 				return fmt.Errorf("invalid multisig-id: %w", err)
 			}
 
 			// Parse signer groups
-			signerGroups, err := parseUint8Slice(c.String("signer-groups"))
+			signerGroups, err := cli.ParseUint8Slice(c.String("signer-groups"))
 			if err != nil {
 				return fmt.Errorf("invalid signer-groups: %w", err)
 			}
 
 			// Parse and pad group quorums to 32 elements
-			groupQuorums, err := parseAndPadUint8Array32(c.String("group-quorums"))
+			groupQuorums, err := cli.ParseAndPadUint8Array32(c.String("group-quorums"))
 			if err != nil {
 				return fmt.Errorf("invalid group-quorums: %w", err)
 			}
 
 			// Parse and pad group parents to 32 elements
-			groupParents, err := parseAndPadUint8Array32(c.String("group-parents"))
+			groupParents, err := cli.ParseAndPadUint8Array32(c.String("group-parents"))
 			if err != nil {
 				return fmt.Errorf("invalid group-parents: %w", err)
 			}

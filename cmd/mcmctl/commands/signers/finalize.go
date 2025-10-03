@@ -3,7 +3,8 @@ package signers
 import (
 	"fmt"
 
-	"mcm-go/pkg/cli"
+	"mcm-go/cmd/mcmctl/flags"
+	"mcm-go/pkg/hex"
 	"mcm-go/pkg/services"
 
 	ucli "github.com/urfave/cli/v2"
@@ -14,20 +15,20 @@ func FinalizeCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "finalize",
 		Usage: "Finalize signers (no more additions allowed)",
-		Flags: []ucli.Flag{
+		Flags: append(flags.TransactionFlags(),
 			&ucli.StringFlag{
 				Name:     "multisig-id",
 				Usage:    "Multisig identifier (32 bytes hex)",
 				Required: true,
 			},
-		},
+		),
 		Action: func(c *ucli.Context) error {
 			svc, err := loadSignersService(c)
 			if err != nil {
 				return err
 			}
 
-			multisigID, err := cli.ParseHex32(c.String("multisig-id"))
+			multisigID, err := hex.Parse32(c.String("multisig-id"))
 			if err != nil {
 				return fmt.Errorf("invalid multisig-id: %w", err)
 			}

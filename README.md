@@ -21,12 +21,12 @@ export MCM_RPC_URL="devnet"
 export MCM_WS_URL="devnet"
 export MCM_PROGRAM_ID="YourProgramID"
 
-# Initialize a multisig
+# Initialize a multisig (hex values must use 0x prefix)
 mcmctl multisig init --multisig-id <hex32> --chain-id 1
 
 # Manage signers
 mcmctl signers init --multisig-id <hex32> --total 10
-mcmctl signers append --multisig-id <hex32> --signers <addr1,addr2,...>
+mcmctl signers append --multisig-id <hex32> --signers <addr1>,<addr2>,...
 mcmctl signers finalize --multisig-id <hex32>
 mcmctl signers set-config --multisig-id <hex32> --signer-groups <groups> --group-quorums <quorums> --group-parents <parents>
 ```
@@ -91,7 +91,7 @@ The `cmd/mcmctl` directory provides a complete command-line interface demonstrat
 - **Multisig operations** - Initialize multisig accounts on Solana
 - **Signers management** - Configure signer addresses and groups
 - **Signatures management** - Submit ECDSA signatures for proposal approval
-- **Proposal operations** - Compute hash for signing and set roots on-chain
+- **Proposal operations** - Compute hash for signing, set roots, and execute operations on-chain
 
 See [cmd/mcmctl/README.md](cmd/mcmctl/README.md) for detailed usage examples.
 
@@ -150,6 +150,12 @@ pts, _ := pwr.WithHashToSign()
 // Distribute pts.HashToSign to signers
 ```
 
+**IMPORTANT - Execution Authority:**
+
+When creating proposals, ensure that the account used as `authority` when executing operations is NOT present in the accounts of any proposal operation. If the same account appears in both places, the program may fail with `ProofCannotBeVerified` error due to signer flag inconsistencies during Merkle proof verification.
+
+**Recommended:** Use a dedicated account as execution authority that never appears in operation accounts.
+
 ### 2. Merkle Trees
 
 Keccak256-based Merkle tree with automatic proof generation:
@@ -185,25 +191,21 @@ import "mcm-go/pkg/services"
 // Signers management
 signersSvc := services.NewSignersService(client)
 signersSvc.InitSigners(ctx, params)
-signersSvc.AppendSignersInBatches(ctx, params)
+signersSvc.AppendSigners(ctx, params)
 signersSvc.FinalizeSigners(ctx, params)
 signersSvc.SetConfig(ctx, params)
 
 // Signatures management
 sigsSvc := services.NewSignaturesService(client)
 sigsSvc.InitSignatures(ctx, params)
-sigsSvc.AppendSignaturesInBatches(ctx, params)
+sigsSvc.AppendSignatures(ctx, params)
 sigsSvc.FinalizeSignatures(ctx, params)
 
-// Proposal service
+// Proposal service (includes creation, root setting, and execution)
 proposalSvc := services.NewProposalService(client)
 p, _ := proposalSvc.CreateProposalFromChain(ctx, params)
 proposalSvc.SetRoot(ctx, params)
-
-// Execution
-execSvc := services.NewExecutionService(client)
-execSvc.ExecuteOperation(ctx, params)
-execSvc.ExecuteAllOperations(ctx, params)
+proposalSvc.Execute(ctx, params) // Execute operations (single, multiple, or all)
 ```
 
 ### 5. Persistence
@@ -250,11 +252,10 @@ signersSvc.InitSigners(ctx, services.InitSignersParams{
     TotalSigners: 10,
 })
 
-// Add signers in batches (max 10 per transaction)
-signersSvc.AppendSignersInBatches(ctx, services.AppendSignersInBatchesParams{
-    MultisigID: multisigID,
-    Signers:    signerAddresses,
-    BatchSize:  10,
+// Add signers
+signersSvc.AppendSigners(ctx, services.AppendSignersParams{
+    MultisigID:   multisigID,
+    SignersBatch: signerAddresses,
 })
 
 // Finalize
@@ -305,12 +306,11 @@ sigsSvc.InitSignatures(ctx, services.InitSignaturesParams{
     ValidUntil:      validUntil,
     TotalSignatures: uint8(len(signatures)),
 })
-sigsSvc.AppendSignaturesInBatches(ctx, services.AppendSignaturesInBatchesParams{
-    MultisigID: multisigID,
-    Root:       pwr.Root,
-    ValidUntil: validUntil,
-    Signatures: signatures,
-    BatchSize:  5,
+sigsSvc.AppendSignatures(ctx, services.AppendSignaturesParams{
+    MultisigID:      multisigID,
+    Root:            pwr.Root,
+    ValidUntil:      validUntil,
+    SignaturesBatch: signatures,
 })
 sigsSvc.FinalizeSignatures(ctx, services.FinalizeSignaturesParams{
     MultisigID: multisigID,
@@ -328,11 +328,22 @@ proposalSvc.SetRoot(ctx, services.SetRootParams{
     Proposal:   pwr,
 })
 
-// Execute operations
-execSvc := services.NewExecutionService(client)
-execSvc.ExecuteAllOperations(ctx, services.ExecuteAllOperationsParams{
+// Execute all operations
+allIndices := make([]int, len(pwr.Instructions))
+for i := range allIndices {
+    allIndices[i] = i
+}
+proposalSvc.Execute(ctx, services.ExecuteParams{
     MultisigID:       multisigID,
     ProposalWithRoot: pwr,
+    OperationIndices: allIndices,
+})
+
+// Or execute specific operations
+proposalSvc.Execute(ctx, services.ExecuteParams{
+    MultisigID:       multisigID,
+    ProposalWithRoot: pwr,
+    OperationIndices: []int{0, 2}, // Execute operations 0 and 2
 })
 ```
 

@@ -76,45 +76,6 @@ func (s *SignaturesService) AppendSignatures(ctx context.Context, params AppendS
 		BuildSignAndSendWithConfirmation(ctx)
 }
 
-// AppendSignaturesInBatchesParams contains parameters for appending signatures in batches
-type AppendSignaturesInBatchesParams struct {
-	MultisigID [32]byte
-	Root       [32]byte
-	ValidUntil uint32
-	Signatures []bindings.Signature
-	BatchSize  int
-}
-
-// AppendSignaturesInBatches appends signatures in multiple batches
-func (s *SignaturesService) AppendSignaturesInBatches(
-	ctx context.Context,
-	params AppendSignaturesInBatchesParams,
-) ([]solana.Signature, error) {
-	sigs := make([]solana.Signature, 0)
-
-	for i := 0; i < len(params.Signatures); i += params.BatchSize {
-		end := i + params.BatchSize
-		if end > len(params.Signatures) {
-			end = len(params.Signatures)
-		}
-
-		batch := params.Signatures[i:end]
-		sig, err := s.AppendSignatures(ctx, AppendSignaturesParams{
-			MultisigID:      params.MultisigID,
-			Root:            params.Root,
-			ValidUntil:      params.ValidUntil,
-			SignaturesBatch: batch,
-		})
-		if err != nil {
-			return sigs, fmt.Errorf("failed to append signatures batch %d-%d: %w", i, end, err)
-		}
-
-		sigs = append(sigs, sig)
-	}
-
-	return sigs, nil
-}
-
 // FinalizeSignaturesParams contains parameters for finalizing signatures
 type FinalizeSignaturesParams struct {
 	MultisigID [32]byte

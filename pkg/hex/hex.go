@@ -7,16 +7,18 @@ import (
 	"strings"
 )
 
-// Decode decodes a hex string, supporting both with and without "0x" or "0X" prefix.
-// This is a general-purpose helper for decoding hex strings in a flexible way.
+// Decode decodes a hex string, requiring "0x" prefix.
+// This ensures consistent hex string formatting across the CLI.
 func Decode(s string) ([]byte, error) {
+	if !strings.HasPrefix(s, "0x") {
+		return nil, fmt.Errorf("hex string must start with '0x' prefix")
+	}
 	s = strings.TrimPrefix(s, "0x")
-	s = strings.TrimPrefix(s, "0X")
 	return hex.DecodeString(s)
 }
 
 // Parse32 parses a hex string into a [32]byte array.
-// Supports hex strings with or without "0x"/"0X" prefix.
+// Requires hex strings with "0x" prefix.
 func Parse32(s string) ([32]byte, error) {
 	var result [32]byte
 
@@ -34,7 +36,7 @@ func Parse32(s string) ([32]byte, error) {
 }
 
 // Parse20 parses a hex string into a [20]byte array (EVM address).
-// Supports hex strings with or without "0x"/"0X" prefix.
+// Requires hex strings with "0x" prefix.
 func Parse20(s string) ([20]byte, error) {
 	var result [20]byte
 

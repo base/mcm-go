@@ -61,13 +61,13 @@ func toProposalJSON(p *proposal.Proposal) (*proposalJSON, error) {
 
 		ixsJSON[i] = instructionJSON{
 			ProgramID: ix.ProgID.String(),
-			Data:      hex.EncodeToString(ix.DataBytes),
+			Data:      "0x" + hex.EncodeToString(ix.DataBytes),
 			Accounts:  accounts,
 		}
 	}
 
 	return &proposalJSON{
-		MultisigID:   hex.EncodeToString(p.MultisigID[:]),
+		MultisigID:   "0x" + hex.EncodeToString(p.MultisigID[:]),
 		ValidUntil:   p.ValidUntil,
 		Instructions: ixsJSON,
 		RootMetadata: rootMetadataJSON{
@@ -82,12 +82,10 @@ func toProposalJSON(p *proposal.Proposal) (*proposalJSON, error) {
 
 // fromProposalJSON converts a JSON DTO to a Proposal
 func fromProposalJSON(pj *proposalJSON) (*proposal.Proposal, error) {
-	multisigIDBytes, err := hexutil.Decode(pj.MultisigID)
-	if err != nil || len(multisigIDBytes) != 32 {
-		return nil, fmt.Errorf("invalid multisigId: must be 32-byte hex (with or without 0x prefix)")
+	multisigID, err := hexutil.Parse32(pj.MultisigID)
+	if err != nil {
+		return nil, fmt.Errorf("invalid multisigId: %w", err)
 	}
-	var multisigID [32]byte
-	copy(multisigID[:], multisigIDBytes)
 
 	multisig, err := solana.PublicKeyFromBase58(pj.RootMetadata.Multisig)
 	if err != nil {

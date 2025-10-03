@@ -15,10 +15,9 @@ func TestDecode(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "without prefix",
+			name:    "without prefix should fail",
 			input:   "deadbeef",
-			want:    "deadbeef",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "with lowercase 0x",
@@ -27,16 +26,14 @@ func TestDecode(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "with uppercase 0X",
+			name:    "with uppercase 0X should fail",
 			input:   "0XDEADBEEF",
-			want:    "deadbeef",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
-			name:    "empty string",
+			name:    "empty string should fail",
 			input:   "",
-			want:    "",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "invalid hex",
@@ -65,9 +62,9 @@ func TestParse32(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "valid hex without prefix",
+			name:    "valid hex without prefix should fail",
 			input:   "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "valid hex with lowercase 0x prefix",
@@ -75,18 +72,18 @@ func TestParse32(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "valid hex with uppercase 0X prefix",
+			name:    "valid hex with uppercase 0X prefix should fail",
 			input:   "0X0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF0123456789ABCDEF",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "too short",
-			input:   "0123456789abcdef",
+			input:   "0x0123456789abcdef",
 			wantErr: true,
 		},
 		{
 			name:    "invalid hex",
-			input:   "xyz",
+			input:   "0xxyz",
 			wantErr: true,
 		},
 	}
@@ -111,9 +108,9 @@ func TestParse20(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name:    "valid EVM address without prefix",
+			name:    "valid EVM address without prefix should fail",
 			input:   "1234567890abcdef1234567890abcdef12345678",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "valid EVM address with lowercase 0x prefix",
@@ -121,18 +118,18 @@ func TestParse20(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "valid EVM address with uppercase 0X prefix",
+			name:    "valid EVM address with uppercase 0X prefix should fail",
 			input:   "0X1234567890ABCDEF1234567890ABCDEF12345678",
-			wantErr: false,
+			wantErr: true,
 		},
 		{
 			name:    "too short",
-			input:   "1234567890",
+			input:   "0x1234567890",
 			wantErr: true,
 		},
 		{
 			name:    "too long",
-			input:   "1234567890abcdef1234567890abcdef1234567890",
+			input:   "0x1234567890abcdef1234567890abcdef1234567890",
 			wantErr: true,
 		},
 	}
