@@ -187,3 +187,121 @@ func TestDecodeHexWith0xPrefix(t *testing.T) {
 		})
 	}
 }
+
+func TestLoadInstructions(t *testing.T) {
+	tmpDir := t.TempDir()
+	filePath := filepath.Join(tmpDir, "instructions.json")
+
+	// Create test instructions file
+	content := `{
+  "instructions": [
+    {
+      "programId": "11111111111111111111111111111111",
+      "data": "0xdeadbeef",
+      "accounts": [
+        {
+          "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ]
+    },
+    {
+      "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "data": "0x1234",
+      "accounts": []
+    }
+  ]
+}`
+
+	err := os.WriteFile(filePath, []byte(content), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Load instructions
+	instructions, err := LoadInstructions(filePath)
+	if err != nil {
+		t.Fatalf("LoadInstructions failed: %v", err)
+	}
+
+	if len(instructions) != 2 {
+		t.Errorf("Expected 2 instructions, got %d", len(instructions))
+	}
+
+	// Check first instruction
+	if instructions[0].ProgID.String() != "11111111111111111111111111111111" {
+		t.Errorf("Instruction 0 ProgID mismatch")
+	}
+	if string(instructions[0].DataBytes) != string([]byte{0xde, 0xad, 0xbe, 0xef}) {
+		t.Errorf("Instruction 0 Data mismatch")
+	}
+	if len(instructions[0].AccountValues) != 1 {
+		t.Errorf("Instruction 0 accounts count mismatch")
+	}
+	if !instructions[0].AccountValues[0].IsSigner {
+		t.Error("Account should be signer")
+	}
+	if instructions[0].AccountValues[0].IsWritable {
+		t.Error("Account should not be writable")
+	}
+
+	// Check second instruction
+	if instructions[1].ProgID.String() != "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" {
+		t.Errorf("Instruction 1 ProgID mismatch")
+	}
+	if string(instructions[1].DataBytes) != string([]byte{0x12, 0x34}) {
+		t.Errorf("Instruction 1 Data mismatch")
+	}
+	if len(instructions[1].AccountValues) != 0 {
+		t.Errorf("Instruction 1 should have no accounts")
+	}
+}
+
+func TestLoadInstructions_EmptyFile(t *testing.T) {
+	tmpDir := t.TempDir()
+	filePath := filepath.Join(tmpDir, "empty.json")
+
+	content := `{"instructions": []}`
+	err := os.WriteFile(filePath, []byte(content), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = LoadInstructions(filePath)
+	if err == nil {
+		t.Error("Expected error for empty instructions, got nil")
+	}
+	if err != nil && !strings.Contains(err.Error(), "no instructions") {
+		t.Errorf("Expected 'no instructions' error, got: %v", err)
+	}
+}
+
+func TestLoadInstructions_InvalidHex(t *testing.T) {
+	tmpDir := t.TempDir()
+	filePath := filepath.Join(tmpDir, "invalid.json")
+
+	// Missing 0x prefix
+	content := `{
+  "instructions": [
+    {
+      "programId": "11111111111111111111111111111111",
+      "data": "deadbeef",
+      "accounts": []
+    }
+  ]
+}`
+
+	err := os.WriteFile(filePath, []byte(content), 0644)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = LoadInstructions(filePath)
+	if err == nil {
+		t.Error("Expected error for invalid hex, got nil")
+	}
+	if err != nil && !strings.Contains(err.Error(), "0x") {
+		t.Errorf("Expected '0x' in error message, got: %v", err)
+	}
+}

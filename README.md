@@ -50,7 +50,7 @@ func main() {
         RPCURL:    "https://api.devnet.solana.com",
         WSURL:     "wss://api.devnet.solana.com",
         ProgramID: programID,
-        Payer:     payer,
+        Payer:     &payer,
     }
 
     mcmClient, _ := client.New(cfg)

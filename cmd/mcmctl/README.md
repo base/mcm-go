@@ -10,18 +10,34 @@ go install github.com/base/mcm-go/cmd/mcmctl@latest
 
 ## Configuration
 
-### Transaction Flags (for `multisig`, `signers`, and `signatures` commands)
+### Flags Overview
 
-These flags are required for commands that interact with the Solana blockchain:
+Commands require different sets of flags depending on their operation:
 
-| Flag               | Environment Variable | Description                                                                            | Default                    |
-| ------------------ | -------------------- | -------------------------------------------------------------------------------------- | -------------------------- |
-| `--rpc, -r`        | `MCM_RPC_URL`        | Solana RPC endpoint URL or network alias (`mainnet`, `devnet`, `testnet`, `localhost`) | Required                   |
-| `--ws`             | `MCM_WS_URL`         | WebSocket endpoint URL or network alias                                                | Required                   |
-| `--program-id, -p` | `MCM_PROGRAM_ID`     | MCM program ID (base58)                                                                | Required                   |
-| `--authority, -a`  | `MCM_AUTHORITY`      | Path to authority keypair file (also used as transaction payer)                        | `~/.config/solana/id.json` |
+**Read-only commands** (e.g., `proposal create`):
 
-**Note:** `proposal` commands that work offline (like `proposal hash`) do not require these flags.
+- `--rpc, -r` : RPC endpoint (required)
+- `--program-id, -p` : MCM program ID (required)
+
+**Write commands** (e.g., `multisig init`, `signers *`, `proposal set-root`, `proposal execute`):
+
+- `--rpc, -r` : RPC endpoint (required)
+- `--program-id, -p` : MCM program ID (required)
+- `--ws` : WebSocket endpoint (required for confirmations)
+- `--authority, -a` : Keypair file for signing (defaults to `~/.config/solana/id.json`)
+
+**Offline commands** (e.g., `proposal hash`):
+
+- No blockchain flags needed
+
+### Flag Details
+
+| Flag               | Environment Variable | Description                                                                            | Default                                    |
+| ------------------ | -------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `--rpc, -r`        | `MCM_RPC_URL`        | Solana RPC endpoint URL or network alias (`mainnet`, `devnet`, `testnet`, `localhost`) | Required (for on-chain ops)                |
+| `--ws`             | `MCM_WS_URL`         | WebSocket endpoint URL or network alias                                                | Required (for write ops)                   |
+| `--program-id, -p` | `MCM_PROGRAM_ID`     | MCM program ID (base58)                                                                | Required (for on-chain ops)                |
+| `--authority, -a`  | `MCM_AUTHORITY`      | Path to authority keypair file (also used as transaction payer)                        | `~/.config/solana/id.json` (for write ops) |
 
 ### Network Aliases
 
@@ -184,12 +200,67 @@ mcmctl signers set-config \
 
 ### Proposal Operations
 
+#### `proposal create`
+
+Create a complete proposal by combining instructions from a JSON file with on-chain state.
+
+```bash
+mcmctl proposal create \
+  --instructions <path> \
+  --multisig-id <hex32> \
+  --valid-until <timestamp> \
+  [--override-previous-root] \
+  --output <path>
+```
+
+**Features:**
+
+- Loads instructions from a simplified JSON file (only operations, no metadata)
+- Fetches current on-chain state (chain ID, multisig, op counts) automatically
+- Generates a complete proposal file ready for signing and execution
+- Read-only operation (only requires `--rpc` and `--program-id`, no wallet needed)
+
+**Instructions JSON Format:**
+
+The input file contains only the instructions array:
+
+```json
+{
+  "instructions": [
+    {
+      "programId": "11111111111111111111111111111111",
+      "data": "0xdeadbeef",
+      "accounts": [
+        {
+          "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+          "isSigner": true,
+          "isWritable": false
+        }
+      ]
+    }
+  ]
+}
+```
+
+**Example:**
+
+```bash
+# Create a proposal from instructions
+mcmctl proposal create \
+  --instructions ./instructions.json \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --valid-until 1800000000 \
+  --output ./proposal.json
+```
+
+The generated `proposal.json` file contains the complete proposal with all metadata and can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
+
 #### `proposal hash`
 
 Compute the hash to sign for a proposal (offline operation).
 
 ```bash
-mcmctl proposal hash --file <path>
+mcmctl proposal hash --proposal <path>
 ```
 
 **Features:**
@@ -202,7 +273,7 @@ mcmctl proposal hash --file <path>
 **Example:**
 
 ```bash
-mcmctl proposal hash --file my_proposal.json
+mcmctl proposal hash --proposal my_proposal.json
 ```
 
 **Example Output:**
@@ -230,7 +301,7 @@ vvvvvvvv
 Load a proposal and set its Merkle root on-chain.
 
 ```bash
-mcmctl proposal set-root --file <path>
+mcmctl proposal set-root --proposal <path>
 ```
 
 **Features:**
@@ -244,7 +315,7 @@ mcmctl proposal set-root --file <path>
 
 ```bash
 mcmctl proposal set-root \
-  --file my_proposal.json
+  --proposal my_proposal.json
 ```
 
 **Example Output:**
@@ -262,10 +333,11 @@ signature: 5j7s...
 Execute operations from a proposal.
 
 ```bash
-mcmctl proposal execute --file <path> --operation-count <count> [--start-index <index>]
+mcmctl proposal execute --proposal <path> --operation-count <count> [--start-index <index>]
 ```
 
 **Flags:**
+
 - `--operation-count, -n` : Number of operations to execute (required)
 - `--start-index, -s` : Index of first operation to execute (default: 0)
 
@@ -280,7 +352,7 @@ mcmctl proposal execute --file <path> --operation-count <count> [--start-index <
 
 ```bash
 mcmctl proposal execute \
-  --file my_proposal.json \
+  --proposal my_proposal.json \
   --operation-count 1
 ```
 
@@ -288,7 +360,7 @@ mcmctl proposal execute \
 
 ```bash
 mcmctl proposal execute \
-  --file my_proposal.json \
+  --proposal my_proposal.json \
   --start-index 1 \
   --operation-count 2
 ```
@@ -297,7 +369,7 @@ mcmctl proposal execute \
 
 ```bash
 mcmctl proposal execute \
-  --file my_proposal.json \
+  --proposal my_proposal.json \
   --operation-count 3
 ```
 
@@ -349,7 +421,7 @@ Initialize signature storage for a new root.
 
 ```bash
 mcmctl signatures init \
-  --file <path> \
+  --proposal <path> \
   --total <uint8>
 ```
 
@@ -357,7 +429,7 @@ mcmctl signatures init \
 
 ```bash
 mcmctl signatures init \
-  --file proposal.json \
+  --proposal proposal.json \
   --total 5
 ```
 
@@ -367,7 +439,7 @@ Append ECDSA signatures to storage.
 
 ```bash
 mcmctl signatures append \
-  --file <path> \
+  --proposal <path> \
   --signatures <sig1,sig2,...>
 ```
 
@@ -381,7 +453,7 @@ mcmctl signatures append \
 
 ```bash
 mcmctl signatures append \
-  --file proposal.json \
+  --proposal proposal.json \
   --signatures "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdeffedcba0987654321fedcba0987654321fedcba0987654321fedcba09876543211b"
 ```
 
@@ -389,7 +461,7 @@ mcmctl signatures append \
 
 ```bash
 mcmctl signatures append \
-  --file proposal.json \
+  --proposal proposal.json \
   --signatures "0x1234...1b,0x5678...1c"
 ```
 
@@ -398,13 +470,13 @@ mcmctl signatures append \
 Finalize signatures (no more additions allowed).
 
 ```bash
-mcmctl signatures finalize --file <path>
+mcmctl signatures finalize --proposal <path>
 ```
 
 **Example:**
 
 ```bash
-mcmctl signatures finalize --file proposal.json
+mcmctl signatures finalize --proposal proposal.json
 ```
 
 #### `signatures clear`
@@ -412,13 +484,13 @@ mcmctl signatures finalize --file proposal.json
 Clear signature storage (allows reinitializing with different parameters).
 
 ```bash
-mcmctl signatures clear --file <path>
+mcmctl signatures clear --proposal <path>
 ```
 
 **Example:**
 
 ```bash
-mcmctl signatures clear --file proposal.json
+mcmctl signatures clear --proposal proposal.json
 ```
 
 ## Complete Workflow Example

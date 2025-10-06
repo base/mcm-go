@@ -15,14 +15,14 @@ func FinalizeCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "finalize",
 		Usage: "Finalize signatures (no more additions allowed)",
-		Flags: append(flags.TransactionFlags(), &ucli.StringFlag{
-			Name:     "file",
-			Aliases:  []string{"f"},
+		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...), &ucli.StringFlag{
+			Name: "proposal",
+			// No alias to avoid conflict with --program-id
 			Usage:    "Path to proposal JSON file",
 			Required: true,
 		}),
 		Action: func(c *ucli.Context) error {
-			filePath := c.String("file")
+			filePath := c.String("proposal")
 
 			pwr, err := util.LoadProposalWithRoot(filePath)
 			if err != nil {

@@ -15,10 +15,10 @@ func InitCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "init",
 		Usage: "Initialize signatures storage for a new root",
-		Flags: append(flags.TransactionFlags(),
+		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...),
 			&ucli.StringFlag{
-				Name:     "file",
-				Aliases:  []string{"f"},
+				Name: "proposal",
+				// No alias to avoid conflict with --program-id
 				Usage:    "Path to proposal JSON file",
 				Required: true,
 			},
@@ -29,7 +29,7 @@ func InitCommand() *ucli.Command {
 			},
 		),
 		Action: func(c *ucli.Context) error {
-			filePath := c.String("file")
+			filePath := c.String("proposal")
 
 			pwr, err := util.LoadProposalWithRoot(filePath)
 			if err != nil {

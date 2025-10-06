@@ -12,6 +12,7 @@ import (
 )
 
 // LoadClient loads the MCM client from CLI flags
+// WS and authority are optional (only needed for write operations)
 func LoadClient(c *ucli.Context) (*client.Client, error) {
 	cfg, err := cli.LoadConfig(cli.ConfigParams{
 		RPCUrl:      c.String("rpc"),

@@ -25,45 +25,6 @@ func NewProposalService(client *client.Client) *ProposalService {
 	return &ProposalService{client: client}
 }
 
-// SetRootParams contains parameters for setting a new root
-type SetRootParams struct {
-	MultisigID [32]byte
-	Proposal   *proposal.ProposalWithRoot
-}
-
-// SetRoot sets a new Merkle root for the multisig
-func (s *ProposalService) SetRoot(ctx context.Context, params SetRootParams) (solana.Signature, error) {
-	// Convert ProposalWithRoot metadata to RootMetadataInput
-	metadata := bindings.RootMetadataInput{
-		ChainId:              params.Proposal.RootMetadata.ChainID,
-		Multisig:             params.Proposal.RootMetadata.Multisig,
-		PreOpCount:           params.Proposal.RootMetadata.PreOpCount,
-		PostOpCount:          params.Proposal.RootMetadata.PostOpCount,
-		OverridePreviousRoot: params.Proposal.RootMetadata.OverridePreviousRoot,
-	}
-
-	// Convert metadata proof to [][32]uint8
-	metadataProof := make([][32]uint8, len(params.Proposal.MetadataProof))
-	copy(metadataProof, params.Proposal.MetadataProof)
-
-	ix, err := instructions.SetRoot(instructions.SetRootParams{
-		MultisigID:    params.MultisigID,
-		Root:          params.Proposal.Root,
-		ValidUntil:    params.Proposal.ValidUntil,
-		Metadata:      metadata,
-		MetadataProof: metadataProof,
-		Authority:     s.client.Payer.PublicKey(),
-		ProgramID:     s.client.ProgramID,
-	})
-	if err != nil {
-		return solana.Signature{}, fmt.Errorf("failed to build set root instruction: %w", err)
-	}
-
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
-		AddInstruction(ix).
-		BuildSignAndSendWithConfirmation(ctx)
-}
-
 // CreateProposalFromChainParams contains parameters for creating a proposal from on-chain state
 type CreateProposalFromChainParams struct {
 	MultisigID           [32]byte
@@ -130,6 +91,45 @@ func (s *ProposalService) CreateProposalFromChain(
 	return builder.Build()
 }
 
+// SetRootParams contains parameters for setting a new root
+type SetRootParams struct {
+	MultisigID [32]byte
+	Proposal   *proposal.ProposalWithRoot
+}
+
+// SetRoot sets a new Merkle root for the multisig
+func (s *ProposalService) SetRoot(ctx context.Context, params SetRootParams) (solana.Signature, error) {
+	// Convert ProposalWithRoot metadata to RootMetadataInput
+	metadata := bindings.RootMetadataInput{
+		ChainId:              params.Proposal.RootMetadata.ChainID,
+		Multisig:             params.Proposal.RootMetadata.Multisig,
+		PreOpCount:           params.Proposal.RootMetadata.PreOpCount,
+		PostOpCount:          params.Proposal.RootMetadata.PostOpCount,
+		OverridePreviousRoot: params.Proposal.RootMetadata.OverridePreviousRoot,
+	}
+
+	// Convert metadata proof to [][32]uint8
+	metadataProof := make([][32]uint8, len(params.Proposal.MetadataProof))
+	copy(metadataProof, params.Proposal.MetadataProof)
+
+	ix, err := instructions.SetRoot(instructions.SetRootParams{
+		MultisigID:    params.MultisigID,
+		Root:          params.Proposal.Root,
+		ValidUntil:    params.Proposal.ValidUntil,
+		Metadata:      metadata,
+		MetadataProof: metadataProof,
+		Authority:     s.client.Payer().PublicKey(),
+		ProgramID:     s.client.ProgramID,
+	})
+	if err != nil {
+		return solana.Signature{}, fmt.Errorf("failed to build set root instruction: %w", err)
+	}
+
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
+		AddInstruction(ix).
+		BuildSignAndSendWithConfirmation(ctx)
+}
+
 // ExecuteParams contains parameters for executing operations
 type ExecuteParams struct {
 	MultisigID       [32]byte
@@ -169,14 +169,14 @@ func (s *ProposalService) Execute(ctx context.Context, params ExecuteParams) ([]
 			Data:              op.DataBytes,
 			Proof:             proof,
 			RemainingAccounts: op.AccountValues,
-			Authority:         s.client.Payer.PublicKey(),
+			Authority:         s.client.Payer().PublicKey(),
 			ProgramID:         s.client.ProgramID,
 		})
 		if err != nil {
 			return sigs, fmt.Errorf("failed to build execute instruction for operation %d: %w", idx, err)
 		}
 
-		sig, err := tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+		sig, err := tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
 			AddInstruction(ix).
 			BuildSignAndSendWithConfirmation(ctx)
 		if err != nil {

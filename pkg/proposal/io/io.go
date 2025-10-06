@@ -7,6 +7,8 @@ import (
 	"os"
 
 	"github.com/base/mcm-go/pkg/proposal"
+
+	"github.com/gagliardetto/solana-go"
 )
 
 // SaveProposal saves a Proposal to a JSON file
@@ -50,4 +52,47 @@ func LoadProposal(path string) (*proposal.Proposal, error) {
 	}
 
 	return p, nil
+}
+
+// instructionsOnlyJSON is a simplified JSON format containing only instructions
+type instructionsOnlyJSON struct {
+	Instructions []instructionJSON `json:"instructions"`
+}
+
+// LoadInstructions loads instructions from a simplified JSON file
+// that contains only an array of instructions without metadata.
+//
+// Example JSON format:
+//
+//	{
+//	  "instructions": [
+//	    {
+//	      "programId": "11111111111111111111111111111111",
+//	      "data": "0xdeadbeef",
+//	      "accounts": [
+//	        {
+//	          "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+//	          "isSigner": true,
+//	          "isWritable": false
+//	        }
+//	      ]
+//	    }
+//	  ]
+//	}
+func LoadInstructions(path string) ([]*solana.GenericInstruction, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read file: %w", err)
+	}
+
+	var dto instructionsOnlyJSON
+	if err := json.Unmarshal(data, &dto); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
+	}
+
+	if len(dto.Instructions) == 0 {
+		return nil, fmt.Errorf("no instructions found in file")
+	}
+
+	return parseInstructionsJSON(dto.Instructions)
 }

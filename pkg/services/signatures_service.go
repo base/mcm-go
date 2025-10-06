@@ -37,14 +37,14 @@ func (s *SignaturesService) InitSignatures(ctx context.Context, params InitSigna
 		Root:            params.Root,
 		ValidUntil:      params.ValidUntil,
 		TotalSignatures: params.TotalSignatures,
-		Authority:       s.client.Payer.PublicKey(),
+		Authority:       s.client.Payer().PublicKey(),
 		ProgramID:       s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build init signatures instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
 		AddInstruction(ix).
 		BuildSignAndSendWithConfirmation(ctx)
 }
@@ -64,14 +64,14 @@ func (s *SignaturesService) AppendSignatures(ctx context.Context, params AppendS
 		Root:            params.Root,
 		ValidUntil:      params.ValidUntil,
 		SignaturesBatch: params.SignaturesBatch,
-		Authority:       s.client.Payer.PublicKey(),
+		Authority:       s.client.Payer().PublicKey(),
 		ProgramID:       s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build append signatures instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
 		AddInstruction(ix).
 		BuildSignAndSendWithConfirmation(ctx)
 }
@@ -89,14 +89,14 @@ func (s *SignaturesService) FinalizeSignatures(ctx context.Context, params Final
 		MultisigID: params.MultisigID,
 		Root:       params.Root,
 		ValidUntil: params.ValidUntil,
-		Authority:  s.client.Payer.PublicKey(),
+		Authority:  s.client.Payer().PublicKey(),
 		ProgramID:  s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build finalize signatures instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
 		AddInstruction(ix).
 		BuildSignAndSendWithConfirmation(ctx)
 }
@@ -114,14 +114,14 @@ func (s *SignaturesService) ClearSignatures(ctx context.Context, params ClearSig
 		MultisigID: params.MultisigID,
 		Root:       params.Root,
 		ValidUntil: params.ValidUntil,
-		Authority:  s.client.Payer.PublicKey(),
+		Authority:  s.client.Payer().PublicKey(),
 		ProgramID:  s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build clear signatures instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
 		AddInstruction(ix).
 		BuildSignAndSendWithConfirmation(ctx)
 }

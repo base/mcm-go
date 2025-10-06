@@ -15,10 +15,10 @@ func ExecuteCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "execute",
 		Usage: "Execute operations from a proposal",
-		Flags: append(flags.TransactionFlags(),
+		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...),
 			&ucli.StringFlag{
-				Name:     "file",
-				Aliases:  []string{"f"},
+				Name: "proposal",
+				// No alias to avoid conflict with --program-id
 				Usage:    "Path to proposal JSON file",
 				Required: true,
 			},
@@ -36,7 +36,7 @@ func ExecuteCommand() *ucli.Command {
 			},
 		),
 		Action: func(c *ucli.Context) error {
-			filePath := c.String("file")
+			filePath := c.String("proposal")
 			startIndex := c.Uint("start-index")
 			operationCount := c.Uint("operation-count")
 

@@ -17,7 +17,7 @@ func InitCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "init",
 		Usage: "Initialize a new multisig",
-		Flags: append(flags.TransactionFlags(),
+		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...),
 			&ucli.StringFlag{
 				Name:     "multisig-id",
 				Usage:    "Multisig identifier (32 bytes hex)",
@@ -46,7 +46,7 @@ func InitCommand() *ucli.Command {
 			ix, err := instructions.Initialize(instructions.InitializeParams{
 				ChainID:    c.Uint64("chain-id"),
 				MultisigID: multisigID,
-				Authority:  mcmClient.Payer.PublicKey(),
+				Authority:  mcmClient.Payer().PublicKey(),
 				ProgramID:  mcmClient.ProgramID,
 			})
 			if err != nil {
@@ -54,7 +54,7 @@ func InitCommand() *ucli.Command {
 			}
 
 			// Submit transaction
-			sig, err := tx.NewTxBuilder(mcmClient.RPC, mcmClient.WS, mcmClient.Payer).
+			sig, err := tx.NewTxBuilder(mcmClient.RPC, mcmClient.WS(), mcmClient.Payer()).
 				AddInstruction(ix).
 				BuildSignAndSendWithConfirmation(c.Context)
 			if err != nil {

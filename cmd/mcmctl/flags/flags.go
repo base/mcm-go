@@ -6,8 +6,8 @@ import (
 	ucli "github.com/urfave/cli/v2"
 )
 
-// TransactionFlags returns the flags needed for blockchain operations
-func TransactionFlags() []ucli.Flag {
+// OnchainReadFlags returns the flags needed for on-chain read operations
+func OnchainReadFlags() []ucli.Flag {
 	return []ucli.Flag{
 		&ucli.StringFlag{
 			Name:     "rpc",
@@ -17,16 +17,23 @@ func TransactionFlags() []ucli.Flag {
 			Required: true,
 		},
 		&ucli.StringFlag{
-			Name:     "ws",
-			Usage:    "Solana WebSocket endpoint URL (required for confirmations)",
-			EnvVars:  []string{"MCM_WS_URL"},
-			Required: true,
-		},
-		&ucli.StringFlag{
 			Name:     "program-id",
 			Aliases:  []string{"p"},
 			Usage:    "MCM program ID (base58)",
 			EnvVars:  []string{"MCM_PROGRAM_ID"},
+			Required: true,
+		},
+	}
+}
+
+// OnchainWriteFlags returns additional flags needed for on-chain write operations (transactions)
+// These flags should be combined with OnchainReadFlags for write commands
+func OnchainWriteFlags() []ucli.Flag {
+	return []ucli.Flag{
+		&ucli.StringFlag{
+			Name:     "ws",
+			Usage:    "Solana WebSocket endpoint URL (required for confirmations)",
+			EnvVars:  []string{"MCM_WS_URL"},
 			Required: true,
 		},
 		&ucli.StringFlag{

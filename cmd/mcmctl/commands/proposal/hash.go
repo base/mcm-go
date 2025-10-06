@@ -16,14 +16,14 @@ func HashCommand() *ucli.Command {
 		Usage: "Compute the hash to sign for a proposal (offline operation)",
 		Flags: []ucli.Flag{
 			&ucli.StringFlag{
-				Name:     "file",
-				Aliases:  []string{"f"},
+				Name: "proposal",
+				// No alias to avoid conflict with --program-id
 				Usage:    "Path to proposal JSON file",
 				Required: true,
 			},
 		},
 		Action: func(c *ucli.Context) error {
-			filePath := c.String("file")
+			filePath := c.String("proposal")
 
 			pwr, err := util.LoadProposalWithRoot(filePath)
 			if err != nil {

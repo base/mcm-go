@@ -28,14 +28,14 @@ func (s *SignersService) InitSigners(ctx context.Context, params InitSignersPara
 	ix, err := instructions.InitSigners(instructions.InitSignersParams{
 		MultisigID:   params.MultisigID,
 		TotalSigners: params.TotalSigners,
-		Authority:    s.client.Payer.PublicKey(),
+		Authority:    s.client.Payer().PublicKey(),
 		ProgramID:    s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build init signers instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
 		AddInstruction(ix).
 		BuildSignAndSendWithConfirmation(ctx)
 }
@@ -49,14 +49,14 @@ func (s *SignersService) AppendSigners(ctx context.Context, params AppendSigners
 	ix, err := instructions.AppendSigners(instructions.AppendSignersParams{
 		MultisigID:   params.MultisigID,
 		SignersBatch: params.SignersBatch,
-		Authority:    s.client.Payer.PublicKey(),
+		Authority:    s.client.Payer().PublicKey(),
 		ProgramID:    s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build append signers instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
 		AddInstruction(ix).
 		BuildSignAndSendWithConfirmation(ctx)
 }
@@ -68,14 +68,14 @@ type FinalizeSignersParams struct {
 func (s *SignersService) FinalizeSigners(ctx context.Context, params FinalizeSignersParams) (solana.Signature, error) {
 	ix, err := instructions.FinalizeSigners(instructions.FinalizeSignersParams{
 		MultisigID: params.MultisigID,
-		Authority:  s.client.Payer.PublicKey(),
+		Authority:  s.client.Payer().PublicKey(),
 		ProgramID:  s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build finalize signers instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
 		AddInstruction(ix).
 		BuildSignAndSendWithConfirmation(ctx)
 }
@@ -87,14 +87,14 @@ type ClearSignersParams struct {
 func (s *SignersService) ClearSigners(ctx context.Context, params ClearSignersParams) (solana.Signature, error) {
 	ix, err := instructions.ClearSigners(instructions.ClearSignersParams{
 		MultisigID: params.MultisigID,
-		Authority:  s.client.Payer.PublicKey(),
+		Authority:  s.client.Payer().PublicKey(),
 		ProgramID:  s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build clear signers instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
 		AddInstruction(ix).
 		BuildSignAndSendWithConfirmation(ctx)
 }
@@ -114,14 +114,14 @@ func (s *SignersService) SetConfig(ctx context.Context, params SetConfigParams) 
 		GroupQuorums: params.GroupQuorums,
 		GroupParents: params.GroupParents,
 		ClearRoot:    params.ClearRoot,
-		Authority:    s.client.Payer.PublicKey(),
+		Authority:    s.client.Payer().PublicKey(),
 		ProgramID:    s.client.ProgramID,
 	})
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to build set config instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS, s.client.Payer).
+	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
 		AddInstruction(ix).
 		BuildSignAndSendWithConfirmation(ctx)
 }

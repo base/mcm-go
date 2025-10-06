@@ -15,7 +15,7 @@ func FinalizeCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "finalize",
 		Usage: "Finalize signers (no more additions allowed)",
-		Flags: append(flags.TransactionFlags(),
+		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...),
 			&ucli.StringFlag{
 				Name:     "multisig-id",
 				Usage:    "Multisig identifier (32 bytes hex)",

@@ -19,10 +19,10 @@ func AppendCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "append",
 		Usage: "Append ECDSA signatures to storage",
-		Flags: append(flags.TransactionFlags(),
+		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...),
 			&ucli.StringFlag{
-				Name:     "file",
-				Aliases:  []string{"f"},
+				Name: "proposal",
+				// No alias to avoid conflict with --program-id
 				Usage:    "Path to proposal JSON file",
 				Required: true,
 			},
@@ -33,7 +33,7 @@ func AppendCommand() *ucli.Command {
 			},
 		),
 		Action: func(c *ucli.Context) error {
-			filePath := c.String("file")
+			filePath := c.String("proposal")
 			pwr, err := util.LoadProposalWithRoot(filePath)
 			if err != nil {
 				return err

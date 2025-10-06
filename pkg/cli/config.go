@@ -19,15 +19,6 @@ type ConfigParams struct {
 	KeypairPath string
 }
 
-// DefaultKeypairPath returns the default Solana keypair path
-func DefaultKeypairPath() string {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return ""
-	}
-	return filepath.Join(home, ".config", "solana", "id.json")
-}
-
 // LoadConfig loads configuration from flags/env and returns a client.Config
 func LoadConfig(params ConfigParams) (*client.Config, error) {
 	// Validate RPC URL
@@ -35,14 +26,14 @@ func LoadConfig(params ConfigParams) (*client.Config, error) {
 		return nil, fmt.Errorf("RPC URL is required (--rpc or MCM_RPC_URL)")
 	}
 
-	// Validate WS URL
-	if params.WSUrl == "" {
-		return nil, fmt.Errorf("WebSocket URL is required (--ws or MCM_WS_URL)")
-	}
-
 	// Resolve network aliases to actual endpoints
 	rpcURL := resolveNetworkAlias(params.RPCUrl, false)
-	wsURL := resolveNetworkAlias(params.WSUrl, true)
+
+	// WS URL is optional (only needed for transactions)
+	wsURL := ""
+	if params.WSUrl != "" {
+		wsURL = resolveNetworkAlias(params.WSUrl, true)
+	}
 
 	// Parse program ID
 	programID, err := solana.PublicKeyFromBase58(params.ProgramID)
@@ -50,10 +41,14 @@ func LoadConfig(params ConfigParams) (*client.Config, error) {
 		return nil, fmt.Errorf("invalid program ID: %w", err)
 	}
 
-	// Load keypair
-	payer, err := loadKeypair(params.KeypairPath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load keypair: %w", err)
+	// Keypair is optional (only needed for transactions)
+	var payer *solana.PrivateKey
+	if params.KeypairPath != "" {
+		key, err := loadKeypair(params.KeypairPath)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load keypair: %w", err)
+		}
+		payer = &key
 	}
 
 	return &client.Config{
@@ -62,6 +57,15 @@ func LoadConfig(params ConfigParams) (*client.Config, error) {
 		ProgramID: programID,
 		Payer:     payer,
 	}, nil
+}
+
+// DefaultKeypairPath returns the default Solana keypair path
+func DefaultKeypairPath() string {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return ""
+	}
+	return filepath.Join(home, ".config", "solana", "id.json")
 }
 
 // resolveNetworkAlias converts network aliases to actual endpoints

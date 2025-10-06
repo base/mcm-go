@@ -92,8 +92,35 @@ func fromProposalJSON(pj *proposalJSON) (*proposal.Proposal, error) {
 		return nil, fmt.Errorf("invalid multisig pubkey: %w", err)
 	}
 
-	instructions := make([]*solana.GenericInstruction, len(pj.Instructions))
-	for i, ixJSON := range pj.Instructions {
+	instructions, err := parseInstructionsJSON(pj.Instructions)
+	if err != nil {
+		return nil, err
+	}
+
+	p := &proposal.Proposal{
+		MultisigID:   multisigID,
+		ValidUntil:   pj.ValidUntil,
+		Instructions: instructions,
+		RootMetadata: proposal.RootMetadata{
+			ChainID:              pj.RootMetadata.ChainID,
+			Multisig:             multisig,
+			PreOpCount:           pj.RootMetadata.PreOpCount,
+			PostOpCount:          pj.RootMetadata.PostOpCount,
+			OverridePreviousRoot: pj.RootMetadata.OverridePreviousRoot,
+		},
+	}
+
+	if err := p.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid proposal after load: %w", err)
+	}
+
+	return p, nil
+}
+
+// parseInstructionsJSON converts JSON instructions to GenericInstructions
+func parseInstructionsJSON(ixsJSON []instructionJSON) ([]*solana.GenericInstruction, error) {
+	instructions := make([]*solana.GenericInstruction, len(ixsJSON))
+	for i, ixJSON := range ixsJSON {
 		progID, err := solana.PublicKeyFromBase58(ixJSON.ProgramID)
 		if err != nil {
 			return nil, fmt.Errorf("instruction %d: invalid programId: %w", i, err)
@@ -123,23 +150,5 @@ func fromProposalJSON(pj *proposalJSON) (*proposal.Proposal, error) {
 			AccountValues: accounts,
 		}
 	}
-
-	p := &proposal.Proposal{
-		MultisigID:   multisigID,
-		ValidUntil:   pj.ValidUntil,
-		Instructions: instructions,
-		RootMetadata: proposal.RootMetadata{
-			ChainID:              pj.RootMetadata.ChainID,
-			Multisig:             multisig,
-			PreOpCount:           pj.RootMetadata.PreOpCount,
-			PostOpCount:          pj.RootMetadata.PostOpCount,
-			OverridePreviousRoot: pj.RootMetadata.OverridePreviousRoot,
-		},
-	}
-
-	if err := p.Validate(); err != nil {
-		return nil, fmt.Errorf("invalid proposal after load: %w", err)
-	}
-
-	return p, nil
+	return instructions, nil
 }

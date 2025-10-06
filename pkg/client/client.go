@@ -9,18 +9,18 @@ import (
 	"github.com/gagliardetto/solana-go/rpc/ws"
 )
 
-type Client struct {
-	RPC       *rpc.Client
-	WS        *ws.Client
-	ProgramID solana.PublicKey
-	Payer     solana.PrivateKey
-}
-
 type Config struct {
 	RPCURL    string
 	WSURL     string
 	ProgramID solana.PublicKey
-	Payer     solana.PrivateKey
+	Payer     *solana.PrivateKey
+}
+
+type Client struct {
+	RPC       *rpc.Client
+	ws        *ws.Client
+	ProgramID solana.PublicKey
+	payer     *solana.PrivateKey
 }
 
 func New(cfg Config) (*Client, error) {
@@ -37,16 +37,34 @@ func New(cfg Config) (*Client, error) {
 
 	client := &Client{
 		RPC:       rpcClient,
-		WS:        wsClient,
+		ws:        wsClient,
 		ProgramID: cfg.ProgramID,
-		Payer:     cfg.Payer,
+		payer:     cfg.Payer,
 	}
 
 	return client, nil
 }
 
+// Payer returns the payer private key, panicking if not set
+// This ensures operations that require a wallet fail fast with a clear error
+func (c *Client) Payer() solana.PrivateKey {
+	if c.payer == nil {
+		panic("operation requires a payer (wallet), but none was configured")
+	}
+	return *c.payer
+}
+
+// WS returns the WebSocket client, panicking if not set
+// This ensures operations that require transaction confirmations fail fast with a clear error
+func (c *Client) WS() *ws.Client {
+	if c.ws == nil {
+		panic("operation requires a WebSocket connection, but none was configured")
+	}
+	return c.ws
+}
+
 func (c *Client) Close() {
-	if c.WS != nil {
-		c.WS.Close()
+	if c.ws != nil {
+		c.ws.Close()
 	}
 }
