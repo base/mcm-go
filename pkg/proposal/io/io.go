@@ -41,7 +41,7 @@ func LoadProposal(path string) (*proposal.Proposal, error) {
 		return nil, fmt.Errorf("failed to read file: %w", err)
 	}
 
-	var dto proposalJSON
+	var dto ProposalJSON
 	if err := json.Unmarshal(data, &dto); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
 	}
@@ -54,9 +54,25 @@ func LoadProposal(path string) (*proposal.Proposal, error) {
 	return p, nil
 }
 
-// instructionsOnlyJSON is a simplified JSON format containing only instructions
-type instructionsOnlyJSON struct {
-	Instructions []instructionJSON `json:"instructions"`
+// SaveInstructions saves instructions to a simplified JSON file
+// that contains only an array of instructions without metadata.
+func SaveInstructions(instructions []*solana.GenericInstruction, path string) error {
+	if len(instructions) == 0 {
+		return fmt.Errorf("no instructions to save")
+	}
+
+	dto := toInstructionsJSON(instructions)
+
+	data, err := json.MarshalIndent(dto, "", "  ")
+	if err != nil {
+		return fmt.Errorf("failed to marshal JSON: %w", err)
+	}
+
+	if err := os.WriteFile(path, data, 0644); err != nil {
+		return fmt.Errorf("failed to write file: %w", err)
+	}
+
+	return nil
 }
 
 // LoadInstructions loads instructions from a simplified JSON file
@@ -64,35 +80,33 @@ type instructionsOnlyJSON struct {
 //
 // Example JSON format:
 //
-//	{
-//	  "instructions": [
-//	    {
-//	      "programId": "11111111111111111111111111111111",
-//	      "data": "0xdeadbeef",
-//	      "accounts": [
-//	        {
-//	          "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-//	          "isSigner": true,
-//	          "isWritable": false
-//	        }
-//	      ]
-//	    }
-//	  ]
-//	}
+//	[
+//	  {
+//	    "programId": "11111111111111111111111111111111",
+//	    "data": "0xdeadbeef",
+//	    "accounts": [
+//	      {
+//	        "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+//	        "isSigner": true,
+//	        "isWritable": false
+//	      }
+//	    ]
+//	  }
+//	]
 func LoadInstructions(path string) ([]*solana.GenericInstruction, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file: %w", err)
 	}
 
-	var dto instructionsOnlyJSON
+	var dto []InstructionJSON
 	if err := json.Unmarshal(data, &dto); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal JSON: %w", err)
 	}
 
-	if len(dto.Instructions) == 0 {
+	if len(dto) == 0 {
 		return nil, fmt.Errorf("no instructions found in file")
 	}
 
-	return parseInstructionsJSON(dto.Instructions)
+	return fromInstructionsJSON(dto)
 }

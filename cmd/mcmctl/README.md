@@ -225,21 +225,19 @@ mcmctl proposal create \
 The input file contains only the instructions array:
 
 ```json
-{
-  "instructions": [
-    {
-      "programId": "11111111111111111111111111111111",
-      "data": "0xdeadbeef",
-      "accounts": [
-        {
-          "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-          "isSigner": true,
-          "isWritable": false
-        }
-      ]
-    }
-  ]
-}
+[
+  {
+    "programId": "11111111111111111111111111111111",
+    "data": "0xdeadbeef",
+    "accounts": [
+      {
+        "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  }
+]
 ```
 
 **Example:**

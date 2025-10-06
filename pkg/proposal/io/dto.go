@@ -12,21 +12,21 @@ import (
 )
 
 // accountMetaJSON is the JSON representation of AccountMeta
-type accountMetaJSON struct {
+type AccountMetaJSON struct {
 	Pubkey     string `json:"pubkey"`
 	IsSigner   bool   `json:"isSigner"`
 	IsWritable bool   `json:"isWritable"`
 }
 
 // instructionJSON is the JSON representation of GenericInstruction
-type instructionJSON struct {
+type InstructionJSON struct {
 	ProgramID string            `json:"programId"`
 	Data      string            `json:"data"`
-	Accounts  []accountMetaJSON `json:"accounts"`
+	Accounts  []AccountMetaJSON `json:"accounts"`
 }
 
 // rootMetadataJSON is the JSON representation of RootMetadata
-type rootMetadataJSON struct {
+type RootMetadataJSON struct {
 	ChainID              uint64 `json:"chainId"`
 	Multisig             string `json:"multisig"`
 	PreOpCount           uint64 `json:"preOpCount"`
@@ -35,42 +35,26 @@ type rootMetadataJSON struct {
 }
 
 // proposalJSON is the JSON representation of Proposal
-type proposalJSON struct {
+type ProposalJSON struct {
 	MultisigID   string            `json:"multisigId"`
 	ValidUntil   uint32            `json:"validUntil"`
-	Instructions []instructionJSON `json:"instructions"`
-	RootMetadata rootMetadataJSON  `json:"rootMetadata"`
+	Instructions []InstructionJSON `json:"instructions"`
+	RootMetadata RootMetadataJSON  `json:"rootMetadata"`
 }
 
 // toProposalJSON converts a Proposal to its JSON DTO
-func toProposalJSON(p *proposal.Proposal) (*proposalJSON, error) {
+func toProposalJSON(p *proposal.Proposal) (*ProposalJSON, error) {
 	if err := p.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid proposal: %w", err)
 	}
 
-	ixsJSON := make([]instructionJSON, len(p.Instructions))
-	for i, ix := range p.Instructions {
-		accounts := make([]accountMetaJSON, len(ix.AccountValues))
-		for j, acc := range ix.AccountValues {
-			accounts[j] = accountMetaJSON{
-				Pubkey:     acc.PublicKey.String(),
-				IsSigner:   acc.IsSigner,
-				IsWritable: acc.IsWritable,
-			}
-		}
+	ixsJSON := toInstructionsJSON(p.Instructions)
 
-		ixsJSON[i] = instructionJSON{
-			ProgramID: ix.ProgID.String(),
-			Data:      "0x" + hex.EncodeToString(ix.DataBytes),
-			Accounts:  accounts,
-		}
-	}
-
-	return &proposalJSON{
+	return &ProposalJSON{
 		MultisigID:   "0x" + hex.EncodeToString(p.MultisigID[:]),
 		ValidUntil:   p.ValidUntil,
 		Instructions: ixsJSON,
-		RootMetadata: rootMetadataJSON{
+		RootMetadata: RootMetadataJSON{
 			ChainID:              p.RootMetadata.ChainID,
 			Multisig:             p.RootMetadata.Multisig.String(),
 			PreOpCount:           p.RootMetadata.PreOpCount,
@@ -81,7 +65,7 @@ func toProposalJSON(p *proposal.Proposal) (*proposalJSON, error) {
 }
 
 // fromProposalJSON converts a JSON DTO to a Proposal
-func fromProposalJSON(pj *proposalJSON) (*proposal.Proposal, error) {
+func fromProposalJSON(pj *ProposalJSON) (*proposal.Proposal, error) {
 	multisigID, err := hexutil.Parse32(pj.MultisigID)
 	if err != nil {
 		return nil, fmt.Errorf("invalid multisigId: %w", err)
@@ -92,7 +76,7 @@ func fromProposalJSON(pj *proposalJSON) (*proposal.Proposal, error) {
 		return nil, fmt.Errorf("invalid multisig pubkey: %w", err)
 	}
 
-	instructions, err := parseInstructionsJSON(pj.Instructions)
+	instructions, err := fromInstructionsJSON(pj.Instructions)
 	if err != nil {
 		return nil, err
 	}
@@ -117,8 +101,30 @@ func fromProposalJSON(pj *proposalJSON) (*proposal.Proposal, error) {
 	return p, nil
 }
 
-// parseInstructionsJSON converts JSON instructions to GenericInstructions
-func parseInstructionsJSON(ixsJSON []instructionJSON) ([]*solana.GenericInstruction, error) {
+// toInstructionsJSON converts GenericInstructions to JSON instructions
+func toInstructionsJSON(instructions []*solana.GenericInstruction) []InstructionJSON {
+	ixsJSON := make([]InstructionJSON, len(instructions))
+	for i, ix := range instructions {
+		accounts := make([]AccountMetaJSON, len(ix.AccountValues))
+		for j, acc := range ix.AccountValues {
+			accounts[j] = AccountMetaJSON{
+				Pubkey:     acc.PublicKey.String(),
+				IsSigner:   acc.IsSigner,
+				IsWritable: acc.IsWritable,
+			}
+		}
+
+		ixsJSON[i] = InstructionJSON{
+			ProgramID: ix.ProgID.String(),
+			Data:      "0x" + hex.EncodeToString(ix.DataBytes),
+			Accounts:  accounts,
+		}
+	}
+	return ixsJSON
+}
+
+// fromInstructionsJSON converts JSON instructions to GenericInstructions
+func fromInstructionsJSON(ixsJSON []InstructionJSON) ([]*solana.GenericInstruction, error) {
 	instructions := make([]*solana.GenericInstruction, len(ixsJSON))
 	for i, ixJSON := range ixsJSON {
 		progID, err := solana.PublicKeyFromBase58(ixJSON.ProgramID)

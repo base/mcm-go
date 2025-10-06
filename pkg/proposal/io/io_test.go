@@ -193,26 +193,24 @@ func TestLoadInstructions(t *testing.T) {
 	filePath := filepath.Join(tmpDir, "instructions.json")
 
 	// Create test instructions file
-	content := `{
-  "instructions": [
-    {
-      "programId": "11111111111111111111111111111111",
-      "data": "0xdeadbeef",
-      "accounts": [
-        {
-          "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-          "isSigner": true,
-          "isWritable": false
-        }
-      ]
-    },
-    {
-      "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-      "data": "0x1234",
-      "accounts": []
-    }
-  ]
-}`
+	content := `[
+  {
+    "programId": "11111111111111111111111111111111",
+    "data": "0xdeadbeef",
+    "accounts": [
+      {
+        "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+        "isSigner": true,
+        "isWritable": false
+      }
+    ]
+  },
+  {
+    "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+    "data": "0x1234",
+    "accounts": []
+  }
+]`
 
 	err := os.WriteFile(filePath, []byte(content), 0644)
 	if err != nil {
@@ -262,7 +260,7 @@ func TestLoadInstructions_EmptyFile(t *testing.T) {
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "empty.json")
 
-	content := `{"instructions": []}`
+	content := `[]`
 	err := os.WriteFile(filePath, []byte(content), 0644)
 	if err != nil {
 		t.Fatal(err)
@@ -282,15 +280,13 @@ func TestLoadInstructions_InvalidHex(t *testing.T) {
 	filePath := filepath.Join(tmpDir, "invalid.json")
 
 	// Missing 0x prefix
-	content := `{
-  "instructions": [
-    {
-      "programId": "11111111111111111111111111111111",
-      "data": "deadbeef",
-      "accounts": []
-    }
-  ]
-}`
+	content := `[
+  {
+    "programId": "11111111111111111111111111111111",
+    "data": "deadbeef",
+    "accounts": []
+  }
+]`
 
 	err := os.WriteFile(filePath, []byte(content), 0644)
 	if err != nil {
