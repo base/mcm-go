@@ -182,14 +182,14 @@ mcmctl signers set-config \
   --clear-root
 ```
 
-**Advanced Example (3 signers in hierarchical groups):**
+**Advanced Example (5 signers in hierarchical groups):**
 
 ```bash
 # Group structure:
-#   Group 0 (root): 2-of-3 quorum
-#   Group 1: 1-of-2 quorum, parent = Group 0
-#   Group 2: 2-of-2 quorum, parent = Group 0
-# Signers: 2 in Group 1, 2 in Group 2, 1 in Group 0
+#   Group 0 (root): Has 1 direct signer + 2 child groups = 3 entities
+#                   Quorum: 2-of-3 (need 2 of: direct signer, Group 1, Group 2)
+#   Group 1: 2 signers, quorum 1-of-2, parent = Group 0
+#   Group 2: 2 signers, quorum 2-of-2, parent = Group 0
 
 mcmctl signers set-config \
   --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
@@ -276,26 +276,6 @@ mcmctl proposal hash --proposal <path>
 mcmctl proposal hash --proposal my_proposal.json
 ```
 
-**Example Output:**
-
-```
-Proposal loaded successfully
-  Multisig ID: 0x0000000000000000000000000000000000000000000000000000000000000000
-  Valid Until: 1800000000
-  Instructions: 1
-  Chain ID: 0
-  Pre Op Count: 0
-  Post Op Count: 1
-  Override Previous Root: false
-
-Merkle Root: 0x92cb93881a2ea83145908fe515b581751f900d5f8f61f9c026fdc8cebd5e402c
-
-Hash to Sign (keccak256(root || validUntil)):
-vvvvvvvv
-0x5be3ca56ef2891fb5f2aecbf0f826664ec0db9eddfe3cf5103cf3a9f4fc7acdb
-^^^^^^^^
-```
-
 #### `proposal set-root`
 
 Load a proposal and set its Merkle root on-chain.
@@ -316,16 +296,6 @@ mcmctl proposal set-root --proposal <path>
 ```bash
 mcmctl proposal set-root \
   --proposal my_proposal.json
-```
-
-**Example Output:**
-
-```
-Root set successfully
-  Multisig ID: 0x0000000000000000000000000000000000000000000000000000000000000000
-  Root: 0x92cb93881a2ea83145908fe515b581751f900d5f8f61f9c026fdc8cebd5e402c
-  Valid Until: 1800000000
-signature: 5j7s...
 ```
 
 #### `proposal execute`
@@ -371,15 +341,6 @@ mcmctl proposal execute \
 mcmctl proposal execute \
   --proposal my_proposal.json \
   --operation-count 3
-```
-
-**Example Output:**
-
-```
-Executed 3 operation(s) successfully
-  operation 0: 5j7s...
-  operation 1: 2k8f...
-  operation 2: 9m3n...
 ```
 
 **Proposal JSON Format:**
