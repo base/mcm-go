@@ -17,16 +17,8 @@ func AppendCommand() *ucli.Command {
 		Name:  "append",
 		Usage: "Append signers to storage",
 		Flags: append(flags.OnchainWriteFlags(),
-			&ucli.StringFlag{
-				Name:     "multisig-id",
-				Usage:    "Multisig identifier (32 bytes hex)",
-				Required: true,
-			},
-			&ucli.StringFlag{
-				Name:     "signers",
-				Usage:    "Comma-separated list of signer addresses (must start with 0x prefix)",
-				Required: true,
-			},
+			flags.MultisigIDFlag(),
+			flags.SignersFlag(),
 		),
 		Action: func(c *ucli.Context) error {
 			svc, err := loadSignersService(c)

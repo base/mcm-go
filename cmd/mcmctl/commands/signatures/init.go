@@ -16,16 +16,8 @@ func InitCommand() *ucli.Command {
 		Name:  "init",
 		Usage: "Initialize signatures storage for a new root",
 		Flags: append(flags.OnchainWriteFlags(),
-			&ucli.StringFlag{
-				Name:     "proposal",
-				Usage:    "Path to proposal JSON file",
-				Required: true,
-			},
-			&ucli.IntFlag{
-				Name:     "total",
-				Usage:    "Total number of signatures",
-				Required: true,
-			},
+			flags.ProposalFlag(),
+			flags.TotalSignaturesFlag(),
 		),
 		Action: func(c *ucli.Context) error {
 			filePath := c.String("proposal")

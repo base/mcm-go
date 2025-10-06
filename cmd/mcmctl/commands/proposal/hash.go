@@ -4,6 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
+	"github.com/base/mcm-go/cmd/mcmctl/flags"
 	"github.com/base/mcm-go/cmd/mcmctl/util"
 
 	ucli "github.com/urfave/cli/v2"
@@ -15,11 +16,7 @@ func HashCommand() *ucli.Command {
 		Name:  "hash",
 		Usage: "Compute the hash to sign for a proposal (offline operation)",
 		Flags: []ucli.Flag{
-			&ucli.StringFlag{
-				Name:     "proposal",
-				Usage:    "Path to proposal JSON file",
-				Required: true,
-			},
+			flags.ProposalFlag(),
 		},
 		Action: func(c *ucli.Context) error {
 			filePath := c.String("proposal")

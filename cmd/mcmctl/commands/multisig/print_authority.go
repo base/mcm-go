@@ -18,11 +18,7 @@ func PrintAuthorityCommand() *ucli.Command {
 		Usage: "Print the multisig signer PDA (authority)",
 		Flags: []ucli.Flag{
 			flags.ProgramIDFlag(),
-			&ucli.StringFlag{
-				Name:     "multisig-id",
-				Usage:    "Multisig identifier (32 bytes hex)",
-				Required: true,
-			},
+			flags.MultisigIDFlag(),
 		},
 		Action: func(c *ucli.Context) error {
 			// Parse program ID

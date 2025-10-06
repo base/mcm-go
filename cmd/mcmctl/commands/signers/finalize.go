@@ -16,11 +16,7 @@ func FinalizeCommand() *ucli.Command {
 		Name:  "finalize",
 		Usage: "Finalize signers (no more additions allowed)",
 		Flags: append(flags.OnchainWriteFlags(),
-			&ucli.StringFlag{
-				Name:     "multisig-id",
-				Usage:    "Multisig identifier (32 bytes hex)",
-				Required: true,
-			},
+			flags.MultisigIDFlag(),
 		),
 		Action: func(c *ucli.Context) error {
 			svc, err := loadSignersService(c)

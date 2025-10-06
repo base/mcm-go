@@ -16,33 +16,23 @@ func ExecuteCommand() *ucli.Command {
 		Name:  "execute",
 		Usage: "Execute operations from a proposal",
 		Flags: append(flags.OnchainWriteFlags(),
-			&ucli.StringFlag{
-				Name: "proposal",
-				// No alias to avoid conflict with --program-id
-				Usage:    "Path to proposal JSON file",
-				Required: true,
-			},
-			&ucli.UintFlag{
-				Name:    "start-index",
-				Aliases: []string{"s"},
-				Usage:   "Index of first operation to execute",
-				Value:   0,
-			},
-			&ucli.UintFlag{
-				Name:     "operation-count",
-				Aliases:  []string{"n"},
-				Usage:    "Number of operations to execute",
-				Required: true,
-			},
+			flags.ProposalFlag(),
+			flags.StartIndexFlag(),
+			flags.OperationCountFlag(),
 		),
 		Action: func(c *ucli.Context) error {
 			filePath := c.String("proposal")
 			startIndex := c.Uint("start-index")
-			operationCount := c.Uint("operation-count")
 
 			pwr, err := util.LoadProposalWithRoot(filePath)
 			if err != nil {
 				return err
+			}
+
+			// If operation-count is not provided, execute all remaining operations
+			operationCount := c.Uint("operation-count")
+			if operationCount == 0 {
+				operationCount = uint(len(pwr.Instructions)) - startIndex
 			}
 
 			mcmClient, err := util.LoadClient(c)

@@ -18,16 +18,8 @@ func AppendCommand() *ucli.Command {
 		Name:  "append",
 		Usage: "Append ECDSA signatures to storage",
 		Flags: append(flags.OnchainWriteFlags(),
-			&ucli.StringFlag{
-				Name:     "proposal",
-				Usage:    "Path to proposal JSON file",
-				Required: true,
-			},
-			&ucli.StringFlag{
-				Name:     "signatures",
-				Usage:    "Comma-separated ECDSA signatures (must start with 0x, format: 0x<130 hex chars>)",
-				Required: true,
-			},
+			flags.ProposalFlag(),
+			flags.SignaturesFlag(),
 		),
 		Action: func(c *ucli.Context) error {
 			filePath := c.String("proposal")

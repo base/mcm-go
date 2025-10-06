@@ -15,11 +15,9 @@ func FinalizeCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "finalize",
 		Usage: "Finalize signatures (no more additions allowed)",
-		Flags: append(flags.OnchainWriteFlags(), &ucli.StringFlag{
-			Name:     "proposal",
-			Usage:    "Path to proposal JSON file",
-			Required: true,
-		}),
+		Flags: append(flags.OnchainWriteFlags(),
+			flags.ProposalFlag(),
+		),
 		Action: func(c *ucli.Context) error {
 			filePath := c.String("proposal")
 

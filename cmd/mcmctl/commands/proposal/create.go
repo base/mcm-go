@@ -18,33 +18,11 @@ func CreateCommand() *ucli.Command {
 		Name:  "create",
 		Usage: "Create a proposal from instructions and on-chain state, then save it to a file",
 		Flags: append(flags.OnchainReadFlags(),
-			&ucli.StringFlag{
-				Name:     "instructions",
-				Aliases:  []string{"i"},
-				Usage:    "Path to instructions JSON file (simplified format with only instructions array)",
-				Required: true,
-			},
-			&ucli.StringFlag{
-				Name:     "multisig-id",
-				Usage:    "Multisig identifier (32 bytes hex)",
-				Required: true,
-			},
-			&ucli.Uint64Flag{
-				Name:     "valid-until",
-				Usage:    "Proposal expiration timestamp (Unix timestamp)",
-				Required: true,
-			},
-			&ucli.BoolFlag{
-				Name:  "override-previous-root",
-				Usage: "Override previous Merkle root (invalidates pending operations)",
-				Value: false,
-			},
-			&ucli.StringFlag{
-				Name:     "output",
-				Aliases:  []string{"o"},
-				Usage:    "Output file path for the generated proposal",
-				Required: true,
-			},
+			flags.MultisigIDFlag(),
+			flags.ValidUntilFlag(),
+			flags.InstructionsFlag(),
+			flags.OverridePreviousRootFlag(),
+			flags.OutputFlag(),
 		),
 		Action: func(c *ucli.Context) error {
 			// Load instructions from simplified JSON file

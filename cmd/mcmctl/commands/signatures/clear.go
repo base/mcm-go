@@ -16,11 +16,7 @@ func ClearCommand() *ucli.Command {
 		Name:  "clear",
 		Usage: "Clear signatures storage",
 		Flags: append(flags.OnchainWriteFlags(),
-			&ucli.StringFlag{
-				Name:     "proposal",
-				Usage:    "Path to proposal JSON file",
-				Required: true,
-			},
+			flags.ProposalFlag(),
 		),
 		Action: func(c *ucli.Context) error {
 			filePath := c.String("proposal")

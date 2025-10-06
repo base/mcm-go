@@ -16,11 +16,7 @@ func SetRootCommand() *ucli.Command {
 		Name:  "set-root",
 		Usage: "Load a proposal and set its root on-chain",
 		Flags: append(flags.OnchainWriteFlags(),
-			&ucli.StringFlag{
-				Name:     "proposal",
-				Usage:    "Path to proposal JSON file",
-				Required: true,
-			},
+			flags.ProposalFlag(),
 		),
 		Action: func(c *ucli.Context) error {
 			filePath := c.String("proposal")

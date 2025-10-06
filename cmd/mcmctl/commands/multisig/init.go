@@ -18,16 +18,8 @@ func InitCommand() *ucli.Command {
 		Name:  "init",
 		Usage: "Initialize a new multisig",
 		Flags: append(flags.OnchainWriteFlags(),
-			&ucli.StringFlag{
-				Name:     "multisig-id",
-				Usage:    "Multisig identifier (32 bytes hex)",
-				Required: true,
-			},
-			&ucli.Uint64Flag{
-				Name:     "chain-id",
-				Usage:    "Chain ID (uint64)",
-				Required: true,
-			},
+			flags.MultisigIDFlag(),
+			flags.ChainIDFlag(),
 		),
 		Action: func(c *ucli.Context) error {
 			// Load client

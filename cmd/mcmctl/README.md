@@ -317,12 +317,12 @@ mcmctl proposal set-root \
 Execute operations from a proposal.
 
 ```bash
-mcmctl proposal execute --proposal <path> --operation-count <count> [--start-index <index>]
+mcmctl proposal execute --proposal <path> [--operation-count <count>] [--start-index <index>]
 ```
 
 **Flags:**
 
-- `--operation-count, -n` : Number of operations to execute (required)
+- `--operation-count, -n` : Number of operations to execute (defaults to all remaining operations)
 - `--start-index, -s` : Index of first operation to execute (default: 0)
 
 **Features:**
@@ -330,7 +330,15 @@ mcmctl proposal execute --proposal <path> --operation-count <count> [--start-ind
 - Loads proposal from JSON file
 - Computes Merkle root and operation proofs
 - Executes operations sequentially starting from start-index
+- If `--operation-count` is not specified, executes all remaining operations from start-index
 - Requires transaction flags (--rpc, --ws, --program-id, --authority)
+
+**Example (execute all operations):**
+
+```bash
+mcmctl proposal execute \
+  --proposal my_proposal.json
+```
 
 **Example (execute single operation):**
 
@@ -349,12 +357,12 @@ mcmctl proposal execute \
   --operation-count 2
 ```
 
-**Example (execute all 3 operations):**
+**Example (execute all remaining operations starting from index 2):**
 
 ```bash
 mcmctl proposal execute \
   --proposal my_proposal.json \
-  --operation-count 3
+  --start-index 2
 ```
 
 **Proposal JSON Format:**

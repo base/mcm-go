@@ -16,16 +16,8 @@ func InitCommand() *ucli.Command {
 		Name:  "init",
 		Usage: "Initialize signers storage",
 		Flags: append(flags.OnchainWriteFlags(),
-			&ucli.StringFlag{
-				Name:     "multisig-id",
-				Usage:    "Multisig identifier (32 bytes hex)",
-				Required: true,
-			},
-			&ucli.IntFlag{
-				Name:     "total",
-				Usage:    "Total number of signers",
-				Required: true,
-			},
+			flags.MultisigIDFlag(),
+			flags.TotalSignersFlag(),
 		),
 		Action: func(c *ucli.Context) error {
 			svc, err := loadSignersService(c)

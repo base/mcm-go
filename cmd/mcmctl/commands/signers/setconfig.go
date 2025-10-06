@@ -17,31 +17,11 @@ func SetConfigCommand() *ucli.Command {
 		Name:  "set-config",
 		Usage: "Set the multisig configuration (signer groups and quorums)",
 		Flags: append(flags.OnchainWriteFlags(),
-			&ucli.StringFlag{
-				Name:     "multisig-id",
-				Usage:    "Multisig identifier (32 bytes hex)",
-				Required: true,
-			},
-			&ucli.StringFlag{
-				Name:     "signer-groups",
-				Usage:    "Comma-separated group assignment for each signer (e.g., '0,1,0' for 3 signers)",
-				Required: true,
-			},
-			&ucli.StringFlag{
-				Name:     "group-quorums",
-				Usage:    "Comma-separated quorum for each group (automatically padded to 32, e.g., '1' or '2,1,1')",
-				Required: true,
-			},
-			&ucli.StringFlag{
-				Name:     "group-parents",
-				Usage:    "Comma-separated parent group for each group (automatically padded to 32, e.g., '0' or '0,0,1')",
-				Required: true,
-			},
-			&ucli.BoolFlag{
-				Name:  "clear-root",
-				Usage: "Clear the current Merkle root (invalidates pending operations)",
-				Value: false,
-			},
+			flags.MultisigIDFlag(),
+			flags.SignerGroupsFlag(),
+			flags.GroupQuorumsFlag(),
+			flags.GroupParentsFlag(),
+			flags.ClearRootFlag(),
 		),
 		Action: func(c *ucli.Context) error {
 			svc, err := loadSignersService(c)
