@@ -2,20 +2,15 @@
 
 Go SDK for the Multi-Chain Multisig (MCM) Solana program.
 
-## Installation
-
-```bash
-go get github.com/base/mcm-go
-```
-
 ## CLI Tool
 
 The SDK includes `mcmctl`, a command-line tool for managing MCM multisigs:
 
 ```bash
-# Build the CLI
-go build -o mcmctl ./cmd/mcmctl
+go install github.com/base/mcm-go/cmd/mcmctl@latest
+```
 
+```bash
 # Set environment variables
 export MCM_RPC_URL="devnet"
 export MCM_WS_URL="devnet"

@@ -5,7 +5,7 @@ CLI tool for managing MCM (Multi-Chain Multisig) on Solana.
 ## Installation
 
 ```bash
-go build -o mcmctl ./cmd/mcmctl
+go install github.com/base/mcm-go/cmd/mcmctl@latest
 ```
 
 ## Configuration
