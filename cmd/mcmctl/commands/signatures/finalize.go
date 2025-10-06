@@ -35,9 +35,7 @@ func FinalizeCommand() *ucli.Command {
 			}
 
 			sig, err := svc.FinalizeSignatures(c.Context, services.FinalizeSignaturesParams{
-				MultisigID: pwr.MultisigID,
-				Root:       pwr.Root,
-				ValidUntil: pwr.ValidUntil,
+				ProposalWithRoot: pwr,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to finalize signatures: %w", err)

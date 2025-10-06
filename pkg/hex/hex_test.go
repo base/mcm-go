@@ -146,3 +146,64 @@ func TestParse20(t *testing.T) {
 		})
 	}
 }
+
+func TestParseSignature(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   string
+		wantErr bool
+	}{
+		{
+			name:    "valid signature",
+			input:   "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1b",
+			wantErr: false,
+		},
+		{
+			name:    "valid signature with whitespace",
+			input:   "  0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1b  ",
+			wantErr: false,
+		},
+		{
+			name:    "without prefix should fail",
+			input:   "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1b",
+			wantErr: true,
+		},
+		{
+			name:    "too short",
+			input:   "0x1234567890abcdef",
+			wantErr: true,
+		},
+		{
+			name:    "too long",
+			input:   "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1bff",
+			wantErr: true,
+		},
+		{
+			name:    "invalid hex in r",
+			input:   "0xzzzz567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1b",
+			wantErr: true,
+		},
+		{
+			name:    "invalid hex in s",
+			input:   "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdефzzzz567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1b",
+			wantErr: true,
+		},
+		{
+			name:    "invalid hex in v",
+			input:   "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdефzz",
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result, err := ParseSignature(tt.input)
+			if tt.wantErr {
+				assert.Error(t, err)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, 65, len(result))
+			}
+		})
+	}
+}

@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 
-	"github.com/base/mcm-go/pkg/crypto"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // WithHashToSign computes the hash that signers need to sign and returns a ProposalToSign

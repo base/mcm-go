@@ -79,6 +79,7 @@ type (
 	InitSignaturesParams          = services.InitSignaturesParams
 	AppendSignaturesParams        = services.AppendSignaturesParams
 	FinalizeSignaturesParams      = services.FinalizeSignaturesParams
+	ClearSignaturesParams         = services.ClearSignaturesParams
 	SetRootParams                 = services.SetRootParams
 	CreateProposalFromChainParams = services.CreateProposalFromChainParams
 	ExecuteParams                 = services.ExecuteParams

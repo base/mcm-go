@@ -43,3 +43,12 @@ func LoadProposalWithRoot(filePath string) (*proposal.ProposalWithRoot, error) {
 
 	return pwr, nil
 }
+
+// CreateProposalToSign creates a ProposalToSign from a ProposalWithRoot by computing the hash to sign
+func CreateProposalToSign(pwr *proposal.ProposalWithRoot) (*proposal.ProposalToSign, error) {
+	pts, err := pwr.WithHashToSign()
+	if err != nil {
+		return nil, fmt.Errorf("failed to compute hash to sign: %w", err)
+	}
+	return pts, nil
+}

@@ -47,10 +47,8 @@ func InitCommand() *ucli.Command {
 			}
 
 			sig, err := svc.InitSignatures(c.Context, services.InitSignaturesParams{
-				MultisigID:      pwr.MultisigID,
-				Root:            pwr.Root,
-				ValidUntil:      pwr.ValidUntil,
-				TotalSignatures: uint8(total),
+				ProposalWithRoot: pwr,
+				TotalSignatures:  uint8(total),
 			})
 			if err != nil {
 				return fmt.Errorf("failed to init signatures: %w", err)

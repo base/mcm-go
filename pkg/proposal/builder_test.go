@@ -4,8 +4,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"github.com/base/mcm-go/pkg/crypto"
-
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/gagliardetto/solana-go"
 	"github.com/stretchr/testify/assert"
 )
@@ -126,7 +125,7 @@ func TestDomainSeparators(t *testing.T) {
 
 	// Verify it's keccak256("MANY_CHAIN_MULTI_SIG_DOMAIN_SEPARATOR_METADATA_SOLANA")
 	computed := crypto.Keccak256Hash([]byte("MANY_CHAIN_MULTI_SIG_DOMAIN_SEPARATOR_METADATA_SOLANA"))
-	assert.Equal(t, expectedMetadata, computed, "Metadata domain separator should be keccak256 of the constant string")
+	assert.Equal(t, expectedMetadata, [32]byte(computed), "Metadata domain separator should be keccak256 of the constant string")
 
 	// From eth_utils.rs lines 43-45
 	expectedOp := decode32("fb98816ff3c5138a68abfd40b8d8fbc22972fea1dd89757331327e6e0a9440b7")
@@ -134,7 +133,7 @@ func TestDomainSeparators(t *testing.T) {
 
 	// Verify it's keccak256("MANY_CHAIN_MULTI_SIG_DOMAIN_SEPARATOR_OP_SOLANA")
 	computed = crypto.Keccak256Hash([]byte("MANY_CHAIN_MULTI_SIG_DOMAIN_SEPARATOR_OP_SOLANA"))
-	assert.Equal(t, expectedOp, computed, "Op domain separator should be keccak256 of the constant string")
+	assert.Equal(t, expectedOp, [32]byte(computed), "Op domain separator should be keccak256 of the constant string")
 }
 
 // TestComputeHashToSign verifies the hash computation for signer validation

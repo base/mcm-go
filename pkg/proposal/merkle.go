@@ -6,6 +6,8 @@ import (
 
 	"github.com/base/mcm-go/pkg/crypto"
 
+	opCrypto "github.com/ethereum/go-ethereum/crypto"
+
 	"github.com/gagliardetto/solana-go"
 )
 
@@ -112,7 +114,7 @@ func encodeMetadataLeaf(metadata RootMetadata) ([32]byte, error) {
 	}
 	data = append(data, overridePadded...)
 
-	return crypto.Keccak256Hash(data), nil
+	return opCrypto.Keccak256Hash(data), nil
 }
 
 // encodeOperationLeaf encodes an operation into a Merkle leaf hash
@@ -163,7 +165,7 @@ func encodeOperationLeaf(
 	serializedAccounts := serializeRemainingAccounts(remainingAccounts)
 	buffer = append(buffer, serializedAccounts...)
 
-	return crypto.Keccak256Hash(buffer), nil
+	return opCrypto.Keccak256Hash(buffer), nil
 }
 
 // serializeRemainingAccounts serializes accounts

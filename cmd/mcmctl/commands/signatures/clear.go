@@ -37,9 +37,7 @@ func ClearCommand() *ucli.Command {
 			}
 
 			sig, err := svc.ClearSignatures(c.Context, services.ClearSignaturesParams{
-				MultisigID: pwr.MultisigID,
-				Root:       pwr.Root,
-				ValidUntil: pwr.ValidUntil,
+				ProposalWithRoot: pwr,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to clear signatures: %w", err)

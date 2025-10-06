@@ -2,12 +2,10 @@ package signatures
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/base/mcm-go/cmd/mcmctl/flags"
 	"github.com/base/mcm-go/cmd/mcmctl/util"
-	"github.com/base/mcm-go/pkg/bindings"
 	"github.com/base/mcm-go/pkg/hex"
 	"github.com/base/mcm-go/pkg/services"
 
@@ -44,68 +42,47 @@ func AppendCommand() *ucli.Command {
 				return err
 			}
 
-			sigsBatch, err := parseSignatures(c.String("signatures"))
+			// Parse signatures from string to [][65]byte
+			signatures, err := parseSignatures(c.String("signatures"))
 			if err != nil {
 				return fmt.Errorf("invalid signatures: %w", err)
 			}
 
+			// Create ProposalToSign from ProposalWithRoot
+			pts, err := util.CreateProposalToSign(pwr)
+			if err != nil {
+				return fmt.Errorf("failed to create proposal to sign: %w", err)
+			}
+
 			sig, err := svc.AppendSignatures(c.Context, services.AppendSignaturesParams{
-				MultisigID:      pwr.MultisigID,
-				Root:            pwr.Root,
-				ValidUntil:      pwr.ValidUntil,
-				SignaturesBatch: sigsBatch,
+				ProposalToSign: pts,
+				Signatures:     signatures,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to append signatures: %w", err)
 			}
 
-			fmt.Printf("appended %d signature(s)\n", len(sigsBatch))
 			fmt.Printf("signature: %s\n", sig)
 			return nil
 		},
 	}
 }
 
-func parseSignatures(s string) ([]bindings.Signature, error) {
+// parseSignatures parses comma-separated ECDSA signatures to [][65]byte
+func parseSignatures(s string) ([][65]byte, error) {
 	if s == "" {
 		return nil, fmt.Errorf("empty signatures input")
 	}
 
 	parts := strings.Split(s, ",")
-	result := make([]bindings.Signature, len(parts))
+	result := make([][65]byte, len(parts))
 
 	for i, part := range parts {
-		part = strings.TrimSpace(part)
-
-		if !strings.HasPrefix(part, "0x") {
-			return nil, fmt.Errorf("signature %d: must start with '0x' prefix", i)
-		}
-
-		if len(part) != 132 { // 0x + 130 hex chars
-			return nil, fmt.Errorf("signature %d: expected 0x followed by 130 hex chars (65 bytes), got %d total chars", i, len(part))
-		}
-
-		// Extract r, s, v with 0x prefix for parsing
-		rBytes, err := hex.Parse32("0x" + part[2:66])
+		sig, err := hex.ParseSignature(part)
 		if err != nil {
-			return nil, fmt.Errorf("signature %d: invalid r value: %w", i, err)
+			return nil, fmt.Errorf("signature %d: %w", i, err)
 		}
-
-		sBytes, err := hex.Parse32("0x" + part[66:130])
-		if err != nil {
-			return nil, fmt.Errorf("signature %d: invalid s value: %w", i, err)
-		}
-
-		v, err := strconv.ParseUint(part[130:132], 16, 8)
-		if err != nil {
-			return nil, fmt.Errorf("signature %d: invalid v value: %w", i, err)
-		}
-
-		result[i] = bindings.Signature{
-			V: uint8(v),
-			R: rBytes,
-			S: sBytes,
-		}
+		result[i] = sig
 	}
 
 	return result, nil

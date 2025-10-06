@@ -52,3 +52,22 @@ func Parse20(s string) ([20]byte, error) {
 	copy(result[:], data)
 	return result, nil
 }
+
+// ParseSignature parses a single ECDSA signature to [65]byte.
+// Format: 0x<130 hex chars> representing r(32) + s(32) + v(1).
+func ParseSignature(s string) ([65]byte, error) {
+	var result [65]byte
+
+	s = strings.TrimSpace(s)
+	data, err := Decode(s)
+	if err != nil {
+		return result, fmt.Errorf("invalid hex string: %w", err)
+	}
+
+	if len(data) != 65 {
+		return result, fmt.Errorf("expected 65 bytes, got %d", len(data))
+	}
+
+	copy(result[:], data)
+	return result, nil
+}

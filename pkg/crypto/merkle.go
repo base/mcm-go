@@ -6,7 +6,7 @@ import (
 	"bytes"
 	"fmt"
 
-	"golang.org/x/crypto/sha3"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // Proof represents a Merkle proof as a slice of 32-byte hashes
@@ -72,6 +72,17 @@ func BuildMerkleTreeFromLeaves(leaves [][32]byte) (*MerkleRootWithProofs, error)
 	}, nil
 }
 
+// VerifyMerkleProof verifies that a leaf is part of a Merkle tree with the given root
+func VerifyMerkleProof(leaf [32]byte, proof Proof, root [32]byte) bool {
+	current := leaf
+
+	for _, sibling := range proof {
+		current = hashPair(current, sibling)
+	}
+
+	return bytes.Equal(current[:], root[:])
+}
+
 // hashPair hashes two 32-byte values using Keccak256.
 // The hashes are sorted before hashing to ensure deterministic results.
 func hashPair(a, b [32]byte) [32]byte {
@@ -86,7 +97,7 @@ func hashPair(a, b [32]byte) [32]byte {
 
 	// Concatenate and hash
 	data := append(left[:], right[:]...)
-	return Keccak256Hash(data)
+	return [32]byte(crypto.Keccak256Hash(data))
 }
 
 // generateMerkleProof generates a Merkle proof for a leaf at the given index
@@ -115,24 +126,4 @@ func generateMerkleProof(tree [][][32]byte, leafIndex int) Proof {
 	}
 
 	return proof
-}
-
-// Keccak256Hash computes the Keccak256 hash of the input data
-func Keccak256Hash(data []byte) [32]byte {
-	hash := sha3.NewLegacyKeccak256()
-	hash.Write(data)
-	var result [32]byte
-	copy(result[:], hash.Sum(nil))
-	return result
-}
-
-// VerifyMerkleProof verifies that a leaf is part of a Merkle tree with the given root
-func VerifyMerkleProof(leaf [32]byte, proof Proof, root [32]byte) bool {
-	current := leaf
-
-	for _, sibling := range proof {
-		current = hashPair(current, sibling)
-	}
-
-	return bytes.Equal(current[:], root[:])
 }
