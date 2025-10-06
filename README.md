@@ -41,9 +41,9 @@ package main
 import (
     "context"
     "github.com/gagliardetto/solana-go"
-    "mcm-go/pkg/client"
-    "mcm-go/pkg/proposal"
-    "mcm-go/pkg/services"
+    "github.com/base/mcm-go/pkg/client"
+    "github.com/base/mcm-go/pkg/proposal"
+    "github.com/base/mcm-go/pkg/services"
 )
 
 func main() {
@@ -125,7 +125,7 @@ mcm-go/
 Proposals contain instructions and metadata. The SDK provides a fluent API for computing cryptographic components:
 
 ```go
-import "mcm-go/pkg/proposal"
+import "github.com/base/mcm-go/pkg/proposal"
 
 // Option 1: Using Builder
 builder := proposal.NewBuilder(multisigID, validUntil)
@@ -161,7 +161,7 @@ When creating proposals, ensure that the account used as `authority` when execut
 Keccak256-based Merkle tree with automatic proof generation:
 
 ```go
-import "mcm-go/pkg/crypto"
+import "github.com/base/mcm-go/pkg/crypto"
 
 leaves := [][32]byte{leaf1, leaf2, leaf3}
 tree, _ := crypto.BuildMerkleTreeFromLeaves(leaves)
@@ -175,7 +175,7 @@ tree, _ := crypto.BuildMerkleTreeFromLeaves(leaves)
 Derive Program Derived Addresses:
 
 ```go
-import "mcm-go/pkg/pda"
+import "github.com/base/mcm-go/pkg/pda"
 
 configPDA, _, _ := pda.MultisigConfigPDA(programID, multisigID)
 rootMetadataPDA, _, _ := pda.RootMetadataPDA(programID, multisigID)
@@ -186,7 +186,7 @@ rootMetadataPDA, _, _ := pda.RootMetadataPDA(programID, multisigID)
 High-level services for common workflows:
 
 ```go
-import "mcm-go/pkg/services"
+import "github.com/base/mcm-go/pkg/services"
 
 // Signers management
 signersSvc := services.NewSignersService(client)
@@ -213,7 +213,7 @@ proposalSvc.Execute(ctx, params) // Execute operations (single, multiple, or all
 Save and load proposals to/from JSON:
 
 ```go
-import "mcm-go/pkg/proposal/io"
+import "github.com/base/mcm-go/pkg/proposal/io"
 
 // Save proposal to file
 io.SaveProposal(p, "proposal.json")
@@ -231,7 +231,7 @@ pts, _ := pwr.WithHashToSign()
 ### 1. Initialize Multisig
 
 ```go
-import "mcm-go/pkg/instructions"
+import "github.com/base/mcm-go/pkg/instructions"
 
 ix, _ := instructions.Initialize(instructions.InitializeParams{
     ChainID:    1,
@@ -364,7 +364,7 @@ proposalSvc.Execute(ctx, services.ExecuteParams{
 Fetch on-chain account state:
 
 ```go
-import "mcm-go/pkg/state"
+import "github.com/base/mcm-go/pkg/state"
 
 fetcher := state.NewFetcher(rpcClient, programID)
 

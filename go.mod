@@ -1,4 +1,4 @@
-module mcm-go
+module github.com/base/mcm-go
 
 go 1.24.5
 

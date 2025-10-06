@@ -1,7 +1,7 @@
 package flags
 
 import (
-	"mcm-go/pkg/cli"
+	"github.com/base/mcm-go/pkg/cli"
 
 	ucli "github.com/urfave/cli/v2"
 )

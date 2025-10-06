@@ -3,9 +3,9 @@ package signers
 import (
 	"fmt"
 
-	"mcm-go/cmd/mcmctl/flags"
-	"mcm-go/pkg/hex"
-	"mcm-go/pkg/services"
+	"github.com/base/mcm-go/cmd/mcmctl/flags"
+	"github.com/base/mcm-go/pkg/hex"
+	"github.com/base/mcm-go/pkg/services"
 
 	ucli "github.com/urfave/cli/v2"
 )

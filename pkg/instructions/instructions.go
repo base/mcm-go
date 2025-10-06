@@ -4,8 +4,8 @@ package instructions
 import (
 	"fmt"
 
-	"mcm-go/pkg/bindings"
-	"mcm-go/pkg/pda"
+	"github.com/base/mcm-go/pkg/bindings"
+	"github.com/base/mcm-go/pkg/pda"
 
 	"github.com/gagliardetto/solana-go"
 )

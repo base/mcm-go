@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"mcm-go/pkg/hex"
+	"github.com/base/mcm-go/pkg/hex"
 )
 
 // ParseAndSortSigners parses a comma-separated list of hex signers,

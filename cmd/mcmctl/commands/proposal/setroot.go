@@ -3,9 +3,9 @@ package proposal
 import (
 	"fmt"
 
-	"mcm-go/cmd/mcmctl/flags"
-	"mcm-go/cmd/mcmctl/util"
-	"mcm-go/pkg/services"
+	"github.com/base/mcm-go/cmd/mcmctl/flags"
+	"github.com/base/mcm-go/cmd/mcmctl/util"
+	"github.com/base/mcm-go/pkg/services"
 
 	ucli "github.com/urfave/cli/v2"
 )

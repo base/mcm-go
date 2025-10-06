@@ -3,11 +3,11 @@ package multisig
 import (
 	"fmt"
 
-	"mcm-go/cmd/mcmctl/flags"
-	"mcm-go/cmd/mcmctl/util"
-	"mcm-go/pkg/hex"
-	"mcm-go/pkg/instructions"
-	"mcm-go/pkg/tx"
+	"github.com/base/mcm-go/cmd/mcmctl/flags"
+	"github.com/base/mcm-go/cmd/mcmctl/util"
+	"github.com/base/mcm-go/pkg/hex"
+	"github.com/base/mcm-go/pkg/instructions"
+	"github.com/base/mcm-go/pkg/tx"
 
 	ucli "github.com/urfave/cli/v2"
 )

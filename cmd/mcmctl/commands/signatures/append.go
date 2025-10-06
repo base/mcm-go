@@ -5,11 +5,11 @@ import (
 	"strconv"
 	"strings"
 
-	"mcm-go/cmd/mcmctl/flags"
-	"mcm-go/cmd/mcmctl/util"
-	"mcm-go/pkg/bindings"
-	"mcm-go/pkg/hex"
-	"mcm-go/pkg/services"
+	"github.com/base/mcm-go/cmd/mcmctl/flags"
+	"github.com/base/mcm-go/cmd/mcmctl/util"
+	"github.com/base/mcm-go/pkg/bindings"
+	"github.com/base/mcm-go/pkg/hex"
+	"github.com/base/mcm-go/pkg/services"
 
 	ucli "github.com/urfave/cli/v2"
 )

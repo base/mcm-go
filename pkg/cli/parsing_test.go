@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	hexPkg "mcm-go/pkg/hex"
+	hexPkg "github.com/base/mcm-go/pkg/hex"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

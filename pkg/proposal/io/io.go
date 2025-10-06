@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"os"
 
-	"mcm-go/pkg/proposal"
+	"github.com/base/mcm-go/pkg/proposal"
 )
 
 // SaveProposal saves a Proposal to a JSON file

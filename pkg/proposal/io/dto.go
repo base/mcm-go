@@ -5,8 +5,8 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	hexutil "mcm-go/pkg/hex"
-	"mcm-go/pkg/proposal"
+	hexutil "github.com/base/mcm-go/pkg/hex"
+	"github.com/base/mcm-go/pkg/proposal"
 
 	"github.com/gagliardetto/solana-go"
 )

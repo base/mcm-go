@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"fmt"
 
-	"mcm-go/cmd/mcmctl/util"
+	"github.com/base/mcm-go/cmd/mcmctl/util"
 
 	ucli "github.com/urfave/cli/v2"
 )

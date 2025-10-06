@@ -3,10 +3,10 @@ package util
 import (
 	"fmt"
 
-	"mcm-go/pkg/cli"
-	"mcm-go/pkg/client"
-	"mcm-go/pkg/proposal"
-	proposalIO "mcm-go/pkg/proposal/io"
+	"github.com/base/mcm-go/pkg/cli"
+	"github.com/base/mcm-go/pkg/client"
+	"github.com/base/mcm-go/pkg/proposal"
+	proposalIO "github.com/base/mcm-go/pkg/proposal/io"
 
 	ucli "github.com/urfave/cli/v2"
 )

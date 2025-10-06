@@ -2,7 +2,7 @@
 package proposal
 
 import (
-	"mcm-go/pkg/crypto"
+	"github.com/base/mcm-go/pkg/crypto"
 
 	"github.com/gagliardetto/solana-go"
 )

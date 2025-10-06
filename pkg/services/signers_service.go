@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"mcm-go/pkg/client"
-	"mcm-go/pkg/instructions"
-	"mcm-go/pkg/tx"
+	"github.com/base/mcm-go/pkg/client"
+	"github.com/base/mcm-go/pkg/instructions"
+	"github.com/base/mcm-go/pkg/tx"
 
 	"github.com/gagliardetto/solana-go"
 )

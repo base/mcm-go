@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"mcm-go/cmd/mcmctl/commands/multisig"
-	"mcm-go/cmd/mcmctl/commands/proposal"
-	"mcm-go/cmd/mcmctl/commands/signatures"
-	"mcm-go/cmd/mcmctl/commands/signers"
+	"github.com/base/mcm-go/cmd/mcmctl/commands/multisig"
+	"github.com/base/mcm-go/cmd/mcmctl/commands/proposal"
+	"github.com/base/mcm-go/cmd/mcmctl/commands/signatures"
+	"github.com/base/mcm-go/cmd/mcmctl/commands/signers"
 
 	ucli "github.com/urfave/cli/v2"
 )

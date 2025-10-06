@@ -4,7 +4,7 @@ import (
 	"encoding/hex"
 	"testing"
 
-	"mcm-go/pkg/crypto"
+	"github.com/base/mcm-go/pkg/crypto"
 
 	"github.com/gagliardetto/solana-go"
 	"github.com/stretchr/testify/assert"

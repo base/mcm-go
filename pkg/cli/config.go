@@ -6,7 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"mcm-go/pkg/client"
+	"github.com/base/mcm-go/pkg/client"
 
 	"github.com/gagliardetto/solana-go"
 )

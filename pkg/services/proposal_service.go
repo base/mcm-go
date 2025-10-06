@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"mcm-go/pkg/bindings"
-	"mcm-go/pkg/client"
-	"mcm-go/pkg/instructions"
-	"mcm-go/pkg/pda"
-	"mcm-go/pkg/proposal"
-	"mcm-go/pkg/state"
-	"mcm-go/pkg/tx"
+	"github.com/base/mcm-go/pkg/bindings"
+	"github.com/base/mcm-go/pkg/client"
+	"github.com/base/mcm-go/pkg/instructions"
+	"github.com/base/mcm-go/pkg/pda"
+	"github.com/base/mcm-go/pkg/proposal"
+	"github.com/base/mcm-go/pkg/state"
+	"github.com/base/mcm-go/pkg/tx"
 
 	"github.com/gagliardetto/solana-go"
 )

@@ -1,8 +1,8 @@
 package signatures
 
 import (
-	"mcm-go/cmd/mcmctl/util"
-	"mcm-go/pkg/services"
+	"github.com/base/mcm-go/cmd/mcmctl/util"
+	"github.com/base/mcm-go/pkg/services"
 
 	ucli "github.com/urfave/cli/v2"
 )
