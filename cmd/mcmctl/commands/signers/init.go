@@ -15,7 +15,7 @@ func InitCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "init",
 		Usage: "Initialize signers storage",
-		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...),
+		Flags: append(flags.OnchainWriteFlags(),
 			&ucli.StringFlag{
 				Name:     "multisig-id",
 				Usage:    "Multisig identifier (32 bytes hex)",

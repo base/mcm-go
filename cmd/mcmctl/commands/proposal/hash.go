@@ -16,8 +16,7 @@ func HashCommand() *ucli.Command {
 		Usage: "Compute the hash to sign for a proposal (offline operation)",
 		Flags: []ucli.Flag{
 			&ucli.StringFlag{
-				Name: "proposal",
-				// No alias to avoid conflict with --program-id
+				Name:     "proposal",
 				Usage:    "Path to proposal JSON file",
 				Required: true,
 			},

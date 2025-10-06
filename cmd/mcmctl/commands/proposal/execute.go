@@ -15,7 +15,7 @@ func ExecuteCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "execute",
 		Usage: "Execute operations from a proposal",
-		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...),
+		Flags: append(flags.OnchainWriteFlags(),
 			&ucli.StringFlag{
 				Name: "proposal",
 				// No alias to avoid conflict with --program-id

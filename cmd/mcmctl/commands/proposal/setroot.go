@@ -15,10 +15,9 @@ func SetRootCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "set-root",
 		Usage: "Load a proposal and set its root on-chain",
-		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...),
+		Flags: append(flags.OnchainWriteFlags(),
 			&ucli.StringFlag{
-				Name: "proposal",
-				// No alias to avoid conflict with --program-id
+				Name:     "proposal",
 				Usage:    "Path to proposal JSON file",
 				Required: true,
 			},

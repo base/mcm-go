@@ -16,7 +16,7 @@ func AppendCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "append",
 		Usage: "Append signers to storage",
-		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...),
+		Flags: append(flags.OnchainWriteFlags(),
 			&ucli.StringFlag{
 				Name:     "multisig-id",
 				Usage:    "Multisig identifier (32 bytes hex)",

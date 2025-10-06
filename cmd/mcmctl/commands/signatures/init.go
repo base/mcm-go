@@ -15,10 +15,9 @@ func InitCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "init",
 		Usage: "Initialize signatures storage for a new root",
-		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...),
+		Flags: append(flags.OnchainWriteFlags(),
 			&ucli.StringFlag{
-				Name: "proposal",
-				// No alias to avoid conflict with --program-id
+				Name:     "proposal",
 				Usage:    "Path to proposal JSON file",
 				Required: true,
 			},

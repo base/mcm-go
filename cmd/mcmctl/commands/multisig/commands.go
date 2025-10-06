@@ -11,6 +11,7 @@ func Command() *ucli.Command {
 		Usage: "Multisig operations",
 		Subcommands: []*ucli.Command{
 			InitCommand(),
+			PrintAuthorityCommand(),
 		},
 	}
 }

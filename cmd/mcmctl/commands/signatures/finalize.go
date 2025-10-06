@@ -15,9 +15,8 @@ func FinalizeCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "finalize",
 		Usage: "Finalize signatures (no more additions allowed)",
-		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...), &ucli.StringFlag{
-			Name: "proposal",
-			// No alias to avoid conflict with --program-id
+		Flags: append(flags.OnchainWriteFlags(), &ucli.StringFlag{
+			Name:     "proposal",
 			Usage:    "Path to proposal JSON file",
 			Required: true,
 		}),

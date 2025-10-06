@@ -92,6 +92,22 @@ mcmctl multisig init \
   --chain-id 1
 ```
 
+#### `multisig print-authority`
+
+Print the multisig signer PDA (authority address).
+
+```bash
+mcmctl multisig print-authority \
+  --multisig-id <hex32>
+```
+
+**Example:**
+
+```bash
+mcmctl multisig print-authority \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000
+```
+
 ### Signers Management
 
 #### `signers init`

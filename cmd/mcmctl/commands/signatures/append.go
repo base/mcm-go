@@ -17,10 +17,9 @@ func AppendCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "append",
 		Usage: "Append ECDSA signatures to storage",
-		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...),
+		Flags: append(flags.OnchainWriteFlags(),
 			&ucli.StringFlag{
-				Name: "proposal",
-				// No alias to avoid conflict with --program-id
+				Name:     "proposal",
 				Usage:    "Path to proposal JSON file",
 				Required: true,
 			},

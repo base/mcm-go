@@ -16,7 +16,7 @@ func SetConfigCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "set-config",
 		Usage: "Set the multisig configuration (signer groups and quorums)",
-		Flags: append(append(flags.OnchainReadFlags(), flags.OnchainWriteFlags()...),
+		Flags: append(flags.OnchainWriteFlags(),
 			&ucli.StringFlag{
 				Name:     "multisig-id",
 				Usage:    "Multisig identifier (32 bytes hex)",
