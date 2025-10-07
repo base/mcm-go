@@ -15,9 +15,9 @@ import (
 // WS and authority are optional (only needed for write operations)
 func LoadClient(c *ucli.Context) (*client.Client, error) {
 	cfg, err := cli.LoadConfig(cli.ConfigParams{
-		RPCUrl:      c.String("rpc"),
-		WSUrl:       c.String("ws"),
-		ProgramID:   c.String("program-id"),
+		RPCUrl:      c.String("rpc-url"),
+		WSUrl:       c.String("ws-url"),
+		ProgramID:   c.String("mcm-program-id"),
 		KeypairPath: c.String("authority"),
 	})
 	if err != nil {

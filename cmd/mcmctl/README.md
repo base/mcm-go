@@ -16,14 +16,14 @@ Commands require different sets of flags depending on their operation:
 
 **Read-only commands** (e.g., `proposal create`):
 
-- `--rpcURL` : RPC endpoint (required)
+- `--rpc-url` : RPC endpoint (required)
 - `--program-id` : MCM program ID (required)
 
 **Write commands** (e.g., `multisig init`, `signers *`, `proposal set-root`, `proposal execute`):
 
-- `--rpcURL` : RPC endpoint (required)
+- `--rpc-url` : RPC endpoint (required)
 - `--program-id` : MCM program ID (required)
-- `--wsURL` : WebSocket endpoint (required for confirmations)
+- `--ws-url` : WebSocket endpoint (required for confirmations)
 - `--authority` : Keypair file for signing (defaults to `~/.config/solana/id.json`)
 
 **Offline commands** (e.g., `proposal hash`):
@@ -32,16 +32,16 @@ Commands require different sets of flags depending on their operation:
 
 ### Flag Details
 
-| Flag               | Environment Variable | Description                                                                            | Default                                    |
-| ------------------ | -------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------ |
-| `--rpcURL`        | `MCM_RPC_URL`        | Solana RPC endpoint URL or network alias (`mainnet`, `devnet`, `testnet`, `localhost`) | Required (for on-chain ops)                |
-| `--wsURL`             | `MCM_WS_URL`         | WebSocket endpoint URL or network alias                                                | Required (for write ops)                   |
+| Flag           | Environment Variable | Description                                                                            | Default                                    |
+| -------------- | -------------------- | -------------------------------------------------------------------------------------- | ------------------------------------------ |
+| `--rpc-url`    | `MCM_RPC_URL`        | Solana RPC endpoint URL or network alias (`mainnet`, `devnet`, `testnet`, `localhost`) | Required (for on-chain ops)                |
+| `--ws-url`     | `MCM_WS_URL`         | WebSocket endpoint URL or network alias                                                | Required (for write ops)                   |
 | `--program-id` | `MCM_PROGRAM_ID`     | MCM program ID (base58)                                                                | Required (for on-chain ops)                |
 | `--authority`  | `MCM_AUTHORITY`      | Path to authority keypair file (also used as transaction payer)                        | `~/.config/solana/id.json` (for write ops) |
 
 ### Network Aliases
 
-The `--rpcURL` and `--wsURL` flags support network aliases for convenience:
+The `--rpc-url` and `--ws-url` flags support network aliases for convenience:
 
 | Alias                       | RPC Endpoint                          | WebSocket Endpoint                  |
 | --------------------------- | ------------------------------------- | ----------------------------------- |
@@ -64,10 +64,10 @@ export MCM_RPC_URL="https://api.devnet.solana.com"
 export MCM_WS_URL="wss://api.devnet.solana.com"
 
 # Or using flags with aliases
-mcmctl --rpcURL devnet --wsURL devnet --program-id YourProgramID <command>
+mcmctl --rpc-url devnet --ws-url devnet --program-id YourProgramID <command>
 
 # Or using flags with full URLs
-mcmctl --rpcURL https://api.devnet.solana.com --wsURL wss://api.devnet.solana.com --program-id YourProgramID <command>
+mcmctl --rpc-url https://api.devnet.solana.com --ws-url wss://api.devnet.solana.com --program-id YourProgramID <command>
 ```
 
 ## Commands
@@ -234,7 +234,7 @@ mcmctl proposal create \
 - Loads instructions from a simplified JSON file (only operations, no metadata)
 - Fetches current on-chain state (chain ID, multisig, op counts) automatically
 - Generates a complete proposal file ready for signing and execution
-- Read-only operation (only requires `--rpc` and `--program-id`, no wallet needed)
+- Read-only operation (only requires `--rpc-url` and `--program-id`, no wallet needed)
 
 **Instructions JSON Format:**
 
@@ -303,7 +303,7 @@ mcmctl proposal set-root --proposal <path>
 - Loads proposal from JSON file
 - Computes Merkle root and metadata proof
 - Submits SetRoot transaction to Solana
-- Requires transaction flags (--rpc, --ws, --program-id, --authority)
+- Requires transaction flags (--rpc-url, --ws-url, --program-id, --authority)
 
 **Example:**
 
@@ -331,7 +331,7 @@ mcmctl proposal execute --proposal <path> [--operation-count <count>] [--start-i
 - Computes Merkle root and operation proofs
 - Executes operations sequentially starting from start-index
 - If `--operation-count` is not specified, executes all remaining operations from start-index
-- Requires transaction flags (--rpc, --ws, --program-id, --authority)
+- Requires transaction flags (--rpc-url, --ws-url, --program-id, --authority)
 
 **Example (execute all operations):**
 

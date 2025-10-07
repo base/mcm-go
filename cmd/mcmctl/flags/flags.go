@@ -12,7 +12,7 @@ import (
 
 func ProgramIDFlag() ucli.Flag {
 	return &ucli.StringFlag{
-		Name:     "program-id",
+		Name:     "mcm-program-id",
 		Usage:    "MCM program ID (base58)",
 		EnvVars:  []string{"MCM_PROGRAM_ID"},
 		Required: true,
@@ -21,7 +21,7 @@ func ProgramIDFlag() ucli.Flag {
 
 func RPCFlag() ucli.Flag {
 	return &ucli.StringFlag{
-		Name:     "rpcURL",
+		Name:     "rpc-url",
 		Usage:    "Solana RPC endpoint URL",
 		EnvVars:  []string{"MCM_RPC_URL"},
 		Required: true,
@@ -30,7 +30,7 @@ func RPCFlag() ucli.Flag {
 
 func WSFlag() ucli.Flag {
 	return &ucli.StringFlag{
-		Name:     "wsURL",
+		Name:     "ws-url",
 		Usage:    "Solana WebSocket endpoint URL (required for confirmations)",
 		EnvVars:  []string{"MCM_WS_URL"},
 		Required: true,

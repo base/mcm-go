@@ -23,7 +23,7 @@ type ConfigParams struct {
 func LoadConfig(params ConfigParams) (*client.Config, error) {
 	// Validate RPC URL
 	if params.RPCUrl == "" {
-		return nil, fmt.Errorf("RPC URL is required (--rpc or MCM_RPC_URL)")
+		return nil, fmt.Errorf("RPC URL is required (--rpc-url or MCM_RPC_URL)")
 	}
 
 	// Resolve network aliases to actual endpoints
