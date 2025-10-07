@@ -22,7 +22,7 @@ func PrintAuthorityCommand() *ucli.Command {
 		},
 		Action: func(c *ucli.Context) error {
 			// Parse program ID
-			programID, err := solana.PublicKeyFromBase58(c.String("program-id"))
+			programID, err := solana.PublicKeyFromBase58(c.String("mcm-program-id"))
 			if err != nil {
 				return fmt.Errorf("invalid program ID: %w", err)
 			}
