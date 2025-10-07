@@ -24,19 +24,17 @@ func TestSaveLoadProposal(t *testing.T) {
 	original := &proposal.Proposal{
 		MultisigID: multisigID,
 		ValidUntil: 1800000000,
-		Instructions: []*solana.GenericInstruction{
-			{
-				ProgID:    solana.SystemProgramID,
-				DataBytes: []byte{0xde, 0xad, 0xbe, 0xef},
-				AccountValues: []*solana.AccountMeta{
-					{
-						PublicKey:  solana.MustPublicKeyFromBase58("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
-						IsSigner:   true,
-						IsWritable: false,
-					},
+		Instructions: []solana.Instruction{solana.NewInstruction(
+			solana.SystemProgramID,
+			[]*solana.AccountMeta{
+				{
+					PublicKey:  solana.MustPublicKeyFromBase58("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"),
+					IsSigner:   true,
+					IsWritable: false,
 				},
 			},
-		},
+			[]byte{0xde, 0xad, 0xbe, 0xef},
+		)},
 		RootMetadata: proposal.RootMetadata{
 			ChainID:              1,
 			Multisig:             solana.MustPublicKeyFromBase58("11111111111111111111111111111111"),
@@ -74,10 +72,18 @@ func TestSaveLoadProposal(t *testing.T) {
 	}
 
 	// Check instruction
-	if !loaded.Instructions[0].ProgID.Equals(original.Instructions[0].ProgID) {
+	if !loaded.Instructions[0].ProgramID().Equals(original.Instructions[0].ProgramID()) {
 		t.Errorf("Instruction ProgID mismatch")
 	}
-	if string(loaded.Instructions[0].DataBytes) != string(original.Instructions[0].DataBytes) {
+	ixData, err := loaded.Instructions[0].Data()
+	if err != nil {
+		t.Errorf("failed to get data: %v", err)
+	}
+	originalIxData, err := original.Instructions[0].Data()
+	if err != nil {
+		t.Errorf("failed to get data: %v", err)
+	}
+	if string(ixData) != string(originalIxData) {
 		t.Errorf("Instruction Data mismatch")
 	}
 
@@ -228,30 +234,41 @@ func TestLoadInstructions(t *testing.T) {
 	}
 
 	// Check first instruction
-	if instructions[0].ProgID.String() != "11111111111111111111111111111111" {
+	if instructions[0].ProgramID().String() != "11111111111111111111111111111111" {
 		t.Errorf("Instruction 0 ProgID mismatch")
 	}
-	if string(instructions[0].DataBytes) != string([]byte{0xde, 0xad, 0xbe, 0xef}) {
+	ixData, err := instructions[0].Data()
+	if err != nil {
+		t.Errorf("failed to get data: %v", err)
+	}
+	if string(ixData) != string([]byte{0xde, 0xad, 0xbe, 0xef}) {
 		t.Errorf("Instruction 0 Data mismatch")
 	}
-	if len(instructions[0].AccountValues) != 1 {
+
+	accounts := instructions[0].Accounts()
+	if len(accounts) != 1 {
 		t.Errorf("Instruction 0 accounts count mismatch")
 	}
-	if !instructions[0].AccountValues[0].IsSigner {
+	if !accounts[0].IsSigner {
 		t.Error("Account should be signer")
 	}
-	if instructions[0].AccountValues[0].IsWritable {
+	if accounts[0].IsWritable {
 		t.Error("Account should not be writable")
 	}
 
 	// Check second instruction
-	if instructions[1].ProgID.String() != "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" {
+	if instructions[1].ProgramID().String() != "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA" {
 		t.Errorf("Instruction 1 ProgID mismatch")
 	}
-	if string(instructions[1].DataBytes) != string([]byte{0x12, 0x34}) {
+
+	ixData, err = instructions[1].Data()
+	if err != nil {
+		t.Errorf("failed to get data: %v", err)
+	}
+	if string(ixData) != string([]byte{0x12, 0x34}) {
 		t.Errorf("Instruction 1 Data mismatch")
 	}
-	if len(instructions[1].AccountValues) != 0 {
+	if len(instructions[1].Accounts()) != 0 {
 		t.Errorf("Instruction 1 should have no accounts")
 	}
 }

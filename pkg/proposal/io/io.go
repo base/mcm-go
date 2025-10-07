@@ -56,12 +56,15 @@ func LoadProposal(path string) (*proposal.Proposal, error) {
 
 // SaveInstructions saves instructions to a simplified JSON file
 // that contains only an array of instructions without metadata.
-func SaveInstructions(instructions []*solana.GenericInstruction, path string) error {
+func SaveInstructions(instructions []solana.Instruction, path string) error {
 	if len(instructions) == 0 {
 		return fmt.Errorf("no instructions to save")
 	}
 
-	dto := toInstructionsJSON(instructions)
+	dto, err := toInstructionsJSON(instructions)
+	if err != nil {
+		return fmt.Errorf("failed to convert to JSON: %w", err)
+	}
 
 	data, err := json.MarshalIndent(dto, "", "  ")
 	if err != nil {
@@ -93,7 +96,7 @@ func SaveInstructions(instructions []*solana.GenericInstruction, path string) er
 //	    ]
 //	  }
 //	]
-func LoadInstructions(path string) ([]*solana.GenericInstruction, error) {
+func LoadInstructions(path string) ([]solana.Instruction, error) {
 	data, err := os.ReadFile(path)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read file: %w", err)

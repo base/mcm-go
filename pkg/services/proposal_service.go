@@ -29,7 +29,7 @@ func NewProposalService(client *client.Client) *ProposalService {
 type CreateProposalFromChainParams struct {
 	MultisigID           [32]byte
 	ValidUntil           uint32
-	Instructions         []*solana.GenericInstruction
+	Instructions         []solana.Instruction
 	OverridePreviousRoot bool
 }
 

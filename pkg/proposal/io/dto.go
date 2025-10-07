@@ -18,7 +18,7 @@ type AccountMetaJSON struct {
 	IsWritable bool   `json:"isWritable"`
 }
 
-// instructionJSON is the JSON representation of GenericInstruction
+// instructionJSON is the JSON representation of Instruction
 type InstructionJSON struct {
 	ProgramID string            `json:"programId"`
 	Data      string            `json:"data"`
@@ -48,7 +48,10 @@ func toProposalJSON(p *proposal.Proposal) (*ProposalJSON, error) {
 		return nil, fmt.Errorf("invalid proposal: %w", err)
 	}
 
-	ixsJSON := toInstructionsJSON(p.Instructions)
+	ixsJSON, err := toInstructionsJSON(p.Instructions)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert to JSON: %w", err)
+	}
 
 	return &ProposalJSON{
 		MultisigID:   "0x" + hex.EncodeToString(p.MultisigID[:]),
@@ -101,12 +104,17 @@ func fromProposalJSON(pj *ProposalJSON) (*proposal.Proposal, error) {
 	return p, nil
 }
 
-// toInstructionsJSON converts GenericInstructions to JSON instructions
-func toInstructionsJSON(instructions []*solana.GenericInstruction) []InstructionJSON {
+// toInstructionsJSON converts Instructions to JSON instructions
+func toInstructionsJSON(instructions []solana.Instruction) ([]InstructionJSON, error) {
 	ixsJSON := make([]InstructionJSON, len(instructions))
 	for i, ix := range instructions {
-		accounts := make([]AccountMetaJSON, len(ix.AccountValues))
-		for j, acc := range ix.AccountValues {
+		ixData, err := ix.Data()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get data: %w", err)
+		}
+
+		accounts := make([]AccountMetaJSON, len(ix.Accounts()))
+		for j, acc := range ix.Accounts() {
 			accounts[j] = AccountMetaJSON{
 				Pubkey:     acc.PublicKey.String(),
 				IsSigner:   acc.IsSigner,
@@ -115,17 +123,17 @@ func toInstructionsJSON(instructions []*solana.GenericInstruction) []Instruction
 		}
 
 		ixsJSON[i] = InstructionJSON{
-			ProgramID: ix.ProgID.String(),
-			Data:      "0x" + hex.EncodeToString(ix.DataBytes),
+			ProgramID: ix.ProgramID().String(),
+			Data:      "0x" + hex.EncodeToString(ixData),
 			Accounts:  accounts,
 		}
 	}
-	return ixsJSON
+	return ixsJSON, nil
 }
 
-// fromInstructionsJSON converts JSON instructions to GenericInstructions
-func fromInstructionsJSON(ixsJSON []InstructionJSON) ([]*solana.GenericInstruction, error) {
-	instructions := make([]*solana.GenericInstruction, len(ixsJSON))
+// fromInstructionsJSON converts JSON instructions to Instructions
+func fromInstructionsJSON(ixsJSON []InstructionJSON) ([]solana.Instruction, error) {
+	instructions := make([]solana.Instruction, len(ixsJSON))
 	for i, ixJSON := range ixsJSON {
 		progID, err := solana.PublicKeyFromBase58(ixJSON.ProgramID)
 		if err != nil {
@@ -150,11 +158,7 @@ func fromInstructionsJSON(ixsJSON []InstructionJSON) ([]*solana.GenericInstructi
 			}
 		}
 
-		instructions[i] = &solana.GenericInstruction{
-			ProgID:        progID,
-			DataBytes:     dataBytes,
-			AccountValues: accounts,
-		}
+		instructions[i] = solana.NewInstruction(progID, accounts, dataBytes)
 	}
 	return instructions, nil
 }

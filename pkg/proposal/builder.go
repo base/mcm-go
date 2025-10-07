@@ -15,7 +15,7 @@ func NewBuilder(multisigID [32]byte, validUntil uint32) *Builder {
 		proposal: &Proposal{
 			MultisigID:   multisigID,
 			ValidUntil:   validUntil,
-			Instructions: make([]*solana.GenericInstruction, 0),
+			Instructions: make([]solana.Instruction, 0),
 		},
 	}
 }
@@ -27,7 +27,7 @@ func (b *Builder) SetRootMetadata(metadata RootMetadata) *Builder {
 }
 
 // AddInstruction adds an instruction to the proposal
-func (b *Builder) AddInstruction(ix *solana.GenericInstruction) *Builder {
+func (b *Builder) AddInstruction(ix solana.Instruction) *Builder {
 	b.proposal.Instructions = append(b.proposal.Instructions, ix)
 	return b
 }
