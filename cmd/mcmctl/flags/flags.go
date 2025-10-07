@@ -13,7 +13,6 @@ import (
 func ProgramIDFlag() ucli.Flag {
 	return &ucli.StringFlag{
 		Name:     "program-id",
-		Aliases:  []string{"p"},
 		Usage:    "MCM program ID (base58)",
 		EnvVars:  []string{"MCM_PROGRAM_ID"},
 		Required: true,
@@ -22,8 +21,7 @@ func ProgramIDFlag() ucli.Flag {
 
 func RPCFlag() ucli.Flag {
 	return &ucli.StringFlag{
-		Name:     "rpc",
-		Aliases:  []string{"r"},
+		Name:     "rpcURL",
 		Usage:    "Solana RPC endpoint URL",
 		EnvVars:  []string{"MCM_RPC_URL"},
 		Required: true,
@@ -32,7 +30,7 @@ func RPCFlag() ucli.Flag {
 
 func WSFlag() ucli.Flag {
 	return &ucli.StringFlag{
-		Name:     "ws",
+		Name:     "wsURL",
 		Usage:    "Solana WebSocket endpoint URL (required for confirmations)",
 		EnvVars:  []string{"MCM_WS_URL"},
 		Required: true,
@@ -42,7 +40,6 @@ func WSFlag() ucli.Flag {
 func AuthorityFlag() ucli.Flag {
 	return &ucli.StringFlag{
 		Name:    "authority",
-		Aliases: []string{"a"},
 		Usage:   "Path to authority keypair file (JSON or base58, also used as transaction payer)",
 		EnvVars: []string{"MCM_AUTHORITY"},
 		Value:   cli.DefaultKeypairPath(),
@@ -102,7 +99,6 @@ func ProposalFlag() ucli.Flag {
 func InstructionsFlag() ucli.Flag {
 	return &ucli.StringFlag{
 		Name:     "instructions",
-		Aliases:  []string{"i"},
 		Usage:    "Path to instructions JSON file (simplified format with only instructions array)",
 		Required: true,
 	}
@@ -126,7 +122,6 @@ func OverridePreviousRootFlag() ucli.Flag {
 func OutputFlag() ucli.Flag {
 	return &ucli.StringFlag{
 		Name:     "output",
-		Aliases:  []string{"o"},
 		Usage:    "Output file path for the generated proposal",
 		Required: true,
 	}
@@ -134,18 +129,16 @@ func OutputFlag() ucli.Flag {
 
 func StartIndexFlag() ucli.Flag {
 	return &ucli.UintFlag{
-		Name:    "start-index",
-		Aliases: []string{"s"},
-		Usage:   "Index of first operation to execute",
-		Value:   0,
+		Name:  "start-index",
+		Usage: "Index of first operation to execute",
+		Value: 0,
 	}
 }
 
 func OperationCountFlag() ucli.Flag {
 	return &ucli.UintFlag{
-		Name:    "operation-count",
-		Aliases: []string{"n"},
-		Usage:   "Number of operations to execute (defaults to all remaining operations)",
+		Name:  "operation-count",
+		Usage: "Number of operations to execute (defaults to all remaining operations)",
 	}
 }
 
