@@ -92,6 +92,85 @@ mcmctl multisig init \
   --chain-id 1
 ```
 
+#### `multisig print-config`
+
+Display the current multisig configuration including signers, groups, and quorums.
+
+```bash
+mcmctl multisig print-config \
+  --multisig-id <hex32> \
+  [--pretty]
+```
+
+**Flags:**
+- `--pretty`: Display configuration as a tree hierarchy (optional)
+
+**Example (flat format):**
+
+```bash
+mcmctl multisig print-config \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000
+```
+
+**Output:**
+```
+=== Multisig Configuration ===
+
+Multisig ID: 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000
+Chain ID: 1
+Owner: 9aXm5rpgGKaL...
+Proposed Owner: 11111111111111111111111111111111
+
+=== Signers (3 total) ===
+  [0] Address: 0x1234..., Index: 0, Group: 1
+  [1] Address: 0x5678..., Index: 1, Group: 1
+  [2] Address: 0xabcd..., Index: 2, Group: 2
+
+=== Group Quorums ===
+  Group 0: quorum = 2
+  Group 1: quorum = 2
+  Group 2: quorum = 1
+
+=== Group Parents (Hierarchy) ===
+  Group 0: ROOT (no parent)
+  Group 1: parent = Group 0
+  Group 2: parent = Group 0
+```
+
+**Example (pretty format):**
+
+```bash
+mcmctl multisig print-config \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --pretty
+```
+
+**Output:**
+```
+=== Multisig Configuration ===
+
+Multisig ID: 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000
+Chain ID: 1
+Owner: 9aXm5rpgGKaL...
+Proposed Owner: 11111111111111111111111111111111
+
+=== Group Hierarchy ===
+Group 0 (ROOT, quorum: 2)
+├── Group 1 (quorum: 2)
+│   ├── [Signer 0] 0x1234...
+│   └── [Signer 1] 0x5678...
+└── Group 2 (quorum: 1)
+    └── [Signer 2] 0xabcd...
+```
+
+**Features:**
+- Read-only operation (only requires `--rpc-url` and `--program-id`, no wallet needed)
+- Tree visualization with `--pretty` flag for easy understanding of group hierarchy
+- Displays complete configuration state
+- Shows signer addresses with their EVM addresses, indices, and group assignments
+- Shows group quorum requirements
+- Shows group hierarchy (parent-child relationships)
+
 #### `multisig print-authority`
 
 Print the multisig signer PDA (authority address).
@@ -165,6 +244,22 @@ mcmctl signers finalize \
 
 ```bash
 mcmctl signers finalize \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000
+```
+
+#### `signers clear`
+
+Clear signers storage.
+
+```bash
+mcmctl signers clear \
+  --multisig-id <hex32>
+```
+
+**Example:**
+
+```bash
+mcmctl signers clear \
   --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000
 ```
 

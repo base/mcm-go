@@ -16,6 +16,7 @@ func Command() *ucli.Command {
 			InitCommand(),
 			AppendCommand(),
 			FinalizeCommand(),
+			ClearCommand(),
 			SetConfigCommand(),
 		},
 	}
