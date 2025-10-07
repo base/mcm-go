@@ -23,7 +23,7 @@ func RPCFlag() ucli.Flag {
 	return &ucli.StringFlag{
 		Name:     "rpc-url",
 		Usage:    "Solana RPC endpoint URL",
-		EnvVars:  []string{"MCM_RPC_URL"},
+		EnvVars:  []string{"RPC_URL"},
 		Required: true,
 	}
 }
@@ -32,7 +32,7 @@ func WSFlag() ucli.Flag {
 	return &ucli.StringFlag{
 		Name:     "ws-url",
 		Usage:    "Solana WebSocket endpoint URL (required for confirmations)",
-		EnvVars:  []string{"MCM_WS_URL"},
+		EnvVars:  []string{"WS_URL"},
 		Required: true,
 	}
 }

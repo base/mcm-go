@@ -12,8 +12,8 @@ go install github.com/base/mcm-go/cmd/mcmctl@latest
 
 ```bash
 # Set environment variables
-export MCM_RPC_URL="devnet"
-export MCM_WS_URL="devnet"
+export RPC_URL="devnet"
+export WS_URL="devnet"
 export MCM_PROGRAM_ID="YourProgramID"
 
 # Initialize a multisig (hex values must use 0x prefix)
