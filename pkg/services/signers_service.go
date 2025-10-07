@@ -6,7 +6,6 @@ import (
 
 	"github.com/base/mcm-go/pkg/client"
 	"github.com/base/mcm-go/pkg/instructions"
-	"github.com/base/mcm-go/pkg/tx"
 
 	"github.com/gagliardetto/solana-go"
 )
@@ -35,9 +34,7 @@ func (s *SignersService) InitSigners(ctx context.Context, params InitSignersPara
 		return solana.Signature{}, fmt.Errorf("failed to build init signers instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
-		AddInstruction(ix).
-		BuildSignAndSendWithConfirmation(ctx)
+	return s.client.BuildSignAndSendWithConfirmation(ctx, ix)
 }
 
 type AppendSignersParams struct {
@@ -56,9 +53,7 @@ func (s *SignersService) AppendSigners(ctx context.Context, params AppendSigners
 		return solana.Signature{}, fmt.Errorf("failed to build append signers instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
-		AddInstruction(ix).
-		BuildSignAndSendWithConfirmation(ctx)
+	return s.client.BuildSignAndSendWithConfirmation(ctx, ix)
 }
 
 type FinalizeSignersParams struct {
@@ -75,9 +70,7 @@ func (s *SignersService) FinalizeSigners(ctx context.Context, params FinalizeSig
 		return solana.Signature{}, fmt.Errorf("failed to build finalize signers instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
-		AddInstruction(ix).
-		BuildSignAndSendWithConfirmation(ctx)
+	return s.client.BuildSignAndSendWithConfirmation(ctx, ix)
 }
 
 type ClearSignersParams struct {
@@ -94,9 +87,7 @@ func (s *SignersService) ClearSigners(ctx context.Context, params ClearSignersPa
 		return solana.Signature{}, fmt.Errorf("failed to build clear signers instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
-		AddInstruction(ix).
-		BuildSignAndSendWithConfirmation(ctx)
+	return s.client.BuildSignAndSendWithConfirmation(ctx, ix)
 }
 
 type SetConfigParams struct {
@@ -121,7 +112,5 @@ func (s *SignersService) SetConfig(ctx context.Context, params SetConfigParams) 
 		return solana.Signature{}, fmt.Errorf("failed to build set config instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
-		AddInstruction(ix).
-		BuildSignAndSendWithConfirmation(ctx)
+	return s.client.BuildSignAndSendWithConfirmation(ctx, ix)
 }

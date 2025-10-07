@@ -59,7 +59,7 @@ func main() {
     // Create proposal from on-chain state
     var multisigID [32]byte // Your multisig ID
     var validUntil uint32 = 1800000000
-    var instructions []proposal.MCMInstruction // Your instructions
+    var instructions []solana.Instruction // Your instructions
 
     proposalSvc := services.NewProposalService(mcmClient)
     ctx := context.Background()
@@ -96,7 +96,7 @@ See [cmd/mcmctl/README.md](cmd/mcmctl/README.md) for detailed usage examples.
 mcm-go/
 ├── pkg/
 │   ├── bindings/      # Anchor-generated types from mcm.json IDL
-│   ├── client/        # Solana RPC/WebSocket client wrapper
+│   ├── client/        # Solana RPC/WebSocket client wrapper with transaction helpers
 │   ├── crypto/        # Keccak256 Merkle tree implementation with proof generation
 │   ├── pda/           # Program Derived Address utilities
 │   ├── proposal/      # Proposal types, builder, Merkle computation, signing
@@ -107,8 +107,7 @@ mcm-go/
 │   │   └── signing.go # Hash to sign computation (pwr.WithHashToSign())
 │   ├── instructions/  # MCM instruction builders (Initialize, SetConfig, etc.)
 │   ├── state/         # On-chain account fetchers
-│   ├── services/      # High-level services (ProposalService, SignersService, etc.)
-│   └── tx/            # Transaction builder and submission utilities
+│   └── services/      # High-level services (ProposalService, SignersService, etc.)
 ├── cmd/mcmctl/        # CLI demonstrating SDK usage
 └── mcm.json          # MCM program IDL (Anchor >= 0.30.0)
 ```
@@ -378,7 +377,7 @@ The SDK is organized in layers:
 4. **Instructions** (`pkg/instructions`) - MCM instruction builders
 5. **State** (`pkg/state`) - On-chain account fetchers
 6. **Services** (`pkg/services`) - High-level workflows
-7. **Client** (`pkg/client`, `pkg/tx`) - RPC and transaction handling
+7. **Client** (`pkg/client`) - RPC, WebSocket, and transaction handling
 
 ## Testing
 

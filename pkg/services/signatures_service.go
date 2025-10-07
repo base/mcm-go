@@ -11,7 +11,6 @@ import (
 	"github.com/base/mcm-go/pkg/crypto"
 	"github.com/base/mcm-go/pkg/instructions"
 	"github.com/base/mcm-go/pkg/proposal"
-	"github.com/base/mcm-go/pkg/tx"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/gagliardetto/solana-go"
@@ -50,9 +49,7 @@ func (s *SignaturesService) InitSignatures(ctx context.Context, params InitSigna
 		return solana.Signature{}, fmt.Errorf("failed to build init signatures instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
-		AddInstruction(ix).
-		BuildSignAndSendWithConfirmation(ctx)
+	return s.client.BuildSignAndSendWithConfirmation(ctx, ix)
 }
 
 // AppendSignaturesParams contains parameters for appending signatures
@@ -97,9 +94,7 @@ func (s *SignaturesService) AppendSignatures(ctx context.Context, params AppendS
 		return solana.Signature{}, fmt.Errorf("failed to build append signatures instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
-		AddInstruction(ix).
-		BuildSignAndSendWithConfirmation(ctx)
+	return s.client.BuildSignAndSendWithConfirmation(ctx, ix)
 }
 
 // FinalizeSignaturesParams contains parameters for finalizing signatures
@@ -122,9 +117,7 @@ func (s *SignaturesService) FinalizeSignatures(ctx context.Context, params Final
 		return solana.Signature{}, fmt.Errorf("failed to build finalize signatures instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
-		AddInstruction(ix).
-		BuildSignAndSendWithConfirmation(ctx)
+	return s.client.BuildSignAndSendWithConfirmation(ctx, ix)
 }
 
 // ClearSignaturesParams contains parameters for clearing signatures
@@ -147,9 +140,7 @@ func (s *SignaturesService) ClearSignatures(ctx context.Context, params ClearSig
 		return solana.Signature{}, fmt.Errorf("failed to build clear signatures instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
-		AddInstruction(ix).
-		BuildSignAndSendWithConfirmation(ctx)
+	return s.client.BuildSignAndSendWithConfirmation(ctx, ix)
 }
 
 // signatureWithAddress pairs a signature with its recovered EVM address

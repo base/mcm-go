@@ -7,7 +7,6 @@ import (
 	"github.com/base/mcm-go/cmd/mcmctl/util"
 	"github.com/base/mcm-go/pkg/hex"
 	"github.com/base/mcm-go/pkg/instructions"
-	"github.com/base/mcm-go/pkg/tx"
 
 	ucli "github.com/urfave/cli/v2"
 )
@@ -46,9 +45,7 @@ func InitCommand() *ucli.Command {
 			}
 
 			// Submit transaction
-			sig, err := tx.NewTxBuilder(mcmClient.RPC, mcmClient.WS(), mcmClient.Payer()).
-				AddInstruction(ix).
-				BuildSignAndSendWithConfirmation(c.Context)
+			sig, err := mcmClient.BuildSignAndSendWithConfirmation(c.Context, ix)
 			if err != nil {
 				return fmt.Errorf("failed to submit transaction: %w", err)
 			}

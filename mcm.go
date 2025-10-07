@@ -8,7 +8,6 @@
 //   - instructions: High-level instruction builders
 //   - state: On-chain account fetchers
 //   - services: High-level services for common workflows
-//   - tx: Transaction building and submission utilities
 //
 // Example usage:
 //
@@ -44,7 +43,6 @@ import (
 	"github.com/base/mcm-go/pkg/proposal"
 	"github.com/base/mcm-go/pkg/services"
 	"github.com/base/mcm-go/pkg/state"
-	"github.com/base/mcm-go/pkg/tx"
 )
 
 // Re-export commonly used types and functions for convenience
@@ -95,11 +93,6 @@ type (
 	MerkleProof          = crypto.Proof
 	MerkleRootWithProofs = crypto.MerkleRootWithProofs
 	ECDSASignature       = crypto.ECDSASignature
-)
-
-// Transaction types
-type (
-	TransactionBuilder = tx.Builder
 )
 
 // Bindings types (re-exported from generated code)
@@ -160,9 +153,6 @@ var (
 
 // State fetchers
 var NewStateFetcher = state.NewFetcher
-
-// Transaction builder
-var NewTxBuilder = tx.NewTxBuilder
 
 // Version information
 const (

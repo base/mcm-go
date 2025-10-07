@@ -10,7 +10,6 @@ import (
 	"github.com/base/mcm-go/pkg/pda"
 	"github.com/base/mcm-go/pkg/proposal"
 	"github.com/base/mcm-go/pkg/state"
-	"github.com/base/mcm-go/pkg/tx"
 
 	"github.com/gagliardetto/solana-go"
 )
@@ -125,9 +124,7 @@ func (s *ProposalService) SetRoot(ctx context.Context, params SetRootParams) (so
 		return solana.Signature{}, fmt.Errorf("failed to build set root instruction: %w", err)
 	}
 
-	return tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
-		AddInstruction(ix).
-		BuildSignAndSendWithConfirmation(ctx)
+	return s.client.BuildSignAndSendWithConfirmation(ctx, ix)
 }
 
 // ExecuteParams contains parameters for executing operations
@@ -181,9 +178,7 @@ func (s *ProposalService) Execute(ctx context.Context, params ExecuteParams) ([]
 			return sigs, fmt.Errorf("failed to build execute instruction for operation %d: %w", idx, err)
 		}
 
-		sig, err := tx.NewTxBuilder(s.client.RPC, s.client.WS(), s.client.Payer()).
-			AddInstruction(ix).
-			BuildSignAndSendWithConfirmation(ctx)
+		sig, err := s.client.BuildSignAndSendWithConfirmation(ctx, ix)
 		if err != nil {
 			return sigs, fmt.Errorf("failed to execute operation %d: %w", idx, err)
 		}
