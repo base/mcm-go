@@ -43,13 +43,18 @@ func (p *Proposal) WithRoot() (*ProposalWithRoot, error) {
 	// Encode each operation as a leaf
 	operationLeaves := make([][32]byte, len(p.Instructions))
 	for i, ix := range p.Instructions {
+		ixData, err := ix.Data()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get data: %w", err)
+		}
+
 		leaf, err := encodeOperationLeaf(
 			p.RootMetadata.ChainID,
 			p.RootMetadata.Multisig,
 			uint64(p.RootMetadata.PreOpCount+uint64(i)),
-			ix.ProgID,
-			ix.DataBytes,
-			ix.AccountValues,
+			ix.ProgramID(),
+			ixData,
+			ix.Accounts(),
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to encode operation %d: %w", i, err)

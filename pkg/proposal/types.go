@@ -20,7 +20,7 @@ type RootMetadata struct {
 type Proposal struct {
 	MultisigID   [32]byte
 	ValidUntil   uint32
-	Instructions []*solana.GenericInstruction
+	Instructions []solana.Instruction
 	RootMetadata RootMetadata
 }
 

@@ -161,14 +161,19 @@ func (s *ProposalService) Execute(ctx context.Context, params ExecuteParams) ([]
 		// Calculate nonce (preOpCount + index)
 		nonce := params.ProposalWithRoot.RootMetadata.PreOpCount + uint64(idx)
 
+		opData, err := op.Data()
+		if err != nil {
+			return nil, fmt.Errorf("failed to get data: %w", err)
+		}
+
 		ix, err := instructions.Execute(instructions.ExecuteParams{
 			MultisigID:        params.MultisigID,
 			ChainID:           params.ProposalWithRoot.RootMetadata.ChainID,
 			Nonce:             nonce,
-			To:                op.ProgID,
-			Data:              op.DataBytes,
+			To:                op.ProgramID(),
+			Data:              opData,
 			Proof:             proof,
-			RemainingAccounts: op.AccountValues,
+			RemainingAccounts: op.Accounts(),
 			Authority:         s.client.Payer().PublicKey(),
 			ProgramID:         s.client.ProgramID,
 		})
