@@ -23,6 +23,7 @@ mcmctl multisig init --multisig-id <hex32> --chain-id 1
 mcmctl signers init --multisig-id <hex32> --total 10
 mcmctl signers append --multisig-id <hex32> --signers <addr1>,<addr2>,...
 mcmctl signers finalize --multisig-id <hex32>
+mcmctl signers clear --multisig-id <hex32>
 mcmctl signers set-config --multisig-id <hex32> --signer-groups <groups> --group-quorums <quorums> --group-parents <parents>
 ```
 
