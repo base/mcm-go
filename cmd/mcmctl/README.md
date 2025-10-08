@@ -138,6 +138,7 @@ mcmctl ownership transfer \
 ```
 
 **Output:**
+
 ```
 ownership transfer proposed
 proposed owner: 9aE476sH92Vz7DMPyq5WLPkrKWivxeuTKEFKd2sZZcde
@@ -170,6 +171,7 @@ mcmctl ownership accept \
 ```
 
 **Output:**
+
 ```
 ownership accepted
 new owner: 9aE476sH92Vz7DMPyq5WLPkrKWivxeuTKEFKd2sZZcde
@@ -196,6 +198,7 @@ mcmctl signers print-config \
 ```
 
 **Flags:**
+
 - `--pretty`: Display configuration as a tree hierarchy (optional)
 
 **Example (flat format):**
@@ -206,9 +209,9 @@ mcmctl signers print-config \
 ```
 
 **Output:**
+
 ```
 === Multisig Configuration ===
-
 Multisig ID: 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000
 Chain ID: 1
 Owner: 9aXm5rpgGKaL...
@@ -239,9 +242,9 @@ mcmctl signers print-config \
 ```
 
 **Output:**
+
 ```
 === Multisig Configuration ===
-
 Multisig ID: 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000
 Chain ID: 1
 Owner: 9aXm5rpgGKaL...
@@ -257,6 +260,7 @@ Group 0 (ROOT, quorum: 2)
 ```
 
 **Features:**
+
 - Read-only operation (only requires `--rpc-url` and `--program-id`, no wallet needed)
 - Tree visualization with `--pretty` flag for easy understanding of group hierarchy
 - Displays complete configuration state

@@ -47,7 +47,7 @@ func PrintConfigCommand() *ucli.Command {
 
 			// Display configuration
 			fmt.Println("=== Multisig Configuration ===")
-			fmt.Printf("\nMultisig ID: 0x%x\n", config.MultisigId)
+			fmt.Printf("Multisig ID: 0x%x\n", config.MultisigId)
 			fmt.Printf("Chain ID: %d\n", config.ChainId)
 			fmt.Printf("Owner: %s\n", config.Owner)
 			fmt.Printf("Proposed Owner: %s\n", config.ProposedOwner)
