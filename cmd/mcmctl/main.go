@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/base/mcm-go/cmd/mcmctl/commands/multisig"
+	"github.com/base/mcm-go/cmd/mcmctl/commands/ownership"
 	"github.com/base/mcm-go/cmd/mcmctl/commands/proposal"
 	"github.com/base/mcm-go/cmd/mcmctl/commands/signatures"
 	"github.com/base/mcm-go/cmd/mcmctl/commands/signers"
@@ -18,6 +19,7 @@ func main() {
 		Usage: "CLI tool for managing MCM multisig on Solana",
 		Commands: []*ucli.Command{
 			multisig.Command(),
+			ownership.Command(),
 			signers.Command(),
 			proposal.Command(),
 			signatures.Command(),

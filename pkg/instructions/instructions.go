@@ -58,6 +58,60 @@ func Initialize(params InitializeParams) (solana.Instruction, error) {
 	return setProgramID(ix, params.ProgramID), nil
 }
 
+// TransferOwnershipParams contains parameters for the TransferOwnership instruction
+type TransferOwnershipParams struct {
+	MultisigID    [32]byte
+	ProposedOwner solana.PublicKey
+	Authority     solana.PublicKey
+	ProgramID     solana.PublicKey
+}
+
+// TransferOwnership creates a TransferOwnership instruction with all required accounts derived
+func TransferOwnership(params TransferOwnershipParams) (solana.Instruction, error) {
+	multisigConfig, _, err := pda.MultisigConfigPDA(params.ProgramID, params.MultisigID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to derive multisig config PDA: %w", err)
+	}
+
+	ix, err := bindings.NewTransferOwnershipInstruction(
+		params.MultisigID,
+		params.ProposedOwner,
+		multisigConfig,
+		params.Authority,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return setProgramID(ix, params.ProgramID), nil
+}
+
+// AcceptOwnershipParams contains parameters for the AcceptOwnership instruction
+type AcceptOwnershipParams struct {
+	MultisigID [32]byte
+	Authority  solana.PublicKey
+	ProgramID  solana.PublicKey
+}
+
+// AcceptOwnership creates an AcceptOwnership instruction with all required accounts derived
+func AcceptOwnership(params AcceptOwnershipParams) (solana.Instruction, error) {
+	multisigConfig, _, err := pda.MultisigConfigPDA(params.ProgramID, params.MultisigID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to derive multisig config PDA: %w", err)
+	}
+
+	ix, err := bindings.NewAcceptOwnershipInstruction(
+		params.MultisigID,
+		multisigConfig,
+		params.Authority,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return setProgramID(ix, params.ProgramID), nil
+}
+
 // SetConfigParams contains parameters for the SetConfig instruction
 type SetConfigParams struct {
 	MultisigID   [32]byte

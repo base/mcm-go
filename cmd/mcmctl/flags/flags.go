@@ -83,6 +83,15 @@ func ChainIDFlag() ucli.Flag {
 	}
 }
 
+func ProposedOwnerFlag() ucli.Flag {
+	return &ucli.StringFlag{
+		Name:     "proposed-owner",
+		Usage:    "Proposed new owner public key (base58)",
+		EnvVars:  []string{"MCM_PROPOSED_OWNER"},
+		Required: true,
+	}
+}
+
 // =============================================================================
 // Proposal Flags
 // =============================================================================

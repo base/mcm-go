@@ -1,8 +1,10 @@
 package services
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"sort"
 
 	"github.com/base/mcm-go/pkg/client"
 	"github.com/base/mcm-go/pkg/instructions"
@@ -43,9 +45,15 @@ type AppendSignersParams struct {
 }
 
 func (s *SignersService) AppendSigners(ctx context.Context, params AppendSignersParams) (solana.Signature, error) {
+	// Sort signers by address (strictly increasing order) as required by the Solana contract
+	sortedSigners, err := sortSigners(params.SignersBatch)
+	if err != nil {
+		return solana.Signature{}, fmt.Errorf("failed to sort signers: %w", err)
+	}
+
 	ix, err := instructions.AppendSigners(instructions.AppendSignersParams{
 		MultisigID:   params.MultisigID,
-		SignersBatch: params.SignersBatch,
+		SignersBatch: sortedSigners,
 		Authority:    s.client.Payer().PublicKey(),
 		ProgramID:    s.client.ProgramID,
 	})
@@ -113,4 +121,30 @@ func (s *SignersService) SetConfig(ctx context.Context, params SetConfigParams) 
 	}
 
 	return s.client.BuildSignAndSendWithConfirmation(ctx, ix)
+}
+
+// sortSigners sorts a batch of signers by address in strictly increasing order.
+// Returns an error if duplicate addresses are detected.
+func sortSigners(signers [][20]uint8) ([][20]uint8, error) {
+	if len(signers) == 0 {
+		return signers, nil
+	}
+
+	// Create a copy to avoid modifying the original slice
+	sorted := make([][20]uint8, len(signers))
+	copy(sorted, signers)
+
+	// Sort by address in ascending order
+	sort.Slice(sorted, func(i, j int) bool {
+		return bytes.Compare(sorted[i][:], sorted[j][:]) < 0
+	})
+
+	// Validate strictly increasing order (no duplicates)
+	for i := 1; i < len(sorted); i++ {
+		if bytes.Equal(sorted[i-1][:], sorted[i][:]) {
+			return nil, fmt.Errorf("duplicate signer address detected: %x", sorted[i])
+		}
+	}
+
+	return sorted, nil
 }

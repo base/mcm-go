@@ -19,6 +19,10 @@ export MCM_PROGRAM_ID="YourProgramID"
 # Initialize a multisig (hex values must use 0x prefix)
 mcmctl multisig init --multisig-id <hex32> --chain-id 1
 
+# Transfer ownership (two-step process)
+mcmctl ownership transfer-ownership --multisig-id <hex32> --proposed-owner <pubkey>
+mcmctl ownership accept-ownership --multisig-id <hex32> --authority <new-owner-keypair>
+
 # Manage signers
 mcmctl signers init --multisig-id <hex32> --total 10
 mcmctl signers append --multisig-id <hex32> --signers <addr1>,<addr2>,...
@@ -85,6 +89,7 @@ func main() {
 The `cmd/mcmctl` directory provides a complete command-line interface demonstrating SDK usage:
 
 - **Multisig operations** - Initialize multisig accounts on Solana
+- **Ownership management** - Transfer multisig ownership securely (two-step process)
 - **Signers management** - Configure signer addresses and groups
 - **Signatures management** - Submit ECDSA signatures for proposal approval
 - **Proposal operations** - Compute hash for signing, set roots, and execute operations on-chain
