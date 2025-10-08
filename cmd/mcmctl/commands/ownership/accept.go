@@ -11,10 +11,10 @@ import (
 	ucli "github.com/urfave/cli/v2"
 )
 
-// AcceptOwnershipCommand returns the multisig accept-ownership command
-func AcceptOwnershipCommand() *ucli.Command {
+// AcceptCommand returns the ownership accept command
+func AcceptCommand() *ucli.Command {
 	return &ucli.Command{
-		Name:  "accept-ownership",
+		Name:  "accept",
 		Usage: "Accept ownership of the multisig (step 2/2)",
 		Flags: append(flags.OnchainWriteFlags(),
 			flags.MultisigIDFlag(),

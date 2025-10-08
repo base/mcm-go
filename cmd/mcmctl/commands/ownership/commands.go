@@ -10,8 +10,8 @@ func Command() *ucli.Command {
 		Name:  "ownership",
 		Usage: "Ownership management operations",
 		Subcommands: []*ucli.Command{
-			TransferOwnershipCommand(),
-			AcceptOwnershipCommand(),
+			TransferCommand(),
+			AcceptCommand(),
 		},
 	}
 }

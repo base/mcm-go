@@ -1,4 +1,4 @@
-package multisig
+package signers
 
 import (
 	"fmt"

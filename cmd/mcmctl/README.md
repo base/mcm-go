@@ -92,12 +92,105 @@ mcmctl multisig init \
   --chain-id 1
 ```
 
-#### `multisig print-config`
+#### `multisig print-authority`
+
+Print the multisig signer PDA (authority address).
+
+```bash
+mcmctl multisig print-authority \
+  --multisig-id <hex32>
+```
+
+**Example:**
+
+```bash
+mcmctl multisig print-authority \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000
+```
+
+### Ownership Management
+
+Ownership commands allow secure transfer of multisig ownership using a two-step process to prevent accidental transfers.
+
+#### `ownership transfer`
+
+Propose a new owner for the multisig (step 1 of 2).
+
+```bash
+mcmctl ownership transfer \
+  --multisig-id <hex32> \
+  --proposed-owner <base58_pubkey>
+```
+
+**Features:**
+
+- Only the current owner can propose a new owner
+- Proposed owner must be a valid Solana public key (base58 format)
+- Proposed owner cannot be the same as the current owner
+- This is step 1 of a secure two-step ownership transfer process
+
+**Example:**
+
+```bash
+mcmctl ownership transfer \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --proposed-owner 9aE476sH92Vz7DMPyq5WLPkrKWivxeuTKEFKd2sZZcde
+```
+
+**Output:**
+```
+ownership transfer proposed
+proposed owner: 9aE476sH92Vz7DMPyq5WLPkrKWivxeuTKEFKd2sZZcde
+signature: <transaction_signature>
+```
+
+#### `ownership accept`
+
+Accept ownership of the multisig (step 2 of 2).
+
+```bash
+mcmctl ownership accept \
+  --multisig-id <hex32>
+```
+
+**Features:**
+
+- Only the proposed owner can accept ownership
+- The `--authority` flag must point to the proposed owner's keypair
+- Once accepted, ownership transfer is complete and permanent
+- The `proposed_owner` field is reset after acceptance
+
+**Example:**
+
+```bash
+# Use the proposed owner's keypair as authority
+mcmctl ownership accept \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --authority ~/.config/solana/new-owner-keypair.json
+```
+
+**Output:**
+```
+ownership accepted
+new owner: 9aE476sH92Vz7DMPyq5WLPkrKWivxeuTKEFKd2sZZcde
+signature: <transaction_signature>
+```
+
+**Important Notes:**
+
+- **Two-step process**: Transfer must be proposed by current owner AND accepted by new owner
+- **Proof of control**: New owner must prove they control the private key by signing the acceptance transaction
+- **No rollback**: Once accepted, the transfer is permanent (unless a new transfer is initiated)
+- **Security**: This pattern prevents accidental transfers to incorrect addresses
+
+### Signers Management
+
+#### `signers print-config`
 
 Display the current multisig configuration including signers, groups, and quorums.
 
 ```bash
-mcmctl multisig print-config \
+mcmctl signers print-config \
   --multisig-id <hex32> \
   [--pretty]
 ```
@@ -108,7 +201,7 @@ mcmctl multisig print-config \
 **Example (flat format):**
 
 ```bash
-mcmctl multisig print-config \
+mcmctl signers print-config \
   --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000
 ```
 
@@ -140,7 +233,7 @@ Proposed Owner: 11111111111111111111111111111111
 **Example (pretty format):**
 
 ```bash
-mcmctl multisig print-config \
+mcmctl signers print-config \
   --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
   --pretty
 ```
@@ -170,99 +263,6 @@ Group 0 (ROOT, quorum: 2)
 - Shows signer addresses with their EVM addresses, indices, and group assignments
 - Shows group quorum requirements
 - Shows group hierarchy (parent-child relationships)
-
-#### `multisig print-authority`
-
-Print the multisig signer PDA (authority address).
-
-```bash
-mcmctl multisig print-authority \
-  --multisig-id <hex32>
-```
-
-**Example:**
-
-```bash
-mcmctl multisig print-authority \
-  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000
-```
-
-### Ownership Management
-
-Ownership commands allow secure transfer of multisig ownership using a two-step process to prevent accidental transfers.
-
-#### `ownership transfer-ownership`
-
-Propose a new owner for the multisig (step 1 of 2).
-
-```bash
-mcmctl ownership transfer-ownership \
-  --multisig-id <hex32> \
-  --proposed-owner <base58_pubkey>
-```
-
-**Features:**
-
-- Only the current owner can propose a new owner
-- Proposed owner must be a valid Solana public key (base58 format)
-- Proposed owner cannot be the same as the current owner
-- This is step 1 of a secure two-step ownership transfer process
-
-**Example:**
-
-```bash
-mcmctl ownership transfer-ownership \
-  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
-  --proposed-owner 9aE476sH92Vz7DMPyq5WLPkrKWivxeuTKEFKd2sZZcde
-```
-
-**Output:**
-```
-ownership transfer proposed
-proposed owner: 9aE476sH92Vz7DMPyq5WLPkrKWivxeuTKEFKd2sZZcde
-signature: <transaction_signature>
-```
-
-#### `ownership accept-ownership`
-
-Accept ownership of the multisig (step 2 of 2).
-
-```bash
-mcmctl ownership accept-ownership \
-  --multisig-id <hex32>
-```
-
-**Features:**
-
-- Only the proposed owner can accept ownership
-- The `--authority` flag must point to the proposed owner's keypair
-- Once accepted, ownership transfer is complete and permanent
-- The `proposed_owner` field is reset after acceptance
-
-**Example:**
-
-```bash
-# Use the proposed owner's keypair as authority
-mcmctl ownership accept-ownership \
-  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
-  --authority ~/.config/solana/new-owner-keypair.json
-```
-
-**Output:**
-```
-ownership accepted
-new owner: 9aE476sH92Vz7DMPyq5WLPkrKWivxeuTKEFKd2sZZcde
-signature: <transaction_signature>
-```
-
-**Important Notes:**
-
-- **Two-step process**: Transfer must be proposed by current owner AND accepted by new owner
-- **Proof of control**: New owner must prove they control the private key by signing the acceptance transaction
-- **No rollback**: Once accepted, the transfer is permanent (unless a new transfer is initiated)
-- **Security**: This pattern prevents accidental transfers to incorrect addresses
-
-### Signers Management
 
 #### `signers init`
 

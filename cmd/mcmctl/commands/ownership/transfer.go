@@ -12,10 +12,10 @@ import (
 	ucli "github.com/urfave/cli/v2"
 )
 
-// TransferOwnershipCommand returns the multisig transfer-ownership command
-func TransferOwnershipCommand() *ucli.Command {
+// TransferCommand returns the ownership transfer command
+func TransferCommand() *ucli.Command {
 	return &ucli.Command{
-		Name:  "transfer-ownership",
+		Name:  "transfer",
 		Usage: "Propose a new owner for the multisig (step 1/2)",
 		Flags: append(flags.OnchainWriteFlags(),
 			flags.MultisigIDFlag(),

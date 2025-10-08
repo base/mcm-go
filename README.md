@@ -20,8 +20,8 @@ export MCM_PROGRAM_ID="YourProgramID"
 mcmctl multisig init --multisig-id <hex32> --chain-id 1
 
 # Transfer ownership (two-step process)
-mcmctl ownership transfer-ownership --multisig-id <hex32> --proposed-owner <pubkey>
-mcmctl ownership accept-ownership --multisig-id <hex32> --authority <new-owner-keypair>
+mcmctl ownership transfer --multisig-id <hex32> --proposed-owner <pubkey>
+mcmctl ownership accept --multisig-id <hex32> --authority <new-owner-keypair>
 
 # Manage signers
 mcmctl signers init --multisig-id <hex32> --total 10

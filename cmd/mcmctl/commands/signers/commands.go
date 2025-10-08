@@ -13,6 +13,7 @@ func Command() *ucli.Command {
 		Name:  "signers",
 		Usage: "Signers management",
 		Subcommands: []*ucli.Command{
+			PrintConfigCommand(),
 			InitCommand(),
 			AppendCommand(),
 			FinalizeCommand(),
