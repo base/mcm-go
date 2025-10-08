@@ -36,11 +36,13 @@ type CreateProposalFromChainParams struct {
 // and deriving the metadata automatically.
 //
 // This method:
-// 1. Fetches MultisigConfig for chain_id
-// 2. Fetches ExpiringRootAndOpCount for the current op_count
-// 3. Derives the MultisigConfig PDA as the multisig address
-// 4. Calculates pre_op_count (current) and post_op_count (current + num_instructions)
-// 5. Returns the proposal - caller can use WithRoot() and WithHashToSign() as needed
+//  1. Fetches MultisigConfig for chain_id
+//  2. Fetches ExpiringRootAndOpCount for the current op_count
+//  3. Derives the MultisigConfig PDA as the multisig address
+//  4. Derives the MCM authority (MultisigSigner PDA) and removes it as a signer from all instructions
+//     (necessary because the PDA will become a signer via invoke_signed during CPI)
+//  5. Calculates pre_op_count (current) and post_op_count (current + num_instructions)
+//  6. Returns the proposal - caller can use WithRoot() and WithHashToSign() as needed
 //
 // The caller is responsible for ensuring valid_until is appropriate and
 // deciding whether to override the previous root.
@@ -65,6 +67,19 @@ func (s *ProposalService) CreateProposalFromChain(
 	configPDA, _, err := pda.MultisigConfigPDA(s.client.ProgramID, params.MultisigID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to derive config PDA: %w", err)
+	}
+
+	// Derive the MCM authority (MultisigSigner PDA)
+	mcmAuthority, _, err := pda.MultisigSignerPDA(s.client.ProgramID, params.MultisigID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to derive MCM authority: %w", err)
+	}
+
+	// Remove MCM authority as signer from all instructions
+	// This is necessary because the MCM authority is a PDA that will become
+	// a signer when doing the CPI via invoke_signed
+	if err := removeMcmAuthorityAsSigner(params.Instructions, mcmAuthority); err != nil {
+		return nil, fmt.Errorf("failed to remove MCM authority as signer: %w", err)
 	}
 
 	// Build metadata from on-chain state
@@ -187,4 +202,27 @@ func (s *ProposalService) Execute(ctx context.Context, params ExecuteParams) ([]
 	}
 
 	return sigs, nil
+}
+
+// removeMcmAuthorityAsSigner removes the MCM authority as a signer from all instructions.
+// This is necessary because the MCM authority is a PDA of the MCM program and will become
+// a signer when doing the CPI via invoke_signed.
+func removeMcmAuthorityAsSigner(ixs []solana.Instruction, mcmAuthority solana.PublicKey) error {
+	for i, ix := range ixs {
+		data, err := ix.Data()
+		if err != nil {
+			return fmt.Errorf("failed to get instruction data: %w", err)
+		}
+		accounts := ix.Accounts()
+		for j, account := range accounts {
+			if account.PublicKey == mcmAuthority {
+				if accounts[j].IsSigner {
+					fmt.Printf("Setting MCM authority as non-signer in instruction %d account %d\n", i, j)
+				}
+				accounts[j].IsSigner = false
+			}
+		}
+		ixs[i] = solana.NewInstruction(ix.ProgramID(), accounts, data)
+	}
+	return nil
 }
