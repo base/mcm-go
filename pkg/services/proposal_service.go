@@ -82,6 +82,12 @@ func (s *ProposalService) CreateProposalFromChain(
 		return nil, fmt.Errorf("failed to remove MCM authority as signer: %w", err)
 	}
 
+	// Set the multisig config as writable in all instructions
+	// This is necessary to ensure a proposal that has instructions which use the multisig config account can be executed.
+	if err := setWritableMultisigConfig(params.Instructions, configPDA); err != nil {
+		return nil, fmt.Errorf("failed to set multisig config as writable: %w", err)
+	}
+
 	// Build metadata from on-chain state
 	preOpCount := expiringRoot.OpCount
 	postOpCount := preOpCount + uint64(len(params.Instructions))
@@ -220,6 +226,29 @@ func removeMcmAuthorityAsSigner(ixs []solana.Instruction, mcmAuthority solana.Pu
 					fmt.Printf("Setting MCM authority as non-signer in instruction %d account %d\n", i, j)
 				}
 				accounts[j].IsSigner = false
+			}
+		}
+		ixs[i] = solana.NewInstruction(ix.ProgramID(), accounts, data)
+	}
+	return nil
+}
+
+// setWritableMultisigConfig sets the multisig config (if present) as writable in all instructions of the proposal. This is needed
+// as the Execute instruction forces the multisig config account to be writable. If the proposal has an instruction which uses the multisig
+// config account but is not writable, the proof verification will fail as the proposal root wont match the proof.
+func setWritableMultisigConfig(ixs []solana.Instruction, multisigConfig solana.PublicKey) error {
+	for i, ix := range ixs {
+		data, err := ix.Data()
+		if err != nil {
+			return fmt.Errorf("failed to get instruction data: %w", err)
+		}
+		accounts := ix.Accounts()
+		for j, account := range accounts {
+			if account.PublicKey == multisigConfig {
+				if accounts[j].IsWritable {
+					fmt.Printf("Setting multisig config as writable in instruction %d account %d\n", i, j)
+				}
+				accounts[j].IsWritable = true
 			}
 		}
 		ixs[i] = solana.NewInstruction(ix.ProgramID(), accounts, data)
