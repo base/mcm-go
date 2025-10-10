@@ -32,19 +32,9 @@ func HashCommand() *ucli.Command {
 			}
 
 			// Display proposal info
-			fmt.Printf("Proposal loaded successfully\n")
-			fmt.Printf("  Multisig ID: 0x%x\n", pts.MultisigID)
-			fmt.Printf("  Valid Until: %d\n", pts.ValidUntil)
-			fmt.Printf("  Instructions: %d\n", len(pts.Instructions))
-			fmt.Printf("  Chain ID: %d\n", pts.RootMetadata.ChainID)
-			fmt.Printf("  Pre Op Count: %d\n", pts.RootMetadata.PreOpCount)
-			fmt.Printf("  Post Op Count: %d\n", pts.RootMetadata.PostOpCount)
-			fmt.Printf("  Override Previous Root: %v\n", pts.RootMetadata.OverridePreviousRoot)
-			fmt.Printf("\n")
 			fmt.Printf("Merkle Root: 0x%x\n", pts.Root)
-			fmt.Printf("\n")
-			fmt.Printf("Hash to Sign (keccak256(root || validUntil)):\n")
-			fmt.Print("vvvvvvvv\n")
+			fmt.Println("Hash to Sign (keccak256(root || validUntil)):")
+			fmt.Println("vvvvvvvv")
 			fmt.Printf("0x%s\n", hex.EncodeToString(pts.HashToSign[:]))
 			fmt.Println("^^^^^^^^")
 

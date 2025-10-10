@@ -49,8 +49,7 @@ func AppendCommand() *ucli.Command {
 				return fmt.Errorf("failed to append signers: %w", err)
 			}
 
-			fmt.Printf("appended %d signers\n", len(signers))
-			fmt.Printf("signature: %s\n", sig)
+			fmt.Printf("Signers appended successfully: %s\n", sig)
 			return nil
 		},
 	}

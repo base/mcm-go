@@ -67,16 +67,7 @@ func CreateCommand() *ucli.Command {
 				return fmt.Errorf("failed to save proposal: %w", err)
 			}
 
-			fmt.Printf("\nProposal created successfully and saved to %s\n", outputPath)
-			fmt.Printf("  Multisig ID: 0x%x\n", p.MultisigID)
-			fmt.Printf("  Valid Until: %d\n", p.ValidUntil)
-			fmt.Printf("  Instructions: %d\n", len(p.Instructions))
-			fmt.Printf("  Chain ID: %d\n", p.RootMetadata.ChainID)
-			fmt.Printf("  Multisig: %s\n", p.RootMetadata.Multisig)
-			fmt.Printf("  Pre Op Count: %d\n", p.RootMetadata.PreOpCount)
-			fmt.Printf("  Post Op Count: %d\n", p.RootMetadata.PostOpCount)
-			fmt.Printf("  Override Previous Root: %v\n", p.RootMetadata.OverridePreviousRoot)
-
+			fmt.Printf("Proposal created successfully and saved to %s\n", outputPath)
 			return nil
 		},
 	}

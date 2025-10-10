@@ -37,9 +37,9 @@ func TestResolveNetworkAlias(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := resolveNetworkAlias(tt.url, tt.isWebSocket)
+			result := ResolveNetworkAlias(tt.url, tt.isWebSocket)
 			if result != tt.expected {
-				t.Errorf("resolveNetworkAlias(%q, %v) = %q, want %q", tt.url, tt.isWebSocket, result, tt.expected)
+				t.Errorf("ResolveNetworkAlias(%q, %v) = %q, want %q", tt.url, tt.isWebSocket, result, tt.expected)
 			}
 		})
 	}

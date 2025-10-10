@@ -50,8 +50,7 @@ func InitCommand() *ucli.Command {
 				return fmt.Errorf("failed to submit transaction: %w", err)
 			}
 
-			fmt.Printf("multisig initialized\n")
-			fmt.Printf("signature: %s\n", sig)
+			fmt.Printf("Multisig initialized successfully: %s\n", sig)
 			return nil
 		},
 	}

@@ -50,7 +50,6 @@ func AcceptCommand() *ucli.Command {
 			}
 
 			fmt.Printf("ownership accepted\n")
-			fmt.Printf("new owner: %s\n", mcmClient.Payer().PublicKey().String())
 			fmt.Printf("signature: %s\n", sig)
 			return nil
 		},

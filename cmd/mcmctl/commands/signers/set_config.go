@@ -65,12 +65,7 @@ func SetConfigCommand() *ucli.Command {
 				return fmt.Errorf("failed to set config: %w", err)
 			}
 
-			fmt.Printf("configuration set successfully\n")
-			fmt.Printf("  signer groups: %v\n", signerGroups)
-			fmt.Printf("  group quorums: %v (first %d)\n", groupQuorums[:min(5, len(groupQuorums))], min(5, len(groupQuorums)))
-			fmt.Printf("  group parents: %v (first %d)\n", groupParents[:min(5, len(groupParents))], min(5, len(groupParents)))
-			fmt.Printf("  clear root: %v\n", clearRoot)
-			fmt.Printf("signature: %s\n", sig)
+			fmt.Printf("Configuration set successfully: %s\n", sig)
 			return nil
 		},
 	}

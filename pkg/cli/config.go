@@ -27,12 +27,12 @@ func LoadConfig(params ConfigParams) (*client.Config, error) {
 	}
 
 	// Resolve network aliases to actual endpoints
-	rpcURL := resolveNetworkAlias(params.RPCUrl, false)
+	rpcURL := ResolveNetworkAlias(params.RPCUrl, false)
 
 	// WS URL is optional (only needed for transactions)
 	wsURL := ""
 	if params.WSUrl != "" {
-		wsURL = resolveNetworkAlias(params.WSUrl, true)
+		wsURL = ResolveNetworkAlias(params.WSUrl, true)
 	}
 
 	// Parse program ID
@@ -68,8 +68,8 @@ func DefaultKeypairPath() string {
 	return filepath.Join(home, ".config", "solana", "id.json")
 }
 
-// resolveNetworkAlias converts network aliases to actual endpoints
-func resolveNetworkAlias(url string, isWebSocket bool) string {
+// ResolveNetworkAlias converts network aliases to actual endpoints
+func ResolveNetworkAlias(url string, isWebSocket bool) string {
 	switch url {
 	case "mainnet", "mainnet-beta":
 		if isWebSocket {

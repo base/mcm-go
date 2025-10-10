@@ -443,6 +443,169 @@ mcmctl proposal create \
 
 The generated `proposal.json` file contains the complete proposal with all metadata and can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
 
+#### `proposal create-upgrade`
+
+Create a proposal to upgrade a Solana program using BPF Loader v3.
+
+```bash
+mcmctl proposal create-upgrade \
+  --program <base58_pubkey> \
+  --buffer <base58_pubkey> \
+  --spill <base58_pubkey> \
+  --multisig-id <hex32> \
+  --valid-until <timestamp> \
+  [--override-previous-root] \
+  --output <path>
+```
+
+**Features:**
+
+- Automatically derives the ProgramData PDA from the program address
+- Fetches and validates upgrade authorities from on-chain (program and buffer must match)
+- Creates the BPF Loader v3 upgrade instruction
+- Generates a complete proposal file ready for signing and execution
+- Read-only operation (only requires `--rpc-url` and `--mcm-program-id`, no wallet needed)
+
+**Example:**
+
+```bash
+# Create an upgrade proposal
+mcmctl proposal create-upgrade \
+  --program 9aE476sH92Vz7DMPyq5WLPkrKWivxeuTKEFKd2sZZcde \
+  --buffer BUFFERAccountXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
+  --spill SPILLAccountXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --valid-until 1800000000 \
+  --output ./upgrade_proposal.json
+```
+
+**Output:**
+
+```
+ProgramData (derived): AbCdEf...
+Upgrade authority: 9aE476sH92...
+Buffer authority: 9aE476sH92...
+Fetching MCM on-chain state...
+
+Upgrade proposal created successfully and saved to ./upgrade_proposal.json
+  Program: 9aE476sH92Vz7DMPyq5WLPkrKWivxeuTKEFKd2sZZcde
+  Buffer: BUFFERAccountXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  Spill: SPILLAccountXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+  Multisig ID: 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000
+  Valid Until: 1800000000
+  Chain ID: 1
+  Pre Op Count: 0
+  Post Op Count: 1
+```
+
+**Workflow:**
+
+1. **Prepare buffer**: Use `solana program write-buffer` to upload your new program
+2. **Create proposal**: Use this command to generate the upgrade proposal
+3. **Sign proposal**: Use `proposal hash` to get the hash, collect signatures
+4. **Submit signatures**: Use `signatures init/append/finalize` to submit signatures
+5. **Set root**: Use `proposal set-root` to set the Merkle root on-chain
+6. **Execute**: Use `proposal execute` to perform the upgrade
+
+The generated proposal can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
+
+#### `proposal create-update-signers`
+
+Create a proposal to update MCM signers configuration with a complete workflow (init, append, finalize, setConfig).
+
+```bash
+mcmctl proposal create-update-signers \
+  --new-signers <comma_separated_hex_addresses> \
+  --signer-groups <comma_separated_group_indices> \
+  --group-quorums <comma_separated_quorums> \
+  --group-parents <comma_separated_parents> \
+  --multisig-id <hex32> \
+  --valid-until <timestamp> \
+  [--clear-root] \
+  [--override-previous-root] \
+  --output <path>
+```
+
+**Features:**
+
+- Generates a complete signers update workflow in a single proposal:
+  1. **InitSigners**: Initializes signer storage with total count
+  2. **AppendSigners**: Adds all signers in chunks (max 10 per instruction)
+  3. **FinalizeSigners**: Finalizes the signer list
+  4. **SetConfig**: Configures signer groups, quorums, and parent relationships
+- Automatically derives the MCM authority PDA
+- Creates a complete proposal file ready for signing and execution
+- Read-only operation (only requires `--rpc-url` and `--mcm-program-id`, no wallet needed)
+
+**Parameters:**
+
+- `--new-signers`: Comma-separated list of 20-byte hex addresses (with 0x prefix)
+- `--signer-groups`: Group index for each signer (e.g., "0,0,1,1" for 4 signers in 2 groups)
+- `--group-quorums`: Quorum threshold for each group (e.g., "2,3" for 2 groups)
+- `--group-parents`: Parent group index for each group (e.g., "0,0" for 2 root groups)
+- `--clear-root`: Optional flag to clear existing Merkle root (invalidates pending operations)
+
+**Example:**
+
+```bash
+# Create a signers update proposal with 4 signers in 2 groups
+mcmctl proposal create-update-signers \
+  --new-signers 0x1234567890123456789012345678901234567890,0xabcdefabcdefabcdefabcdefabcdefabcdefabcd,0x9876543210987654321098765432109876543210,0xfedcbafedcbafedcbafedcbafedcbafedcbafedc \
+  --signer-groups 0,0,1,1 \
+  --group-quorums 2,2 \
+  --group-parents 0,0 \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --valid-until 1800000000 \
+  --output ./update_signers_proposal.json
+```
+
+**Output:**
+
+```
+New signers: 4
+  [0] 0x1234567890123456789012345678901234567890
+  [1] 0xabcdefabcdefabcdefabcdefabcdefabcdefabcd
+  [2] 0x9876543210987654321098765432109876543210
+  [3] 0xfedcbafedcbafedcbafedcbafedcbafedcbafedc
+Signer groups: [0 0 1 1]
+Group quorums: [2 2 0 0...]
+Group parents: [0 0 0 0...]
+Clear root: false
+MCM authority: AbCdEf...
+
+1. Creating InitSigners instruction...
+   ✓ Total signers: 4
+
+2. Creating AppendSigners instruction(s)...
+   ✓ Chunk 1: 4 signers [0:4]
+
+3. Creating FinalizeSigners instruction...
+   ✓ Finalize complete
+
+4. Creating SetConfig instruction...
+   ✓ Groups: 2, ClearRoot: false
+
+Fetching MCM on-chain state...
+
+✅ Update signers proposal created successfully and saved to ./update_signers_proposal.json
+  Multisig ID: 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000
+  Valid Until: 1800000000
+  Instructions: 4
+  Chain ID: 1
+  Pre Op Count: 0
+  Post Op Count: 4
+```
+
+**Workflow:**
+
+This command generates all 4 instructions needed to completely update signers:
+1. Initialize storage for new signers
+2. Append all signer addresses (in chunks if needed)
+3. Finalize the signer list
+4. Set the configuration (groups, quorums, hierarchy)
+
+The generated proposal can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
+
 #### `proposal hash`
 
 Compute the hash to sign for a proposal (offline operation).

@@ -42,10 +42,7 @@ func SetRootCommand() *ucli.Command {
 			}
 
 			fmt.Printf("Root set successfully\n")
-			fmt.Printf("  Multisig ID: 0x%x\n", pwr.MultisigID)
-			fmt.Printf("  Root: 0x%x\n", pwr.Root)
-			fmt.Printf("  Valid Until: %d\n", pwr.ValidUntil)
-			fmt.Printf("signature: %s\n", sig)
+			fmt.Printf("Signature: %s\n", sig)
 			return nil
 		},
 	}

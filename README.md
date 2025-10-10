@@ -92,7 +92,10 @@ The `cmd/mcmctl` directory provides a complete command-line interface demonstrat
 - **Ownership management** - Transfer multisig ownership securely (two-step process)
 - **Signers management** - Configure signer addresses and groups
 - **Signatures management** - Submit ECDSA signatures for proposal approval
-- **Proposal operations** - Compute hash for signing, set roots, and execute operations on-chain
+- **Proposal operations** - Create proposals from instructions, compute hash for signing, set roots, and execute operations on-chain
+  - Includes specialized commands:
+    - `proposal create-upgrade` for Solana program upgrades via BPF Loader v3
+    - `proposal create-update-signers` for complete signers configuration updates
 
 See [cmd/mcmctl/README.md](cmd/mcmctl/README.md) for detailed usage examples.
 

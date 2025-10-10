@@ -59,7 +59,6 @@ func TransferCommand() *ucli.Command {
 			}
 
 			fmt.Printf("ownership transfer proposed\n")
-			fmt.Printf("proposed owner: %s\n", proposedOwner.String())
 			fmt.Printf("signature: %s\n", sig)
 			return nil
 		},

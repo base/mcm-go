@@ -38,8 +38,7 @@ func ClearCommand() *ucli.Command {
 				return fmt.Errorf("failed to clear signatures: %w", err)
 			}
 
-			fmt.Printf("signatures cleared\n")
-			fmt.Printf("signature: %s\n", sig)
+			fmt.Printf("Signatures cleared successfully: %s\n", sig)
 			return nil
 		},
 	}
