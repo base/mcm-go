@@ -15,17 +15,12 @@ import (
 	ucli "github.com/urfave/cli/v2"
 )
 
-// AcceptOwnershipCommand returns the accept ownership proposal creation command
-func AcceptOwnershipCommand() *ucli.Command {
+// CreateAcceptOwnershipCommand returns the accept ownership proposal creation command
+func CreateAcceptOwnershipCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "create-accept-ownership",
 		Usage: "Create a proposal to accept ownership of the multisig",
-		Flags: append(flags.OnchainReadFlags(),
-			flags.MultisigIDFlag(),
-			flags.ValidUntilFlag(),
-			flags.OverridePreviousRootFlag(),
-			flags.OutputFlag(),
-		),
+		Flags: flags.ProposalCreationFlags(),
 		Action: func(c *ucli.Context) error {
 			// Parse and validate CLI parameters
 			params, err := parseAcceptOwnershipParams(c)
@@ -90,6 +85,7 @@ func AcceptOwnershipCommand() *ucli.Command {
 
 // acceptOwnershipParams holds parsed parameters for the accept ownership command
 type acceptOwnershipParams struct {
+	// Common MCM parameters
 	multisigID           [32]byte
 	validUntil           uint32
 	overridePreviousRoot bool
@@ -98,6 +94,7 @@ type acceptOwnershipParams struct {
 
 // parseAcceptOwnershipParams parses and validates CLI parameters for accept ownership command
 func parseAcceptOwnershipParams(c *ucli.Context) (*acceptOwnershipParams, error) {
+	// Parse common MCM parameters
 	multisigID, err := mcmHex.Parse32(c.String("multisig-id"))
 	if err != nil {
 		return nil, fmt.Errorf("invalid multisig-id: %w", err)

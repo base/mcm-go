@@ -21,11 +21,7 @@ func CreateUpgradeCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "create-upgrade",
 		Usage: "Create a proposal to upgrade a Solana program using BPF Loader v3",
-		Flags: append(flags.OnchainReadFlags(),
-			flags.MultisigIDFlag(),
-			flags.ValidUntilFlag(),
-			flags.OverridePreviousRootFlag(),
-			flags.OutputFlag(),
+		Flags: append(flags.ProposalCreationFlags(),
 			&ucli.StringFlag{
 				Name:     "program",
 				Usage:    "Program account address to upgrade",
@@ -98,19 +94,33 @@ func CreateUpgradeCommand() *ucli.Command {
 
 // upgradeParams holds parsed parameters for the upgrade command
 type upgradeParams struct {
-	program              solana.PublicKey
-	buffer               solana.PublicKey
-	spill                solana.PublicKey
-	programData          solana.PublicKey
+	// Common MCM parameters
 	multisigID           [32]byte
 	validUntil           uint32
 	overridePreviousRoot bool
 	outputPath           string
 	rpcURL               string
+	// Specific loader_v3 parameters
+	program     solana.PublicKey
+	buffer      solana.PublicKey
+	spill       solana.PublicKey
+	programData solana.PublicKey
 }
 
 // parseUpgradeParams parses and validates CLI parameters for upgrade command
 func parseUpgradeParams(c *ucli.Context) (*upgradeParams, error) {
+	// 1. Parse common MCM parameters
+	multisigID, err := hex.Parse32(c.String("multisig-id"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid multisig-id: %w", err)
+	}
+
+	validUntil := uint32(c.Uint64("valid-until"))
+	overridePreviousRoot := c.Bool("override-previous-root")
+	outputPath := c.String("output")
+	rpcURL := cli.ResolveNetworkAlias(c.String("rpc-url"), false)
+
+	// 2. Parse specific loader_v3 parameters
 	program, err := solana.PublicKeyFromBase58(c.String("program"))
 	if err != nil {
 		return nil, fmt.Errorf("invalid program address: %w", err)
@@ -126,17 +136,7 @@ func parseUpgradeParams(c *ucli.Context) (*upgradeParams, error) {
 		return nil, fmt.Errorf("invalid spill address: %w", err)
 	}
 
-	multisigID, err := hex.Parse32(c.String("multisig-id"))
-	if err != nil {
-		return nil, fmt.Errorf("invalid multisig-id: %w", err)
-	}
-
-	validUntil := uint32(c.Uint64("valid-until"))
-	overridePreviousRoot := c.Bool("override-previous-root")
-	outputPath := c.String("output")
-	rpcURL := cli.ResolveNetworkAlias(c.String("rpc-url"), false)
-
-	// Derive ProgramData PDA from program address
+	// 3. Derive ProgramData PDA from program address
 	programData, _, err := solana.FindProgramAddress(
 		[][]byte{program.Bytes()},
 		solana.BPFLoaderUpgradeableProgramID,
@@ -146,16 +146,17 @@ func parseUpgradeParams(c *ucli.Context) (*upgradeParams, error) {
 	}
 	fmt.Printf("ProgramData (derived): %s\n", programData)
 
+	// 4. Return with common fields first
 	return &upgradeParams{
-		program:              program,
-		buffer:               buffer,
-		spill:                spill,
-		programData:          programData,
 		multisigID:           multisigID,
 		validUntil:           validUntil,
 		overridePreviousRoot: overridePreviousRoot,
 		outputPath:           outputPath,
 		rpcURL:               rpcURL,
+		program:              program,
+		buffer:               buffer,
+		spill:                spill,
+		programData:          programData,
 	}, nil
 }
 

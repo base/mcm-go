@@ -96,6 +96,9 @@ The `cmd/mcmctl` directory provides a complete command-line interface demonstrat
   - Includes specialized commands:
     - `proposal create-upgrade` for Solana program upgrades via BPF Loader v3
     - `proposal create-update-signers` for complete signers configuration updates
+    - `proposal create-accept-ownership` for accepting ownership transfers
+    - `proposal create-pause` for pausing/unpausing bridge operations
+    - `proposal create-set-partner-oracle-config` for updating bridge oracle configuration
 
 See [cmd/mcmctl/README.md](cmd/mcmctl/README.md) for detailed usage examples.
 

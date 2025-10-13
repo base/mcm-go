@@ -17,7 +17,7 @@ func PrintAuthorityCommand() *ucli.Command {
 		Name:  "print-authority",
 		Usage: "Print the multisig signer PDA (authority)",
 		Flags: []ucli.Flag{
-			flags.ProgramIDFlag(),
+			flags.MCMProgramIDFlag(),
 			flags.MultisigIDFlag(),
 		},
 		Action: func(c *ucli.Context) error {

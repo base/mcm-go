@@ -10,7 +10,7 @@ import (
 // Infrastructure Flags (RPC, WS, Program, Authority)
 // =============================================================================
 
-func ProgramIDFlag() ucli.Flag {
+func MCMProgramIDFlag() ucli.Flag {
 	return &ucli.StringFlag{
 		Name:     "mcm-program-id",
 		Usage:    "MCM program ID (base58)",
@@ -48,7 +48,7 @@ func AuthorityFlag() ucli.Flag {
 
 func OnchainReadFlags() []ucli.Flag {
 	return []ucli.Flag{
-		ProgramIDFlag(),
+		MCMProgramIDFlag(),
 		RPCFlag(),
 	}
 }
@@ -149,6 +149,18 @@ func OperationCountFlag() ucli.Flag {
 		Name:  "operation-count",
 		Usage: "Number of operations to execute (defaults to all remaining operations)",
 	}
+}
+
+// ProposalCreationFlags returns common flags for all concrete proposal commands
+// These flags are used by all commands that create MCM proposals (loader_v3, mcm, bridge)
+func ProposalCreationFlags() []ucli.Flag {
+	return append(
+		OnchainReadFlags(),
+		MultisigIDFlag(),
+		ValidUntilFlag(),
+		OverridePreviousRootFlag(),
+		OutputFlag(),
+	)
 }
 
 // =============================================================================

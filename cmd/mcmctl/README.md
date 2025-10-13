@@ -606,6 +606,115 @@ This command generates all 4 instructions needed to completely update signers:
 
 The generated proposal can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
 
+#### `proposal create-accept-ownership`
+
+Create a proposal to accept ownership of a program or account.
+
+```bash
+mcmctl proposal create-accept-ownership \
+  --multisig-id <hex32> \
+  --valid-until <timestamp> \
+  [--override-previous-root] \
+  --output <path>
+```
+
+**Features:**
+
+- Creates a proposal to accept ownership (second step of ownership transfer)
+- Fetches current on-chain state automatically
+- Generates a complete proposal file ready for signing and execution
+- Read-only operation (only requires `--rpc-url` and `--mcm-program-id`, no wallet needed)
+
+**Example:**
+
+```bash
+mcmctl proposal create-accept-ownership \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --valid-until 1800000000 \
+  --output ./accept_ownership_proposal.json
+```
+
+The generated proposal can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
+
+#### `proposal create-pause`
+
+Create a proposal to pause/unpause bridge operations.
+
+```bash
+mcmctl proposal create-pause \
+  --bridge-program-id <base58_pubkey> \
+  --pause <true|false> \
+  --multisig-id <hex32> \
+  --valid-until <timestamp> \
+  [--override-previous-root] \
+  --output <path>
+```
+
+**Features:**
+
+- Creates a proposal to set the pause status of the bridge
+- Pause: `true` to pause bridge operations, `false` to unpause
+- Fetches current on-chain state automatically
+- Generates a complete proposal file ready for signing and execution
+- Read-only operation (only requires `--rpc-url` and `--mcm-program-id`, no wallet needed)
+
+**Example:**
+
+```bash
+# Pause the bridge
+mcmctl proposal create-pause \
+  --bridge-program-id BridgeProgramIDXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
+  --pause true \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --valid-until 1800000000 \
+  --output ./pause_bridge_proposal.json
+
+# Unpause the bridge
+mcmctl proposal create-pause \
+  --bridge-program-id BridgeProgramIDXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
+  --pause false \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --valid-until 1800000000 \
+  --output ./unpause_bridge_proposal.json
+```
+
+The generated proposal can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
+
+#### `proposal create-set-partner-oracle-config`
+
+Create a proposal to update the partner oracle configuration in the bridge.
+
+```bash
+mcmctl proposal create-set-partner-oracle-config \
+  --bridge-program-id <base58_pubkey> \
+  --required-threshold <uint8> \
+  --multisig-id <hex32> \
+  --valid-until <timestamp> \
+  [--override-previous-root] \
+  --output <path>
+```
+
+**Features:**
+
+- Creates a proposal to set the partner oracle configuration
+- Required threshold: number of oracle signatures required (0-255)
+- Fetches current on-chain state automatically
+- Generates a complete proposal file ready for signing and execution
+- Read-only operation (only requires `--rpc-url` and `--mcm-program-id`, no wallet needed)
+
+**Example:**
+
+```bash
+mcmctl proposal create-set-partner-oracle-config \
+  --bridge-program-id BridgeProgramIDXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
+  --required-threshold 3 \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --valid-until 1800000000 \
+  --output ./set_partner_oracle_config_proposal.json
+```
+
+The generated proposal can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
+
 #### `proposal hash`
 
 Compute the hash to sign for a proposal (offline operation).

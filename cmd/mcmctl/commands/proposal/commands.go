@@ -1,6 +1,7 @@
 package proposal
 
 import (
+	"github.com/base/mcm-go/cmd/mcmctl/commands/proposal/bridge"
 	"github.com/base/mcm-go/cmd/mcmctl/commands/proposal/loader_v3"
 	"github.com/base/mcm-go/cmd/mcmctl/commands/proposal/mcm"
 
@@ -19,7 +20,9 @@ func Command() *ucli.Command {
 			ExecuteCommand(),
 			loader_v3.CreateUpgradeCommand(),
 			mcm.CreateUpdateSignersCommand(),
-			mcm.AcceptOwnershipCommand(),
+			mcm.CreateAcceptOwnershipCommand(),
+			bridge.CreatePauseCommand(),
+			bridge.CreateSetPartnerOracleConfigCommand(),
 		},
 	}
 }
