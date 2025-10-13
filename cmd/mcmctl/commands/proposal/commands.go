@@ -1,7 +1,8 @@
 package proposal
 
 import (
-	"github.com/base/mcm-go/cmd/mcmctl/commands/proposal/concrete"
+	"github.com/base/mcm-go/cmd/mcmctl/commands/proposal/loader_v3"
+	"github.com/base/mcm-go/cmd/mcmctl/commands/proposal/mcm"
 
 	ucli "github.com/urfave/cli/v2"
 )
@@ -16,8 +17,9 @@ func Command() *ucli.Command {
 			HashCommand(),
 			SetRootCommand(),
 			ExecuteCommand(),
-			concrete.CreateUpgradeCommand(),
-			concrete.CreateUpdateSignersCommand(),
+			loader_v3.CreateUpgradeCommand(),
+			mcm.CreateUpdateSignersCommand(),
+			mcm.AcceptOwnershipCommand(),
 		},
 	}
 }

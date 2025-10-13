@@ -1,4 +1,4 @@
-package concrete
+package mcm
 
 import (
 	"fmt"
@@ -82,21 +82,20 @@ func CreateUpdateSignersCommand() *ucli.Command {
 			fmt.Println("\nFetching MCM on-chain state...")
 			p, err := proposalSvc.CreateProposalFromChain(c.Context, services.CreateProposalFromChainParams{
 				MultisigID:           params.multisigID,
-				ValidUntil:           uint32(c.Uint64("valid-until")),
+				ValidUntil:           params.validUntil,
 				Instructions:         proposalIxs,
-				OverridePreviousRoot: c.Bool("override-previous-root"),
+				OverridePreviousRoot: params.overridePreviousRoot,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to create proposal: %w", err)
 			}
 
 			// Save proposal to file
-			outputPath := c.String("output")
-			if err := proposalIO.SaveProposal(p, outputPath); err != nil {
+			if err := proposalIO.SaveProposal(p, params.outputPath); err != nil {
 				return fmt.Errorf("failed to save proposal: %w", err)
 			}
 
-			fmt.Printf("\nUpdate signers proposal created successfully and saved to %s\n", outputPath)
+			fmt.Printf("\nUpdate signers proposal created successfully and saved to %s\n", params.outputPath)
 			return nil
 		},
 	}
@@ -104,12 +103,15 @@ func CreateUpdateSignersCommand() *ucli.Command {
 
 // updateSignersParams holds parsed parameters for the update signers command
 type updateSignersParams struct {
-	multisigID   [32]byte
-	newSigners   [][20]uint8
-	signerGroups []uint8
-	groupQuorums [32]uint8
-	groupParents [32]uint8
-	clearRoot    bool
+	multisigID           [32]byte
+	newSigners           [][20]uint8
+	signerGroups         []uint8
+	groupQuorums         [32]uint8
+	groupParents         [32]uint8
+	clearRoot            bool
+	validUntil           uint32
+	overridePreviousRoot bool
+	outputPath           string
 }
 
 // parseUpdateSignersParams parses and validates CLI parameters for update signers command
@@ -147,14 +149,20 @@ func parseUpdateSignersParams(c *ucli.Context) (*updateSignersParams, error) {
 	}
 
 	clearRoot := c.Bool("clear-root")
+	validUntil := uint32(c.Uint64("valid-until"))
+	overridePreviousRoot := c.Bool("override-previous-root")
+	outputPath := c.String("output")
 
 	return &updateSignersParams{
-		multisigID:   multisigID,
-		newSigners:   newSigners,
-		signerGroups: signerGroups,
-		groupQuorums: groupQuorums,
-		groupParents: groupParents,
-		clearRoot:    clearRoot,
+		multisigID:           multisigID,
+		newSigners:           newSigners,
+		signerGroups:         signerGroups,
+		groupQuorums:         groupQuorums,
+		groupParents:         groupParents,
+		clearRoot:            clearRoot,
+		validUntil:           validUntil,
+		overridePreviousRoot: overridePreviousRoot,
+		outputPath:           outputPath,
 	}, nil
 }
 

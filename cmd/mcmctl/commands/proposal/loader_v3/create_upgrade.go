@@ -1,4 +1,4 @@
-package concrete
+package loader_v3
 
 import (
 	"context"
@@ -77,21 +77,20 @@ func CreateUpgradeCommand() *ucli.Command {
 			fmt.Println("Fetching MCM on-chain state...")
 			p, err := proposalSvc.CreateProposalFromChain(c.Context, services.CreateProposalFromChainParams{
 				MultisigID:           params.multisigID,
-				ValidUntil:           uint32(c.Uint64("valid-until")),
+				ValidUntil:           params.validUntil,
 				Instructions:         []solana.Instruction{upgradeIx},
-				OverridePreviousRoot: c.Bool("override-previous-root"),
+				OverridePreviousRoot: params.overridePreviousRoot,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to create proposal: %w", err)
 			}
 
 			// Save proposal to file
-			outputPath := c.String("output")
-			if err := proposalIO.SaveProposal(p, outputPath); err != nil {
+			if err := proposalIO.SaveProposal(p, params.outputPath); err != nil {
 				return fmt.Errorf("failed to save proposal: %w", err)
 			}
 
-			fmt.Printf("\nUpgrade proposal created successfully and saved to %s\n", outputPath)
+			fmt.Printf("\nUpgrade proposal created successfully and saved to %s\n", params.outputPath)
 			return nil
 		},
 	}
@@ -99,12 +98,15 @@ func CreateUpgradeCommand() *ucli.Command {
 
 // upgradeParams holds parsed parameters for the upgrade command
 type upgradeParams struct {
-	program     solana.PublicKey
-	buffer      solana.PublicKey
-	spill       solana.PublicKey
-	programData solana.PublicKey
-	multisigID  [32]byte
-	rpcURL      string
+	program              solana.PublicKey
+	buffer               solana.PublicKey
+	spill                solana.PublicKey
+	programData          solana.PublicKey
+	multisigID           [32]byte
+	validUntil           uint32
+	overridePreviousRoot bool
+	outputPath           string
+	rpcURL               string
 }
 
 // parseUpgradeParams parses and validates CLI parameters for upgrade command
@@ -129,6 +131,9 @@ func parseUpgradeParams(c *ucli.Context) (*upgradeParams, error) {
 		return nil, fmt.Errorf("invalid multisig-id: %w", err)
 	}
 
+	validUntil := uint32(c.Uint64("valid-until"))
+	overridePreviousRoot := c.Bool("override-previous-root")
+	outputPath := c.String("output")
 	rpcURL := cli.ResolveNetworkAlias(c.String("rpc-url"), false)
 
 	// Derive ProgramData PDA from program address
@@ -142,12 +147,15 @@ func parseUpgradeParams(c *ucli.Context) (*upgradeParams, error) {
 	fmt.Printf("ProgramData (derived): %s\n", programData)
 
 	return &upgradeParams{
-		program:     program,
-		buffer:      buffer,
-		spill:       spill,
-		programData: programData,
-		multisigID:  multisigID,
-		rpcURL:      rpcURL,
+		program:              program,
+		buffer:               buffer,
+		spill:                spill,
+		programData:          programData,
+		multisigID:           multisigID,
+		validUntil:           validUntil,
+		overridePreviousRoot: overridePreviousRoot,
+		outputPath:           outputPath,
+		rpcURL:               rpcURL,
 	}, nil
 }
 
