@@ -15,10 +15,10 @@ import (
 	ucli "github.com/urfave/cli/v2"
 )
 
-// CreatePauseCommand returns the pause/unpause bridge proposal creation command
-func CreatePauseCommand() *ucli.Command {
+// PauseCommand returns the pause/unpause bridge proposal creation command
+func PauseCommand() *ucli.Command {
 	return &ucli.Command{
-		Name:  "create-pause",
+		Name:  "pause",
 		Usage: "Create a proposal to pause or unpause the bridge",
 		Flags: append(flags.ProposalCreationFlags(),
 			&ucli.StringFlag{

@@ -15,10 +15,10 @@ import (
 	ucli "github.com/urfave/cli/v2"
 )
 
-// CreateSetPartnerOracleConfigCommand returns the set partner oracle config proposal creation command
-func CreateSetPartnerOracleConfigCommand() *ucli.Command {
+// SetPartnerOracleConfigCommand returns the set partner oracle config proposal creation command
+func SetPartnerOracleConfigCommand() *ucli.Command {
 	return &ucli.Command{
-		Name:  "create-set-partner-oracle-config",
+		Name:  "set-partner-oracle-config",
 		Usage: "Create a proposal to update the partner oracle configuration",
 		Flags: append(flags.ProposalCreationFlags(),
 			&ucli.StringFlag{

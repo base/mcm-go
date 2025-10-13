@@ -17,10 +17,10 @@ import (
 	ucli "github.com/urfave/cli/v2"
 )
 
-// CreateUpdateSignersCommand returns the update signers proposal creation command
-func CreateUpdateSignersCommand() *ucli.Command {
+// UpdateSignersCommand returns the update signers proposal creation command
+func UpdateSignersCommand() *ucli.Command {
 	return &ucli.Command{
-		Name:  "create-update-signers",
+		Name:  "update-signers",
 		Usage: "Create a proposal to update MCM signers configuration (init, append, finalize, setConfig)",
 		Flags: append(flags.ProposalCreationFlags(),
 			&ucli.StringFlag{

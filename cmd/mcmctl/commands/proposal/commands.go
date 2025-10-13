@@ -18,11 +18,9 @@ func Command() *ucli.Command {
 			HashCommand(),
 			SetRootCommand(),
 			ExecuteCommand(),
-			loader_v3.CreateUpgradeCommand(),
-			mcm.CreateUpdateSignersCommand(),
-			mcm.CreateAcceptOwnershipCommand(),
-			bridge.CreatePauseCommand(),
-			bridge.CreateSetPartnerOracleConfigCommand(),
+			bridge.Command(),
+			loader_v3.Command(),
+			mcm.Command(),
 		},
 	}
 }

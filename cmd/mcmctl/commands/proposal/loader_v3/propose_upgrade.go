@@ -16,10 +16,10 @@ import (
 	ucli "github.com/urfave/cli/v2"
 )
 
-// CreateUpgradeCommand returns the upgrade proposal creation command
-func CreateUpgradeCommand() *ucli.Command {
+// UpgradeCommand returns the upgrade proposal creation command
+func UpgradeCommand() *ucli.Command {
 	return &ucli.Command{
-		Name:  "create-upgrade",
+		Name:  "upgrade",
 		Usage: "Create a proposal to upgrade a Solana program using BPF Loader v3",
 		Flags: append(flags.ProposalCreationFlags(),
 			&ucli.StringFlag{

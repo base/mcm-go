@@ -93,12 +93,12 @@ The `cmd/mcmctl` directory provides a complete command-line interface demonstrat
 - **Signers management** - Configure signer addresses and groups
 - **Signatures management** - Submit ECDSA signatures for proposal approval
 - **Proposal operations** - Create proposals from instructions, compute hash for signing, set roots, and execute operations on-chain
-  - Includes specialized commands:
-    - `proposal create-upgrade` for Solana program upgrades via BPF Loader v3
-    - `proposal create-update-signers` for complete signers configuration updates
-    - `proposal create-accept-ownership` for accepting ownership transfers
-    - `proposal create-pause` for pausing/unpausing bridge operations
-    - `proposal create-set-partner-oracle-config` for updating bridge oracle configuration
+  - Includes specialized commands organized by category:
+    - **loader-v3**: `proposal loader-v3 upgrade` for Solana program upgrades via BPF Loader v3
+    - **mcm**: `proposal mcm update-signers` for complete signers configuration updates
+    - **mcm**: `proposal mcm accept-ownership` for accepting ownership transfers
+    - **bridge**: `proposal bridge pause` for pausing/unpausing bridge operations
+    - **bridge**: `proposal bridge set-partner-oracle-config` for updating bridge oracle configuration
 
 See [cmd/mcmctl/README.md](cmd/mcmctl/README.md) for detailed usage examples.
 

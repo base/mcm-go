@@ -15,10 +15,10 @@ import (
 	ucli "github.com/urfave/cli/v2"
 )
 
-// CreateAcceptOwnershipCommand returns the accept ownership proposal creation command
-func CreateAcceptOwnershipCommand() *ucli.Command {
+// AcceptOwnershipCommand returns the accept ownership proposal creation command
+func AcceptOwnershipCommand() *ucli.Command {
 	return &ucli.Command{
-		Name:  "create-accept-ownership",
+		Name:  "accept-ownership",
 		Usage: "Create a proposal to accept ownership of the multisig",
 		Flags: flags.ProposalCreationFlags(),
 		Action: func(c *ucli.Context) error {

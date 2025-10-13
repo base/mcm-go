@@ -443,12 +443,12 @@ mcmctl proposal create \
 
 The generated `proposal.json` file contains the complete proposal with all metadata and can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
 
-#### `proposal create-upgrade`
+#### `proposal loader-v3 upgrade`
 
 Create a proposal to upgrade a Solana program using BPF Loader v3.
 
 ```bash
-mcmctl proposal create-upgrade \
+mcmctl proposal loader-v3 upgrade \
   --program <base58_pubkey> \
   --buffer <base58_pubkey> \
   --spill <base58_pubkey> \
@@ -470,7 +470,7 @@ mcmctl proposal create-upgrade \
 
 ```bash
 # Create an upgrade proposal
-mcmctl proposal create-upgrade \
+mcmctl proposal loader-v3 upgrade \
   --program 9aE476sH92Vz7DMPyq5WLPkrKWivxeuTKEFKd2sZZcde \
   --buffer BUFFERAccountXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
   --spill SPILLAccountXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
@@ -509,12 +509,12 @@ Upgrade proposal created successfully and saved to ./upgrade_proposal.json
 
 The generated proposal can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
 
-#### `proposal create-update-signers`
+#### `proposal mcm update-signers`
 
 Create a proposal to update MCM signers configuration with a complete workflow (init, append, finalize, setConfig).
 
 ```bash
-mcmctl proposal create-update-signers \
+mcmctl proposal mcm update-signers \
   --new-signers <comma_separated_hex_addresses> \
   --signer-groups <comma_separated_group_indices> \
   --group-quorums <comma_separated_quorums> \
@@ -549,7 +549,7 @@ mcmctl proposal create-update-signers \
 
 ```bash
 # Create a signers update proposal with 4 signers in 2 groups
-mcmctl proposal create-update-signers \
+mcmctl proposal mcm update-signers \
   --new-signers 0x1234567890123456789012345678901234567890,0xabcdefabcdefabcdefabcdefabcdefabcdefabcd,0x9876543210987654321098765432109876543210,0xfedcbafedcbafedcbafedcbafedcbafedcbafedc \
   --signer-groups 0,0,1,1 \
   --group-quorums 2,2 \
@@ -606,12 +606,12 @@ This command generates all 4 instructions needed to completely update signers:
 
 The generated proposal can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
 
-#### `proposal create-accept-ownership`
+#### `proposal mcm accept-ownership`
 
 Create a proposal to accept ownership of a program or account.
 
 ```bash
-mcmctl proposal create-accept-ownership \
+mcmctl proposal mcm accept-ownership \
   --multisig-id <hex32> \
   --valid-until <timestamp> \
   [--override-previous-root] \
@@ -628,7 +628,7 @@ mcmctl proposal create-accept-ownership \
 **Example:**
 
 ```bash
-mcmctl proposal create-accept-ownership \
+mcmctl proposal mcm accept-ownership \
   --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
   --valid-until 1800000000 \
   --output ./accept_ownership_proposal.json
@@ -636,12 +636,12 @@ mcmctl proposal create-accept-ownership \
 
 The generated proposal can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
 
-#### `proposal create-pause`
+#### `proposal bridge pause`
 
 Create a proposal to pause/unpause bridge operations.
 
 ```bash
-mcmctl proposal create-pause \
+mcmctl proposal bridge pause \
   --bridge-program-id <base58_pubkey> \
   --pause <true|false> \
   --multisig-id <hex32> \
@@ -662,7 +662,7 @@ mcmctl proposal create-pause \
 
 ```bash
 # Pause the bridge
-mcmctl proposal create-pause \
+mcmctl proposal bridge pause \
   --bridge-program-id BridgeProgramIDXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
   --pause true \
   --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
@@ -670,7 +670,7 @@ mcmctl proposal create-pause \
   --output ./pause_bridge_proposal.json
 
 # Unpause the bridge
-mcmctl proposal create-pause \
+mcmctl proposal bridge pause \
   --bridge-program-id BridgeProgramIDXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
   --pause false \
   --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
@@ -680,12 +680,12 @@ mcmctl proposal create-pause \
 
 The generated proposal can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
 
-#### `proposal create-set-partner-oracle-config`
+#### `proposal bridge set-partner-oracle-config`
 
 Create a proposal to update the partner oracle configuration in the bridge.
 
 ```bash
-mcmctl proposal create-set-partner-oracle-config \
+mcmctl proposal bridge set-partner-oracle-config \
   --bridge-program-id <base58_pubkey> \
   --required-threshold <uint8> \
   --multisig-id <hex32> \
@@ -705,7 +705,7 @@ mcmctl proposal create-set-partner-oracle-config \
 **Example:**
 
 ```bash
-mcmctl proposal create-set-partner-oracle-config \
+mcmctl proposal bridge set-partner-oracle-config \
   --bridge-program-id BridgeProgramIDXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
   --required-threshold 3 \
   --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
