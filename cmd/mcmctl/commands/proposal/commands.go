@@ -16,8 +16,8 @@ func Command() *ucli.Command {
 			HashCommand(),
 			SetRootCommand(),
 			ExecuteCommand(),
-			concrete.UpgradeCommand(),
-			concrete.UpdateSignersCommand(),
+			concrete.CreateUpgradeCommand(),
+			concrete.CreateUpdateSignersCommand(),
 		},
 	}
 }
