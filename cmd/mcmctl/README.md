@@ -509,6 +509,61 @@ Upgrade proposal created successfully and saved to ./upgrade_proposal.json
 
 The generated proposal can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
 
+#### `proposal loader-v3 set-authority`
+
+Create a proposal to change or remove the upgrade authority of a BPF Loader v3 program or buffer.
+
+```bash
+mcmctl proposal loader-v3 set-authority \
+  --account <program_id_or_buffer> \
+  --new-authority <base58_pubkey> \
+  --multisig-id <hex32> \
+  --valid-until <timestamp> \
+  [--override-previous-root] \
+  --output <path>
+```
+
+**Features:**
+
+- Automatically detects if account is a Program ID or Buffer address
+- If Program ID: derives ProgramData PDA automatically
+- If Buffer: uses the address directly
+- Omitting `--new-authority` makes the program/buffer **immutable** (irreversible)
+- Read-only operation (no wallet needed)
+
+**Example (change authority):**
+
+```bash
+mcmctl proposal loader-v3 set-authority \
+  --account 9aE476sH92Vz7DMPyq5WLPkrKWivxeuTKEFKd2sZZcde \
+  --new-authority NewAuthorityXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --valid-until 1800000000 \
+  --output ./set_authority_proposal.json
+```
+
+**Example (make immutable - no `--new-authority`):**
+
+```bash
+mcmctl proposal loader-v3 set-authority \
+  --account 9aE476sH92Vz7DMPyq5WLPkrKWivxeuTKEFKd2sZZcde \
+  --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
+  --valid-until 1800000000 \
+  --output ./make_immutable_proposal.json
+```
+
+**⚠️ Warning:** Making a program or buffer immutable is **irreversible**. No further upgrades or authority changes will be possible.
+
+**Workflow:**
+
+1. **Create proposal**: Use this command
+2. **Sign proposal**: Use `proposal hash` to get the hash, collect signatures
+3. **Submit signatures**: Use `signatures init/append/finalize` to submit signatures
+4. **Set root**: Use `proposal set-root` to set the Merkle root on-chain
+5. **Execute**: Use `proposal execute` to perform the authority change
+
+The generated proposal can be used with `proposal hash`, `proposal set-root`, and `proposal execute` commands.
+
 #### `proposal mcm update-signers`
 
 Create a proposal to update MCM signers configuration with a complete workflow (init, append, finalize, setConfig).

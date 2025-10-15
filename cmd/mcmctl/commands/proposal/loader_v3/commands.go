@@ -11,6 +11,7 @@ func Command() *ucli.Command {
 		Usage: "BPF Loader v3 proposal operations",
 		Subcommands: []*ucli.Command{
 			UpgradeCommand(),
+			SetAuthorityCommand(),
 		},
 	}
 }
