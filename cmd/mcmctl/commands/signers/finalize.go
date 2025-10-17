@@ -36,7 +36,8 @@ func FinalizeCommand() *ucli.Command {
 				return fmt.Errorf("failed to finalize signers: %w", err)
 			}
 
-			fmt.Printf("Signers finalized successfully: %s\n", sig)
+			fmt.Printf("Signers finalized successfully\n")
+			fmt.Printf("Signature: %s\n", sig)
 			return nil
 		},
 	}

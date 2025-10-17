@@ -58,8 +58,8 @@ func TransferCommand() *ucli.Command {
 				return fmt.Errorf("failed to submit transaction: %w", err)
 			}
 
-			fmt.Printf("ownership transfer proposed\n")
-			fmt.Printf("signature: %s\n", sig)
+			fmt.Printf("Ownership transfer proposed successfully\n")
+			fmt.Printf("Signature: %s\n", sig)
 			return nil
 		},
 	}

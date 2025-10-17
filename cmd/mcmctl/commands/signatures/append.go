@@ -53,7 +53,8 @@ func AppendCommand() *ucli.Command {
 				return fmt.Errorf("failed to append signatures: %w", err)
 			}
 
-			fmt.Printf("Signatures appended successfully: %s\n", sig)
+			fmt.Printf("Signatures appended successfully\n")
+			fmt.Printf("Signature: %s\n", sig)
 			return nil
 		},
 	}

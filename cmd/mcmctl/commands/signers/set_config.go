@@ -65,7 +65,8 @@ func SetConfigCommand() *ucli.Command {
 				return fmt.Errorf("failed to set config: %w", err)
 			}
 
-			fmt.Printf("Configuration set successfully: %s\n", sig)
+			fmt.Printf("Configuration set successfully\n")
+			fmt.Printf("Signature: %s\n", sig)
 			return nil
 		},
 	}

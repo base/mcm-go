@@ -45,7 +45,8 @@ func InitCommand() *ucli.Command {
 				return fmt.Errorf("failed to init signatures: %w", err)
 			}
 
-			fmt.Printf("Signatures storage initialized successfully: %s\n", sig)
+			fmt.Printf("Signatures storage initialized successfully\n")
+			fmt.Printf("Signature: %s\n", sig)
 			return nil
 		},
 	}
