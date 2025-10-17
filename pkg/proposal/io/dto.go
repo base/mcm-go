@@ -2,6 +2,7 @@
 package io
 
 import (
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 
@@ -124,7 +125,7 @@ func toInstructionsJSON(instructions []solana.Instruction) ([]InstructionJSON, e
 
 		ixsJSON[i] = InstructionJSON{
 			ProgramID: ix.ProgramID().String(),
-			Data:      "0x" + hex.EncodeToString(ixData),
+			Data:      base64.StdEncoding.EncodeToString(ixData),
 			Accounts:  accounts,
 		}
 	}
@@ -140,9 +141,9 @@ func fromInstructionsJSON(ixsJSON []InstructionJSON) ([]solana.Instruction, erro
 			return nil, fmt.Errorf("instruction %d: invalid programId: %w", i, err)
 		}
 
-		dataBytes, err := hexutil.Decode(ixJSON.Data)
+		dataBytes, err := base64.StdEncoding.DecodeString(ixJSON.Data)
 		if err != nil {
-			return nil, fmt.Errorf("instruction %d: invalid data hex: %w", i, err)
+			return nil, fmt.Errorf("instruction %d: invalid data base64: %w", i, err)
 		}
 
 		accounts := make([]*solana.AccountMeta, len(ixJSON.Accounts))

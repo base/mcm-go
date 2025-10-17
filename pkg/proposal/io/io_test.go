@@ -95,21 +95,21 @@ func TestSaveLoadProposal(t *testing.T) {
 		t.Errorf("Multisig mismatch")
 	}
 
-	// Verify that the JSON file contains 0x prefixes
+	// Verify JSON format
 	jsonData, err := os.ReadFile(filePath)
 	if err != nil {
 		t.Fatalf("Failed to read JSON file: %v", err)
 	}
 	jsonStr := string(jsonData)
 
-	// Check that multisigId has 0x prefix (account for JSON formatting with spaces)
+	// Check multisigId format
 	if !strings.Contains(jsonStr, `"multisigId": "0x`) && !strings.Contains(jsonStr, `"multisigId":"0x`) {
 		t.Errorf("JSON multisigId should have 0x prefix. JSON content:\n%s", jsonStr)
 	}
 
-	// Check that instruction data has 0x prefix (account for JSON formatting with spaces)
-	if !strings.Contains(jsonStr, `"data": "0x`) && !strings.Contains(jsonStr, `"data":"0x`) {
-		t.Errorf("JSON instruction data should have 0x prefix. JSON content:\n%s", jsonStr)
+	// Check instruction data is base64 encoded
+	if !strings.Contains(jsonStr, `"data": "3q2+7w=="`) && !strings.Contains(jsonStr, `"data":"3q2+7w=="`) {
+		t.Errorf("JSON instruction data should be base64 encoded. JSON content:\n%s", jsonStr)
 	}
 }
 
@@ -202,7 +202,7 @@ func TestLoadInstructions(t *testing.T) {
 	content := `[
   {
     "programId": "11111111111111111111111111111111",
-    "data": "0xdeadbeef",
+    "data": "3q2+7w==",
     "accounts": [
       {
         "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
@@ -213,7 +213,7 @@ func TestLoadInstructions(t *testing.T) {
   },
   {
     "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-    "data": "0x1234",
+    "data": "EjQ=",
     "accounts": []
   }
 ]`
@@ -292,15 +292,15 @@ func TestLoadInstructions_EmptyFile(t *testing.T) {
 	}
 }
 
-func TestLoadInstructions_InvalidHex(t *testing.T) {
+func TestLoadInstructions_InvalidBase64(t *testing.T) {
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "invalid.json")
 
-	// Missing 0x prefix
+	// Invalid base64 encoding
 	content := `[
   {
     "programId": "11111111111111111111111111111111",
-    "data": "deadbeef",
+    "data": "!!!invalid!!!",
     "accounts": []
   }
 ]`
@@ -312,9 +312,9 @@ func TestLoadInstructions_InvalidHex(t *testing.T) {
 
 	_, err = LoadInstructions(filePath)
 	if err == nil {
-		t.Error("Expected error for invalid hex, got nil")
+		t.Error("Expected error for invalid base64, got nil")
 	}
-	if err != nil && !strings.Contains(err.Error(), "0x") {
-		t.Errorf("Expected '0x' in error message, got: %v", err)
+	if err != nil && !strings.Contains(err.Error(), "base64") {
+		t.Errorf("Expected 'base64' in error message, got: %v", err)
 	}
 }

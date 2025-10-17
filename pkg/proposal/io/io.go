@@ -86,7 +86,7 @@ func SaveInstructions(instructions []solana.Instruction, path string) error {
 //	[
 //	  {
 //	    "programId": "11111111111111111111111111111111",
-//	    "data": "0xdeadbeef",
+//	    "data": "3q2+7w==",
 //	    "accounts": [
 //	      {
 //	        "pubkey": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
