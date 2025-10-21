@@ -22,7 +22,7 @@ func (pwr *ProposalWithRoot) WithHashToSign(programID solana.PublicKey) (*Propos
 	copy(programID32[:], programID[:])
 
 	// Compute EIP-712 hash
-	hashToSign, err := computeEIP712HashToSign(
+	messageHash, domainSep, structHash, err := computeEIP712HashToSign(
 		pwr.Root,
 		pwr.ValidUntil,
 		pwr.RootMetadata.ChainID,
@@ -34,7 +34,9 @@ func (pwr *ProposalWithRoot) WithHashToSign(programID solana.PublicKey) (*Propos
 
 	return &ProposalToSign{
 		ProposalWithRoot: pwr,
-		HashToSign:       hashToSign,
+		MessageHash:      messageHash,
+		DomainSeparator:  domainSep,
+		StructHash:       structHash,
 	}, nil
 }
 
@@ -43,12 +45,17 @@ func (pwr *ProposalWithRoot) WithHashToSign(programID solana.PublicKey) (*Propos
 // - Domain: ManyChainMultiSig v1 (with chainId, verifyingContract=0x00...00, salt=programId)
 // - Message: RootValidation(bytes32 root, uint32 validUntil)
 // - Hash: keccak256("\x19\x01" || domainSeparator || structHash)
+//
+// Returns:
+// - messageHash: Final EIP-712 hash to sign
+// - domainSeparator: hashStruct(EIP712Domain)
+// - structHash: hashStruct(RootValidation)
 func computeEIP712HashToSign(
 	root [32]byte,
 	validUntil uint32,
 	chainID uint64,
 	programID [32]byte,
-) ([32]byte, error) {
+) (messageHash [32]byte, domainSeparator [32]byte, structHash [32]byte, err error) {
 	// Define the typed data structure
 	typedData := apitypes.TypedData{
 		Types: apitypes.Types{
@@ -79,22 +86,25 @@ func computeEIP712HashToSign(
 	}
 
 	// Hash the domain
-	domainSeparator, err := typedData.HashStruct("EIP712Domain", typedData.Domain.Map())
+	domainSepBytes, err := typedData.HashStruct("EIP712Domain", typedData.Domain.Map())
 	if err != nil {
-		return [32]byte{}, fmt.Errorf("failed to hash domain: %w", err)
+		return [32]byte{}, [32]byte{}, [32]byte{}, fmt.Errorf("failed to hash domain: %w", err)
 	}
+	copy(domainSeparator[:], domainSepBytes)
 
 	// Hash the message
-	structHash, err := typedData.HashStruct("RootValidation", typedData.Message)
+	structHashBytes, err := typedData.HashStruct("RootValidation", typedData.Message)
 	if err != nil {
-		return [32]byte{}, fmt.Errorf("failed to hash struct: %w", err)
+		return [32]byte{}, [32]byte{}, [32]byte{}, fmt.Errorf("failed to hash struct: %w", err)
 	}
+	copy(structHash[:], structHashBytes)
 
 	// Compute final EIP-712 hash: \x19\x01 || domainSeparator || structHash
 	rawData := []byte{0x19, 0x01}
-	rawData = append(rawData, domainSeparator...)
-	rawData = append(rawData, structHash...)
+	rawData = append(rawData, domainSeparator[:]...)
+	rawData = append(rawData, structHash[:]...)
 
 	hash := crypto.Keccak256Hash(rawData)
-	return [32]byte(hash), nil
+	messageHash = [32]byte(hash)
+	return
 }

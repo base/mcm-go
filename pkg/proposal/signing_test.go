@@ -14,16 +14,18 @@ func TestEIP712DomainStructure(t *testing.T) {
 	chainID := uint64(5190648258797659666)
 	programID := [32]byte{4, 5, 6}
 
-	hash, err := computeEIP712HashToSign(root, validUntil, chainID, programID)
+	hash, domainSep, structHash, err := computeEIP712HashToSign(root, validUntil, chainID, programID)
 	require.NoError(t, err, "Failed to compute hash")
+	assert.NotEqual(t, [32]byte{}, domainSep, "DomainSeparator should not be zero")
+	assert.NotEqual(t, [32]byte{}, structHash, "StructHash should not be zero")
 
 	// Verify that different inputs produce different hashes
-	hash2, err := computeEIP712HashToSign(root, validUntil+1, chainID, programID)
+	hash2, _, _, err := computeEIP712HashToSign(root, validUntil+1, chainID, programID)
 	require.NoError(t, err, "Failed to compute hash2")
 
 	assert.NotEqual(t, hash, hash2, "Different validUntil should produce different hashes")
 
-	hash3, err := computeEIP712HashToSign([32]byte{7, 8, 9}, validUntil, chainID, programID)
+	hash3, _, _, err := computeEIP712HashToSign([32]byte{7, 8, 9}, validUntil, chainID, programID)
 	require.NoError(t, err, "Failed to compute hash3")
 
 	assert.NotEqual(t, hash, hash3, "Different root should produce different hashes")
@@ -63,7 +65,12 @@ func TestWithHashToSignIntegration(t *testing.T) {
 	// Verify the ProposalToSign structure
 	assert.NotNil(t, pts, "ProposalToSign should not be nil")
 	assert.Equal(t, pwr, pts.ProposalWithRoot, "ProposalWithRoot should be preserved")
-	assert.NotEqual(t, [32]byte{}, pts.HashToSign, "HashToSign should not be zero")
+	assert.NotEqual(t, [32]byte{}, pts.MessageHash, "MessageHash should not be zero")
+	assert.NotEqual(t, [32]byte{}, pts.DomainSeparator, "DomainSeparator should not be zero")
+	assert.NotEqual(t, [32]byte{}, pts.StructHash, "StructHash should not be zero")
 
-	t.Logf("Hash to sign: 0x%x", pts.HashToSign)
+	t.Logf("Message hash: 0x%x", pts.MessageHash)
+	t.Logf("Domain separator: 0x%x", pts.DomainSeparator)
+	t.Logf("Struct hash: 0x%x", pts.StructHash)
+	t.Logf("Combined (for signing tool): 0x%x%x", pts.DomainSeparator, pts.StructHash)
 }

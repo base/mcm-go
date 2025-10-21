@@ -64,7 +64,7 @@ func (s *SignaturesService) AppendSignatures(ctx context.Context, params AppendS
 	signatures := params.Signatures
 
 	// Sort signatures by recovered EVM address (strictly increasing order)
-	sortedSignatures, err := sortSignaturesByAddress(crypto.MessageHash(proposalToSign.HashToSign[:]), signatures)
+	sortedSignatures, err := sortSignaturesByAddress(crypto.MessageHash(proposalToSign.MessageHash[:]), signatures)
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to sort signatures: %w", err)
 	}

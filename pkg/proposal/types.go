@@ -41,7 +41,9 @@ type ProposalWithRoot struct {
 // ProposalToSign extends ProposalWithRoot with the hash that signers need to sign
 type ProposalToSign struct {
 	*ProposalWithRoot
-	HashToSign [32]byte
+	MessageHash     [32]byte // Final EIP-712 hash (used for ecrecover)
+	DomainSeparator [32]byte // hashStruct(EIP712Domain)
+	StructHash      [32]byte // hashStruct(RootValidation)
 }
 
 // Validate checks if the proposal is valid

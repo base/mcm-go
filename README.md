@@ -80,7 +80,7 @@ func main() {
     pwr, _ := p.WithRoot()
     pts, _ := pwr.WithHashToSign(programID)
 
-    // Distribute pts.HashToSign to signers for ECDSA signing
+    // Distribute pts.MessageHash to signers for ECDSA signing
 }
 ```
 
@@ -153,7 +153,7 @@ pwr, _ := p.WithRoot()
 // Compute hash for ECDSA signing (EIP-712)
 pts, _ := pwr.WithHashToSign(programID)
 
-// Distribute pts.HashToSign to signers
+// Distribute pts.MessageHash to signers
 ```
 
 **IMPORTANT - Execution Authority:**
@@ -301,7 +301,7 @@ p, _ := proposalSvc.CreateProposalFromChain(ctx, services.CreateProposalFromChai
 pwr, _ := p.WithRoot()
 pts, _ := pwr.WithHashToSign(programID)
 
-// Distribute pts.HashToSign to signers for off-chain ECDSA signing
+// Distribute pts.MessageHash to signers for off-chain ECDSA signing
 // Collect signatures...
 
 // Submit signatures on-chain
