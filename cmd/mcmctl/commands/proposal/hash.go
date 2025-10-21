@@ -41,7 +41,7 @@ func HashCommand() *ucli.Command {
 			fmt.Printf("Merkle Root: 0x%x\n", pts.Root)
 			fmt.Println("Hash to Sign (EIP-712):")
 			fmt.Println("vvvvvvvv")
-			fmt.Printf("0x%x%x\n", pts.DomainSeparator, pts.StructHash)
+			fmt.Printf("0x1901%x%x\n", pts.DomainSeparator, pts.StructHash)
 			fmt.Println("^^^^^^^^")
 
 			return nil
