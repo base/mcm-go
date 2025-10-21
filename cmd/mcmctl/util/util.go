@@ -8,6 +8,7 @@ import (
 	"github.com/base/mcm-go/pkg/proposal"
 	proposalIO "github.com/base/mcm-go/pkg/proposal/io"
 
+	"github.com/gagliardetto/solana-go"
 	ucli "github.com/urfave/cli/v2"
 )
 
@@ -45,10 +46,19 @@ func LoadProposalWithRoot(filePath string) (*proposal.ProposalWithRoot, error) {
 }
 
 // CreateProposalToSign creates a ProposalToSign from a ProposalWithRoot by computing the hash to sign
-func CreateProposalToSign(pwr *proposal.ProposalWithRoot) (*proposal.ProposalToSign, error) {
-	pts, err := pwr.WithHashToSign()
+func CreateProposalToSign(pwr *proposal.ProposalWithRoot, programID solana.PublicKey) (*proposal.ProposalToSign, error) {
+	pts, err := pwr.WithHashToSign(programID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to compute hash to sign: %w", err)
 	}
 	return pts, nil
+}
+
+// ParseProgramID parses a program ID from a base58 string
+func ParseProgramID(programIDStr string) (solana.PublicKey, error) {
+	programID, err := solana.PublicKeyFromBase58(programIDStr)
+	if err != nil {
+		return solana.PublicKey{}, fmt.Errorf("invalid program ID: %w", err)
+	}
+	return programID, nil
 }

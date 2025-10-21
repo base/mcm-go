@@ -78,7 +78,7 @@ func main() {
 
     // Compute Merkle root and hash to sign
     pwr, _ := p.WithRoot()
-    pts, _ := pwr.WithHashToSign()
+    pts, _ := pwr.WithHashToSign(programID)
 
     // Distribute pts.HashToSign to signers for ECDSA signing
 }
@@ -150,8 +150,8 @@ p := &proposal.Proposal{
 // Compute Merkle root and proofs
 pwr, _ := p.WithRoot()
 
-// Compute hash for ECDSA signing (keccak256(root || validUntil))
-pts, _ := pwr.WithHashToSign()
+// Compute hash for ECDSA signing (EIP-712)
+pts, _ := pwr.WithHashToSign(programID)
 
 // Distribute pts.HashToSign to signers
 ```
@@ -229,7 +229,7 @@ p, _ := io.LoadProposal("proposal.json")
 
 // Compute root and hash after loading
 pwr, _ := p.WithRoot()
-pts, _ := pwr.WithHashToSign()
+pts, _ := pwr.WithHashToSign(programID)
 ```
 
 ## Complete Workflow
@@ -299,7 +299,7 @@ p, _ := proposalSvc.CreateProposalFromChain(ctx, services.CreateProposalFromChai
 
 // Compute root and hash
 pwr, _ := p.WithRoot()
-pts, _ := pwr.WithHashToSign()
+pts, _ := pwr.WithHashToSign(programID)
 
 // Distribute pts.HashToSign to signers for off-chain ECDSA signing
 // Collect signatures...

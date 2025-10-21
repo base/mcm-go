@@ -17,6 +17,7 @@ func HashCommand() *ucli.Command {
 		Usage: "Compute the hash to sign for a proposal (offline operation)",
 		Flags: []ucli.Flag{
 			flags.ProposalFlag(),
+			flags.MCMProgramIDFlag(),
 		},
 		Action: func(c *ucli.Context) error {
 			filePath := c.String("proposal")
@@ -26,14 +27,20 @@ func HashCommand() *ucli.Command {
 				return err
 			}
 
-			pts, err := pwr.WithHashToSign()
+			// Parse program ID
+			programID, err := util.ParseProgramID(c.String("mcm-program-id"))
+			if err != nil {
+				return err
+			}
+
+			pts, err := pwr.WithHashToSign(programID)
 			if err != nil {
 				return fmt.Errorf("failed to compute hash to sign: %w", err)
 			}
 
 			// Display proposal info
 			fmt.Printf("Merkle Root: 0x%x\n", pts.Root)
-			fmt.Println("Hash to Sign (keccak256(root || validUntil)):")
+			fmt.Println("Hash to Sign (EIP-712):")
 			fmt.Println("vvvvvvvv")
 			fmt.Printf("0x%s\n", hex.EncodeToString(pts.HashToSign[:]))
 			fmt.Println("^^^^^^^^")

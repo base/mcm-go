@@ -39,8 +39,14 @@ func AppendCommand() *ucli.Command {
 				return fmt.Errorf("invalid signatures: %w", err)
 			}
 
+			// Parse program ID
+			programID, err := util.ParseProgramID(c.String("mcm-program-id"))
+			if err != nil {
+				return err
+			}
+
 			// Create ProposalToSign from ProposalWithRoot
-			pts, err := util.CreateProposalToSign(pwr)
+			pts, err := util.CreateProposalToSign(pwr, programID)
 			if err != nil {
 				return fmt.Errorf("failed to create proposal to sign: %w", err)
 			}

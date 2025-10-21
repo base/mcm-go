@@ -782,7 +782,7 @@ mcmctl proposal hash --proposal <path>
 
 - Works completely offline (no blockchain connection needed)
 - Computes the Merkle root from the proposal
-- Displays the hash to sign: `keccak256(root || validUntil)`
+- Displays the hash to sign: EIP-712 structured data hash
 - Shows proposal metadata for verification
 
 **Example:**

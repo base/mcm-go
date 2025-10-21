@@ -135,25 +135,3 @@ func TestDomainSeparators(t *testing.T) {
 	computed = crypto.Keccak256Hash([]byte("MANY_CHAIN_MULTI_SIG_DOMAIN_SEPARATOR_OP_SOLANA"))
 	assert.Equal(t, expectedOp, [32]byte(computed), "Op domain separator should be keccak256 of the constant string")
 }
-
-// TestComputeHashToSign verifies the hash computation for signer validation
-// This hash is: keccak256(root || validUntil_as_4_bytes_LE)
-func TestComputeHashToSign(t *testing.T) {
-	root := decode32("d5ef592d1ad183db43b4980d7ab7ee43a6f6a284988c3e3a23d38c07beb520c7")
-	validUntil := uint32(1748317727)
-
-	result := computeHashToSign(root, validUntil)
-
-	// Verify deterministic behavior
-	result2 := computeHashToSign(root, validUntil)
-	assert.Equal(t, result, result2, "Hash must be deterministic")
-
-	// Verify different inputs produce different hashes
-	differentRoot := decode32("0000000000000000000000000000000000000000000000000000000000000000")
-	differentResult := computeHashToSign(differentRoot, validUntil)
-	assert.NotEqual(t, result, differentResult, "Different roots must produce different hashes")
-
-	differentValidUntil := uint32(1748317728)
-	differentResult2 := computeHashToSign(root, differentValidUntil)
-	assert.NotEqual(t, result, differentResult2, "Different validUntil must produce different hashes")
-}
