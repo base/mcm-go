@@ -64,9 +64,13 @@ func (s *SignaturesService) AppendSignatures(ctx context.Context, params AppendS
 	signatures := params.Signatures
 
 	// Sort signatures by recovered EVM address (strictly increasing order)
-	sortedSignatures, err := sortSignaturesByAddress(crypto.MessageHash(proposalToSign.MessageHash[:]), signatures)
+	sortedSignatures, sorted, err := sortSignaturesByAddress(proposalToSign.MessageHash, signatures)
 	if err != nil {
 		return solana.Signature{}, fmt.Errorf("failed to sort signatures: %w", err)
+	}
+
+	if sorted {
+		fmt.Println("signatures were reordered to be strictly increasing")
 	}
 
 	// Convert sorted [65]byte signatures to bindings.Signature format
@@ -150,9 +154,10 @@ type signatureWithAddress struct {
 }
 
 // sortSignaturesByAddress sorts signatures by their recovered EVM addresses in strictly increasing order
-func sortSignaturesByAddress(signedHash [32]byte, signatures [][65]byte) ([][65]byte, error) {
+// Returns the sorted signatures, a boolean indicating if reordering occurred, and an error if any
+func sortSignaturesByAddress(signedHash [32]byte, signatures [][65]byte) ([][65]byte, bool, error) {
 	if len(signatures) == 0 {
-		return signatures, nil
+		return signatures, false, nil
 	}
 
 	// Create pairs of signature + recovered address
@@ -162,7 +167,7 @@ func sortSignaturesByAddress(signedHash [32]byte, signatures [][65]byte) ([][65]
 		// Recover address from signature
 		address, err := crypto.RecoverAddressFromSig(signedHash, sig)
 		if err != nil {
-			return nil, fmt.Errorf("failed to recover address from signature %d: %w", i, err)
+			return nil, false, fmt.Errorf("failed to recover address from signature %d: %w", i, err)
 		}
 
 		pairs[i] = signatureWithAddress{
@@ -171,15 +176,24 @@ func sortSignaturesByAddress(signedHash [32]byte, signatures [][65]byte) ([][65]
 		}
 	}
 
+	// Check if signatures are already sorted before sorting
+	wasReordered := false
+	for i := 1; i < len(pairs); i++ {
+		if bytes.Compare(pairs[i-1].address[:], pairs[i].address[:]) >= 0 {
+			wasReordered = true
+			break
+		}
+	}
+
 	// Sort by address in ascending order
 	sort.Slice(pairs, func(i, j int) bool {
 		return bytes.Compare(pairs[i].address[:], pairs[j].address[:]) < 0
 	})
 
-	// Validate strictly increasing order
+	// Validate strictly increasing order (no duplicates)
 	for i := 1; i < len(pairs); i++ {
 		if bytes.Compare(pairs[i-1].address[:], pairs[i].address[:]) >= 0 {
-			return nil, fmt.Errorf("duplicate or non-increasing addresses detected")
+			return nil, false, fmt.Errorf("duplicate or non-increasing addresses detected")
 		}
 	}
 
@@ -189,5 +203,5 @@ func sortSignaturesByAddress(signedHash [32]byte, signatures [][65]byte) ([][65]
 		sorted[i] = pair.signature
 	}
 
-	return sorted, nil
+	return sorted, wasReordered, nil
 }

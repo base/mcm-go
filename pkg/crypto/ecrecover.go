@@ -25,10 +25,3 @@ func RecoverAddressFromSig(hash [32]byte, sig [65]byte) (common.Address, error) 
 	}
 	return crypto.PubkeyToAddress(*pub), nil
 }
-
-// MessageHash computes the hash of a message in the format of "\x19Ethereum Signed Message:\n32" + keccak256(message)
-func MessageHash(msg []byte) [32]byte {
-	prefix := fmt.Sprintf("\x19Ethereum Signed Message:\n%d", len(msg))
-	data := append([]byte(prefix), msg...)
-	return crypto.Keccak256Hash(data)
-}
