@@ -42,7 +42,7 @@ type CreateProposalFromChainParams struct {
 //  4. Derives the MCM authority (MultisigSigner PDA) and removes it as a signer from all instructions
 //     (necessary because the PDA will become a signer via invoke_signed during CPI)
 //  5. Calculates pre_op_count (current) and post_op_count (current + num_instructions)
-//  6. Returns the proposal - caller can use WithRoot() and WithHashToSign() as needed
+//  6. Returns the proposal - caller can use WithRoot() and WithMessageHash() as needed
 //
 // The caller is responsible for ensuring valid_until is appropriate and
 // deciding whether to override the previous root.

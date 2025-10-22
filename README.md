@@ -78,7 +78,7 @@ func main() {
 
     // Compute Merkle root and hash to sign
     pwr, _ := p.WithRoot()
-    pts, _ := pwr.WithHashToSign(programID)
+    pts, _ := pwr.WithMessageHash(programID)
 
     // Distribute pts.MessageHash to signers for ECDSA signing
 }
@@ -116,7 +116,7 @@ mcm-go/
 │   │   ├── types.go   # Core types (Proposal, ProposalWithRoot, ProposalToSign)
 │   │   ├── builder.go # Builder pattern for constructing proposals
 │   │   ├── merkle.go  # Merkle root computation (p.WithRoot())
-│   │   └── signing.go # Hash to sign computation (pwr.WithHashToSign())
+│   │   └── signing.go # Hash to sign computation (pwr.WithMessageHash())
 │   ├── instructions/  # MCM instruction builders (Initialize, SetConfig, etc.)
 │   ├── state/         # On-chain account fetchers
 │   └── services/      # High-level services (ProposalService, SignersService, etc.)
@@ -151,7 +151,7 @@ p := &proposal.Proposal{
 pwr, _ := p.WithRoot()
 
 // Compute hash for ECDSA signing (EIP-712)
-pts, _ := pwr.WithHashToSign(programID)
+pts, _ := pwr.WithMessageHash(programID)
 
 // Distribute pts.MessageHash to signers
 ```
@@ -229,7 +229,7 @@ p, _ := io.LoadProposal("proposal.json")
 
 // Compute root and hash after loading
 pwr, _ := p.WithRoot()
-pts, _ := pwr.WithHashToSign(programID)
+pts, _ := pwr.WithMessageHash(programID)
 ```
 
 ## Complete Workflow
@@ -299,7 +299,7 @@ p, _ := proposalSvc.CreateProposalFromChain(ctx, services.CreateProposalFromChai
 
 // Compute root and hash
 pwr, _ := p.WithRoot()
-pts, _ := pwr.WithHashToSign(programID)
+pts, _ := pwr.WithMessageHash(programID)
 
 // Distribute pts.MessageHash to signers for off-chain ECDSA signing
 // Collect signatures...

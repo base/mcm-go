@@ -47,7 +47,7 @@ func LoadProposalWithRoot(filePath string) (*proposal.ProposalWithRoot, error) {
 
 // CreateProposalToSign creates a ProposalToSign from a ProposalWithRoot by computing the hash to sign
 func CreateProposalToSign(pwr *proposal.ProposalWithRoot, programID solana.PublicKey) (*proposal.ProposalToSign, error) {
-	pts, err := pwr.WithHashToSign(programID)
+	pts, err := pwr.WithMessageHash(programID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to compute hash to sign: %w", err)
 	}

@@ -11,8 +11,8 @@ import (
 	"github.com/gagliardetto/solana-go"
 )
 
-// WithHashToSign computes the hash that signers need to sign using EIP-712 and returns a ProposalToSign
-func (pwr *ProposalWithRoot) WithHashToSign(programID solana.PublicKey) (*ProposalToSign, error) {
+// WithMessageHash computes the EIP-712 message hash that signers need to sign and returns a ProposalToSign
+func (pwr *ProposalWithRoot) WithMessageHash(programID solana.PublicKey) (*ProposalToSign, error) {
 	if pwr.Proposal == nil {
 		return nil, fmt.Errorf("proposal is nil")
 	}
@@ -22,7 +22,7 @@ func (pwr *ProposalWithRoot) WithHashToSign(programID solana.PublicKey) (*Propos
 	copy(programID32[:], programID[:])
 
 	// Compute EIP-712 hash
-	messageHash, domainSep, structHash, err := computeEIP712HashToSign(
+	messageHash, domainSep, structHash, err := computeEIP712MessageHash(
 		pwr.Root,
 		pwr.ValidUntil,
 		pwr.RootMetadata.ChainID,
@@ -40,9 +40,10 @@ func (pwr *ProposalWithRoot) WithHashToSign(programID solana.PublicKey) (*Propos
 	}, nil
 }
 
-// computeEIP712HashToSign computes the EIP-712 hash that signers need to sign
+// computeEIP712MessageHash computes the EIP-712 message hash that signers need to sign
 // Following the EIP-712 specification with:
-// - Domain: ManyChainMultiSig v1 (with chainId, verifyingContract=0x00...00, salt=programId)
+// - Domain: ManyChainMultiSig v1 (with chainId, salt=programId)
+// - Domain type: EIP712Domain(string name,string version,uint256 chainId,bytes32 salt)
 // - Message: RootValidation(bytes32 root, uint32 validUntil)
 // - Hash: keccak256("\x19\x01" || domainSeparator || structHash)
 //
@@ -50,7 +51,7 @@ func (pwr *ProposalWithRoot) WithHashToSign(programID solana.PublicKey) (*Propos
 // - messageHash: Final EIP-712 hash to sign
 // - domainSeparator: hashStruct(EIP712Domain)
 // - structHash: hashStruct(RootValidation)
-func computeEIP712HashToSign(
+func computeEIP712MessageHash(
 	root [32]byte,
 	validUntil uint32,
 	chainID uint64,
@@ -63,7 +64,6 @@ func computeEIP712HashToSign(
 				{Name: "name", Type: "string"},
 				{Name: "version", Type: "string"},
 				{Name: "chainId", Type: "uint256"},
-				{Name: "verifyingContract", Type: "address"},
 				{Name: "salt", Type: "bytes32"},
 			},
 			"RootValidation": []apitypes.Type{
@@ -73,11 +73,10 @@ func computeEIP712HashToSign(
 		},
 		PrimaryType: "RootValidation",
 		Domain: apitypes.TypedDataDomain{
-			Name:              "ManyChainMultiSig",
-			Version:           "1",
-			ChainId:           (*math.HexOrDecimal256)(big.NewInt(int64(chainID))),
-			VerifyingContract: "0x0000000000000000000000000000000000000000",
-			Salt:              hexutil.Encode(programID[:]),
+			Name:    "ManyChainMultiSig",
+			Version: "1",
+			ChainId: (*math.HexOrDecimal256)(big.NewInt(int64(chainID))),
+			Salt:    hexutil.Encode(programID[:]),
 		},
 		Message: apitypes.TypedDataMessage{
 			"root":       hexutil.Encode(root[:]),

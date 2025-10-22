@@ -32,7 +32,7 @@ func HashCommand() *ucli.Command {
 				return err
 			}
 
-			pts, err := pwr.WithHashToSign(programID)
+			pts, err := pwr.WithMessageHash(programID)
 			if err != nil {
 				return fmt.Errorf("failed to compute hash to sign: %w", err)
 			}
