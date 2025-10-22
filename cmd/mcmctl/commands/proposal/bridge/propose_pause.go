@@ -28,11 +28,6 @@ func PauseCommand() *ucli.Command {
 				Required: true,
 			},
 			&ucli.StringFlag{
-				Name:     "bridge",
-				Usage:    "Bridge account address",
-				Required: true,
-			},
-			&ucli.StringFlag{
 				Name:     "guardian",
 				Usage:    "Guardian account address (MCM authority)",
 				Required: true,
@@ -50,10 +45,16 @@ func PauseCommand() *ucli.Command {
 				return err
 			}
 
+			// Derive bridge PDA from bridge program ID
+			bridge, _, err := util.BridgePDA(params.bridgeProgramID)
+			if err != nil {
+				return fmt.Errorf("failed to derive bridge PDA: %w", err)
+			}
+
 			// Create set pause status instruction
 			pauseIx, err := newSetPauseStatusInstruction(
 				params.paused,
-				params.bridge,
+				bridge,
 				params.guardian,
 				params.bridgeProgramID,
 			)
@@ -106,7 +107,6 @@ type pauseParams struct {
 	outputPath           string
 	// Specific bridge parameters
 	bridgeProgramID solana.PublicKey
-	bridge          solana.PublicKey
 	guardian        solana.PublicKey
 	paused          bool
 }
@@ -129,11 +129,6 @@ func parsePauseParams(c *ucli.Context) (*pauseParams, error) {
 		return nil, fmt.Errorf("invalid bridge program ID: %w", err)
 	}
 
-	bridge, err := solana.PublicKeyFromBase58(c.String("bridge"))
-	if err != nil {
-		return nil, fmt.Errorf("invalid bridge address: %w", err)
-	}
-
 	guardian, err := solana.PublicKeyFromBase58(c.String("guardian"))
 	if err != nil {
 		return nil, fmt.Errorf("invalid guardian address: %w", err)
@@ -144,7 +139,6 @@ func parsePauseParams(c *ucli.Context) (*pauseParams, error) {
 	// 3. Print summary (common first, then specific)
 	fmt.Printf("Multisig ID: 0x%x\n", multisigID)
 	fmt.Printf("Bridge program ID: %s\n", bridgeProgramID)
-	fmt.Printf("Bridge account: %s\n", bridge)
 	fmt.Printf("Guardian account: %s\n", guardian)
 	fmt.Printf("Pause status: %v\n", paused)
 
@@ -155,7 +149,6 @@ func parsePauseParams(c *ucli.Context) (*pauseParams, error) {
 		overridePreviousRoot: overridePreviousRoot,
 		outputPath:           outputPath,
 		bridgeProgramID:      bridgeProgramID,
-		bridge:               bridge,
 		guardian:             guardian,
 		paused:               paused,
 	}, nil

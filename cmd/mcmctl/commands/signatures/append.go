@@ -6,6 +6,7 @@ import (
 
 	"github.com/base/mcm-go/cmd/mcmctl/flags"
 	"github.com/base/mcm-go/cmd/mcmctl/util"
+	"github.com/base/mcm-go/pkg/cli"
 	"github.com/base/mcm-go/pkg/hex"
 	"github.com/base/mcm-go/pkg/services"
 
@@ -40,7 +41,7 @@ func AppendCommand() *ucli.Command {
 			}
 
 			// Parse program ID
-			programID, err := util.ParseProgramID(c.String("mcm-program-id"))
+			programID, err := cli.ParseProgramID(c.String("mcm-program-id"))
 			if err != nil {
 				return err
 			}

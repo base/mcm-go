@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/base/mcm-go/pkg/hex"
+	"github.com/gagliardetto/solana-go"
 )
 
 // ParseAndSortSigners parses a comma-separated list of hex signers,
@@ -115,4 +116,13 @@ func ParseAndPadUint8Array32(s string) ([32]uint8, error) {
 
 	// Remaining elements are already 0 due to zero-initialization
 	return result, nil
+}
+
+// ParseProgramID parses a program ID from a base58 string
+func ParseProgramID(programIDStr string) (solana.PublicKey, error) {
+	programID, err := solana.PublicKeyFromBase58(programIDStr)
+	if err != nil {
+		return solana.PublicKey{}, fmt.Errorf("invalid program ID: %w", err)
+	}
+	return programID, nil
 }
