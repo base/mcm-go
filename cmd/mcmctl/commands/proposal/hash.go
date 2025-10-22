@@ -5,7 +5,6 @@ import (
 
 	"github.com/base/mcm-go/cmd/mcmctl/flags"
 	"github.com/base/mcm-go/cmd/mcmctl/util"
-	"github.com/base/mcm-go/pkg/cli"
 
 	ucli "github.com/urfave/cli/v2"
 )
@@ -28,7 +27,7 @@ func HashCommand() *ucli.Command {
 			}
 
 			// Parse program ID
-			programID, err := cli.ParseProgramID(c.String("mcm-program-id"))
+			programID, err := util.ParseProgramID(c.String("mcm-program-id"))
 			if err != nil {
 				return err
 			}

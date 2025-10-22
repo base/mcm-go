@@ -6,7 +6,6 @@ import (
 
 	"github.com/base/mcm-go/cmd/mcmctl/flags"
 	"github.com/base/mcm-go/cmd/mcmctl/util"
-	"github.com/base/mcm-go/pkg/cli"
 	"github.com/base/mcm-go/pkg/hex"
 	proposalIO "github.com/base/mcm-go/pkg/proposal/io"
 	"github.com/base/mcm-go/pkg/services"
@@ -118,7 +117,7 @@ func parseUpgradeParams(c *ucli.Context) (*upgradeParams, error) {
 	validUntil := uint32(c.Uint64("valid-until"))
 	overridePreviousRoot := c.Bool("override-previous-root")
 	outputPath := c.String("output")
-	rpcURL := cli.ResolveNetworkAlias(c.String("rpc-url"), false)
+	rpcURL := util.ResolveNetworkAlias(c.String("rpc-url"), false)
 
 	// 2. Parse specific loader_v3 parameters
 	program, err := solana.PublicKeyFromBase58(c.String("program"))

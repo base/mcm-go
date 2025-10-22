@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/base/mcm-go/cmd/mcmctl/flags"
-	"github.com/base/mcm-go/pkg/cli"
+	"github.com/base/mcm-go/cmd/mcmctl/util"
 	"github.com/base/mcm-go/pkg/hex"
 	"github.com/base/mcm-go/pkg/services"
 
@@ -32,7 +32,7 @@ func AppendCommand() *ucli.Command {
 			}
 
 			signersList := c.String("signers")
-			signers, sorted, err := cli.ParseAndSortSigners(signersList)
+			signers, sorted, err := util.ParseAndSortSigners(signersList)
 			if err != nil {
 				return fmt.Errorf("failed to parse signers: %w", err)
 			}

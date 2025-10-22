@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/base/mcm-go/cmd/mcmctl/flags"
-	"github.com/base/mcm-go/pkg/cli"
+	"github.com/base/mcm-go/cmd/mcmctl/util"
 	"github.com/base/mcm-go/pkg/hex"
 	"github.com/base/mcm-go/pkg/services"
 
@@ -35,19 +35,19 @@ func SetConfigCommand() *ucli.Command {
 			}
 
 			// Parse signer groups
-			signerGroups, err := cli.ParseUint8Slice(c.String("signer-groups"))
+			signerGroups, err := util.ParseUint8Slice(c.String("signer-groups"))
 			if err != nil {
 				return fmt.Errorf("invalid signer-groups: %w", err)
 			}
 
 			// Parse and pad group quorums to 32 elements
-			groupQuorums, err := cli.ParseAndPadUint8Array32(c.String("group-quorums"))
+			groupQuorums, err := util.ParseAndPadUint8Array32(c.String("group-quorums"))
 			if err != nil {
 				return fmt.Errorf("invalid group-quorums: %w", err)
 			}
 
 			// Parse and pad group parents to 32 elements
-			groupParents, err := cli.ParseAndPadUint8Array32(c.String("group-parents"))
+			groupParents, err := util.ParseAndPadUint8Array32(c.String("group-parents"))
 			if err != nil {
 				return fmt.Errorf("invalid group-parents: %w", err)
 			}

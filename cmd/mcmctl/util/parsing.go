@@ -1,4 +1,4 @@
-package cli
+package util
 
 import (
 	"bytes"
@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/base/mcm-go/pkg/hex"
+
 	"github.com/gagliardetto/solana-go"
 )
 

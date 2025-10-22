@@ -1,7 +1,7 @@
 package flags
 
 import (
-	"github.com/base/mcm-go/pkg/cli"
+	"github.com/base/mcm-go/cmd/mcmctl/util"
 
 	ucli "github.com/urfave/cli/v2"
 )
@@ -42,7 +42,7 @@ func AuthorityFlag() ucli.Flag {
 		Name:    "authority",
 		Usage:   "Path to authority keypair file (JSON or base58, also used as transaction payer)",
 		EnvVars: []string{"MCM_AUTHORITY"},
-		Value:   cli.DefaultKeypairPath(),
+		Value:   util.DefaultKeypairPath(),
 	}
 }
 
