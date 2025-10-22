@@ -106,22 +106,35 @@ See [cmd/mcmctl/README.md](cmd/mcmctl/README.md) for detailed usage examples.
 
 ```
 mcm-go/
-├── pkg/
-│   ├── bindings/      # Anchor-generated types from mcm.json IDL
-│   ├── client/        # Solana RPC/WebSocket client wrapper with transaction helpers
-│   ├── crypto/        # Keccak256 Merkle tree implementation with proof generation
-│   ├── pda/           # Program Derived Address utilities
-│   ├── proposal/      # Proposal types, builder, Merkle computation, signing
-│   │   ├── io/        # JSON persistence (save/load proposals)
-│   │   ├── types.go   # Core types (Proposal, ProposalWithRoot, ProposalToSign)
-│   │   ├── builder.go # Builder pattern for constructing proposals
-│   │   ├── merkle.go  # Merkle root computation (p.WithRoot())
-│   │   └── signing.go # Hash to sign computation (pwr.WithMessageHash())
-│   ├── instructions/  # MCM instruction builders (Initialize, SetConfig, etc.)
-│   ├── state/         # On-chain account fetchers
-│   └── services/      # High-level services (ProposalService, SignersService, etc.)
-├── cmd/mcmctl/        # CLI demonstrating SDK usage
-└── mcm.json          # MCM program IDL (Anchor >= 0.30.0)
+├── pkg/                      # MCM SDK (public, reusable)
+│   ├── bindings/            # Anchor-generated types from mcm.json IDL
+│   ├── client/              # Solana RPC/WebSocket client wrapper with transaction helpers
+│   ├── crypto/              # Keccak256 Merkle tree implementation with proof generation
+│   ├── pda/                 # Program Derived Address utilities (MCM program)
+│   ├── proposal/            # Proposal types, builder, Merkle computation, signing
+│   │   ├── io/              # JSON persistence (save/load proposals)
+│   │   ├── types.go         # Core types (Proposal, ProposalWithRoot, ProposalToSign)
+│   │   ├── builder.go       # Builder pattern for constructing proposals
+│   │   ├── merkle.go        # Merkle root computation (p.WithRoot())
+│   │   └── signing.go       # Hash to sign computation (pwr.WithMessageHash())
+│   ├── instructions/        # MCM instruction builders (Initialize, SetConfig, etc.)
+│   ├── state/               # On-chain account fetchers (MCM program)
+│   └── services/            # High-level services (ProposalService, SignersService, etc.)
+├── cmd/
+│   ├── internal/bridge/     # Bridge program support (CLI-internal)
+│   │   ├── bindings/        # Anchor-generated from bridge-minimal.json
+│   │   ├── instructions/    # Bridge instruction wrappers
+│   │   ├── pda/             # Bridge PDA utilities
+│   │   └── state/           # Bridge account fetchers
+│   └── mcmctl/              # CLI tool
+│       ├── commands/        # CLI commands
+│       ├── flags/           # CLI flag definitions
+│       └── util/            # CLI utilities (config, parsing, etc.)
+├── scripts/
+│   ├── generate-mcm-bindings.sh     # Generate pkg/bindings/
+│   └── generate-bridge-bindings.sh  # Generate cmd/internal/bridge/bindings/
+├── mcm.json                 # MCM program IDL (Anchor >= 0.30.0)
+└── bridge-minimal.json      # Bridge program IDL (config instructions only)
 ```
 
 ## Core Concepts

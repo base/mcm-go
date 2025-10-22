@@ -1,16 +1,16 @@
 package bridge
 
 import (
-	"bytes"
 	"fmt"
 
+	bridgeInstructions "github.com/base/mcm-go/cmd/internal/bridge/instructions"
+	bridgeState "github.com/base/mcm-go/cmd/internal/bridge/state"
 	"github.com/base/mcm-go/cmd/mcmctl/flags"
 	"github.com/base/mcm-go/cmd/mcmctl/util"
 	"github.com/base/mcm-go/pkg/hex"
 	proposalIO "github.com/base/mcm-go/pkg/proposal/io"
 	"github.com/base/mcm-go/pkg/services"
 
-	bin "github.com/gagliardetto/binary"
 	solana "github.com/gagliardetto/solana-go"
 	ucli "github.com/urfave/cli/v2"
 )
@@ -27,11 +27,6 @@ func PauseCommand() *ucli.Command {
 				EnvVars:  []string{"BRIDGE_PROGRAM_ID"},
 				Required: true,
 			},
-			&ucli.StringFlag{
-				Name:     "guardian",
-				Usage:    "Guardian account address (MCM authority)",
-				Required: true,
-			},
 			&ucli.BoolFlag{
 				Name:     "paused",
 				Usage:    "Set to true to pause the bridge, false to unpause",
@@ -45,29 +40,32 @@ func PauseCommand() *ucli.Command {
 				return err
 			}
 
-			// Derive bridge PDA from bridge program ID
-			bridge, _, err := util.BridgePDA(params.bridgeProgramID)
-			if err != nil {
-				return fmt.Errorf("failed to derive bridge PDA: %w", err)
-			}
-
-			// Create set pause status instruction
-			pauseIx, err := newSetPauseStatusInstruction(
-				params.paused,
-				bridge,
-				params.guardian,
-				params.bridgeProgramID,
-			)
-			if err != nil {
-				return fmt.Errorf("failed to create set pause status instruction: %w", err)
-			}
-
-			// Load MCM client and create proposal service
+			// Load MCM client first (needed for fetching bridge state)
 			mcmClient, err := util.LoadClient(c)
 			if err != nil {
 				return err
 			}
 			defer mcmClient.Close()
+
+			// Fetch bridge account to get guardian
+			fmt.Println("Fetching Bridge account...")
+			bridgeFetcher := bridgeState.NewFetcher(mcmClient.RPC, params.bridgeProgramID)
+			bridgeAccount, err := bridgeFetcher.GetBridge(c.Context)
+			if err != nil {
+				return fmt.Errorf("failed to fetch bridge account: %w", err)
+			}
+
+			fmt.Printf("Guardian (from bridge): %s\n", bridgeAccount.Guardian)
+
+			// Create set pause status instruction
+			pauseIx, err := bridgeInstructions.SetPauseStatus(bridgeInstructions.SetPauseStatusParams{
+				Paused:    params.paused,
+				Guardian:  bridgeAccount.Guardian,
+				ProgramID: params.bridgeProgramID,
+			})
+			if err != nil {
+				return fmt.Errorf("failed to create set pause status instruction: %w", err)
+			}
 
 			proposalSvc := services.NewProposalService(mcmClient)
 
@@ -107,7 +105,6 @@ type pauseParams struct {
 	outputPath           string
 	// Specific bridge parameters
 	bridgeProgramID solana.PublicKey
-	guardian        solana.PublicKey
 	paused          bool
 }
 
@@ -129,17 +126,11 @@ func parsePauseParams(c *ucli.Context) (*pauseParams, error) {
 		return nil, fmt.Errorf("invalid bridge program ID: %w", err)
 	}
 
-	guardian, err := solana.PublicKeyFromBase58(c.String("guardian"))
-	if err != nil {
-		return nil, fmt.Errorf("invalid guardian address: %w", err)
-	}
-
 	paused := c.Bool("paused")
 
 	// 3. Print summary (common first, then specific)
 	fmt.Printf("Multisig ID: 0x%x\n", multisigID)
 	fmt.Printf("Bridge program ID: %s\n", bridgeProgramID)
-	fmt.Printf("Guardian account: %s\n", guardian)
 	fmt.Printf("Pause status: %v\n", paused)
 
 	// 4. Return with common fields first
@@ -149,55 +140,6 @@ func parsePauseParams(c *ucli.Context) (*pauseParams, error) {
 		overridePreviousRoot: overridePreviousRoot,
 		outputPath:           outputPath,
 		bridgeProgramID:      bridgeProgramID,
-		guardian:             guardian,
 		paused:               paused,
 	}, nil
-}
-
-// Instruction discriminator for set_pause_status
-var instructionSetPauseStatus = [8]byte{118, 25, 145, 217, 114, 209, 236, 145}
-
-// newSetPauseStatusInstruction builds a "set_pause_status" instruction for the bridge program.
-// Set the pause status for the bridge. Only the guardian can call this function.
-// This function is mostly based on the generated code from the bridge program IDL with anchor-go.
-//
-// # Arguments
-// * `newPaused` - The new pause status (true for paused, false for unpaused)
-// * `bridgeAccount` - The bridge account containing configuration
-// * `guardianAccount` - The guardian account authorized to update configuration
-// * `bridgeProgramID` - The bridge program ID
-func newSetPauseStatusInstruction(
-	newPaused bool,
-	bridgeAccount solana.PublicKey,
-	guardianAccount solana.PublicKey,
-	bridgeProgramID solana.PublicKey,
-) (solana.Instruction, error) {
-	buf := new(bytes.Buffer)
-	enc := bin.NewBorshEncoder(buf)
-
-	// Encode the instruction discriminator
-	err := enc.WriteBytes(instructionSetPauseStatus[:], false)
-	if err != nil {
-		return nil, fmt.Errorf("failed to write instruction discriminator: %w", err)
-	}
-
-	// Serialize the newPaused parameter
-	err = enc.Encode(newPaused)
-	if err != nil {
-		return nil, fmt.Errorf("failed to encode newPaused parameter: %w", err)
-	}
-
-	accounts := solana.AccountMetaSlice{}
-
-	// Account 0: Bridge account (writable)
-	accounts.Append(solana.NewAccountMeta(bridgeAccount, true, false))
-	// Account 1: Guardian account (signer)
-	accounts.Append(solana.NewAccountMeta(guardianAccount, false, true))
-
-	// Create the instruction
-	return solana.NewInstruction(
-		bridgeProgramID,
-		accounts,
-		buf.Bytes(),
-	), nil
 }

@@ -699,7 +699,6 @@ Create a proposal to pause/unpause bridge operations.
 ```bash
 mcmctl proposal bridge pause \
   --bridge-program-id <base58_pubkey> \
-  --guardian <base58_pubkey> \
   --paused <true|false> \
   --multisig-id <hex32> \
   --valid-until <timestamp> \
@@ -711,7 +710,7 @@ mcmctl proposal bridge pause \
 
 - Creates a proposal to set the pause status of the bridge
 - The bridge account PDA is automatically derived from the bridge program ID (using seed `"bridge"`)
-- Guardian must be the MCM authority (multisig signer PDA)
+- The guardian is automatically fetched from the Bridge account on-chain
 - Paused: `true` to pause bridge operations, `false` to unpause
 - Fetches current on-chain state automatically
 - Generates a complete proposal file ready for signing and execution
@@ -723,7 +722,6 @@ mcmctl proposal bridge pause \
 # Pause the bridge
 mcmctl proposal bridge pause \
   --bridge-program-id BridgeProgramIDXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
-  --guardian GuardianAccountXXXXXXXXXXXXXXXXXXXXXXXXXXX \
   --paused true \
   --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
   --valid-until 1800000000 \
@@ -732,7 +730,6 @@ mcmctl proposal bridge pause \
 # Unpause the bridge
 mcmctl proposal bridge pause \
   --bridge-program-id BridgeProgramIDXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
-  --guardian GuardianAccountXXXXXXXXXXXXXXXXXXXXXXXXXXX \
   --paused false \
   --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
   --valid-until 1800000000 \
@@ -748,7 +745,6 @@ Create a proposal to update the partner oracle configuration in the bridge.
 ```bash
 mcmctl proposal bridge set-partner-oracle-config \
   --bridge-program-id <base58_pubkey> \
-  --guardian <base58_pubkey> \
   --required-threshold <uint8> \
   --multisig-id <hex32> \
   --valid-until <timestamp> \
@@ -760,7 +756,7 @@ mcmctl proposal bridge set-partner-oracle-config \
 
 - Creates a proposal to set the partner oracle configuration
 - The bridge account PDA is automatically derived from the bridge program ID (using seed `"bridge"`)
-- Guardian must be the MCM authority (multisig signer PDA)
+- The upgrade authority is automatically fetched from the bridge program's ProgramData account
 - Required threshold: number of oracle signatures required (0-255)
 - Fetches current on-chain state automatically
 - Generates a complete proposal file ready for signing and execution
@@ -771,7 +767,6 @@ mcmctl proposal bridge set-partner-oracle-config \
 ```bash
 mcmctl proposal bridge set-partner-oracle-config \
   --bridge-program-id BridgeProgramIDXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
-  --guardian GuardianAccountXXXXXXXXXXXXXXXXXXXXXXXXXXX \
   --required-threshold 3 \
   --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
   --valid-until 1800000000 \
