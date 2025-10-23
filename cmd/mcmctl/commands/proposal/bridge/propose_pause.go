@@ -28,9 +28,12 @@ func PauseCommand() *ucli.Command {
 				Required: true,
 			},
 			&ucli.BoolFlag{
-				Name:     "paused",
-				Usage:    "Set to true to pause the bridge, false to unpause",
-				Required: true,
+				Name:  "pause",
+				Usage: "Pause the bridge",
+			},
+			&ucli.BoolFlag{
+				Name:  "unpause",
+				Usage: "Unpause the bridge",
 			},
 		),
 		Action: func(c *ucli.Context) error {
@@ -126,12 +129,27 @@ func parsePauseParams(c *ucli.Context) (*pauseParams, error) {
 		return nil, fmt.Errorf("invalid bridge program ID: %w", err)
 	}
 
-	paused := c.Bool("paused")
+	pause := c.Bool("pause")
+	unpause := c.Bool("unpause")
+
+	// Validate: exactly one of --pause or --unpause must be specified
+	if pause && unpause {
+		return nil, fmt.Errorf("cannot specify both --pause and --unpause")
+	}
+	if !pause && !unpause {
+		return nil, fmt.Errorf("must specify either --pause or --unpause")
+	}
+
+	paused := pause // true if --pause, false if --unpause
 
 	// 3. Print summary (common first, then specific)
 	fmt.Printf("Multisig ID: 0x%x\n", multisigID)
 	fmt.Printf("Bridge program ID: %s\n", bridgeProgramID)
-	fmt.Printf("Pause status: %v\n", paused)
+	action := "unpause"
+	if paused {
+		action = "pause"
+	}
+	fmt.Printf("Action: %s\n", action)
 
 	// 4. Return with common fields first
 	return &pauseParams{

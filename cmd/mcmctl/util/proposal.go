@@ -26,11 +26,11 @@ func LoadProposalWithRoot(filePath string) (*proposal.ProposalWithRoot, error) {
 	return pwr, nil
 }
 
-// CreateProposalWithMessageHash creates a ProposalWithMessageHash from a ProposalWithRoot by computing the hash to sign
+// CreateProposalWithMessageHash creates a ProposalWithMessageHash from a ProposalWithRoot by computing the message hash
 func CreateProposalWithMessageHash(pwr *proposal.ProposalWithRoot, programID solana.PublicKey) (*proposal.ProposalWithMessageHash, error) {
 	pts, err := pwr.WithMessageHash(programID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to compute hash to sign: %w", err)
+		return nil, fmt.Errorf("failed to compute message hash: %w", err)
 	}
 	return pts, nil
 }

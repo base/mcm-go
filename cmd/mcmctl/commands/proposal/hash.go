@@ -13,7 +13,7 @@ import (
 func HashCommand() *ucli.Command {
 	return &ucli.Command{
 		Name:  "hash",
-		Usage: "Compute the hash to sign for a proposal (offline operation)",
+		Usage: "Compute the message hash for a proposal (offline operation)",
 		Flags: []ucli.Flag{
 			flags.ProposalFlag(),
 			flags.MCMProgramIDFlag(),
@@ -34,12 +34,12 @@ func HashCommand() *ucli.Command {
 
 			pts, err := pwr.WithMessageHash(programID)
 			if err != nil {
-				return fmt.Errorf("failed to compute hash to sign: %w", err)
+				return fmt.Errorf("failed to compute message hash: %w", err)
 			}
 
 			// Display proposal info
 			fmt.Printf("Merkle Root: 0x%x\n", pts.Root)
-			fmt.Println("Hash to Sign (EIP-712):")
+			fmt.Println("Message Hash (EIP-712):")
 			fmt.Println("vvvvvvvv")
 			fmt.Printf("0x1901%x%x\n", pts.DomainSeparator, pts.StructHash)
 			fmt.Println("^^^^^^^^")

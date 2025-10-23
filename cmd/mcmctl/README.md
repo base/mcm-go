@@ -699,7 +699,7 @@ Create a proposal to pause/unpause bridge operations.
 ```bash
 mcmctl proposal bridge pause \
   --bridge-program-id <base58_pubkey> \
-  --paused <true|false> \
+  (--pause | --unpause) \
   --multisig-id <hex32> \
   --valid-until <timestamp> \
   [--override-previous-root] \
@@ -711,7 +711,7 @@ mcmctl proposal bridge pause \
 - Creates a proposal to set the pause status of the bridge
 - The bridge account PDA is automatically derived from the bridge program ID (using seed `"bridge"`)
 - The guardian is automatically fetched from the Bridge account on-chain
-- Paused: `true` to pause bridge operations, `false` to unpause
+- Use `--pause` to pause bridge operations or `--unpause` to unpause (mutually exclusive)
 - Fetches current on-chain state automatically
 - Generates a complete proposal file ready for signing and execution
 - Read-only operation (only requires `--rpc-url` and `--mcm-program-id`, no wallet needed)
@@ -722,7 +722,7 @@ mcmctl proposal bridge pause \
 # Pause the bridge
 mcmctl proposal bridge pause \
   --bridge-program-id BridgeProgramIDXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
-  --paused true \
+  --pause \
   --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
   --valid-until 1800000000 \
   --output ./pause_bridge_proposal.json
@@ -730,7 +730,7 @@ mcmctl proposal bridge pause \
 # Unpause the bridge
 mcmctl proposal bridge pause \
   --bridge-program-id BridgeProgramIDXXXXXXXXXXXXXXXXXXXXXXXXXXXXX \
-  --paused false \
+  --unpause \
   --multisig-id 0x6d792d6d756c74697369672d303031000000000000000000000000000000000000 \
   --valid-until 1800000000 \
   --output ./unpause_bridge_proposal.json
@@ -777,7 +777,7 @@ The generated proposal can be used with `proposal hash`, `proposal set-root`, an
 
 #### `proposal hash`
 
-Compute the hash to sign for a proposal (offline operation).
+Compute the message hash for a proposal (offline operation).
 
 ```bash
 mcmctl proposal hash --proposal <path>
@@ -787,7 +787,7 @@ mcmctl proposal hash --proposal <path>
 
 - Works completely offline (no blockchain connection needed)
 - Computes the Merkle root from the proposal
-- Displays the hash to sign: EIP-712 structured data hash
+- Displays the message hash: EIP-712 structured data hash
 - Shows proposal metadata for verification
 
 **Example:**

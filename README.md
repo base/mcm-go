@@ -76,7 +76,7 @@ func main() {
         OverridePreviousRoot: false,
     })
 
-    // Compute Merkle root and hash to sign
+    // Compute Merkle root and message hash
     pwr, _ := p.WithRoot()
     pts, _ := pwr.WithMessageHash(programID)
 
@@ -116,7 +116,7 @@ mcm-go/
 │   │   ├── types.go         # Core types (Proposal, ProposalWithRoot, ProposalWithMessageHash)
 │   │   ├── builder.go       # Builder pattern for constructing proposals
 │   │   ├── merkle.go        # Merkle root computation (p.WithRoot())
-│   │   └── signing.go       # Hash to sign computation (pwr.WithMessageHash())
+│   │   └── signing.go       # Message hash computation (pwr.WithMessageHash())
 │   ├── instructions/        # MCM instruction builders (Initialize, SetConfig, etc.)
 │   ├── state/               # On-chain account fetchers (MCM program)
 │   └── services/            # High-level services (ProposalService, SignersService, etc.)
@@ -163,7 +163,7 @@ p := &proposal.Proposal{
 // Compute Merkle root and proofs
 pwr, _ := p.WithRoot()
 
-// Compute hash for ECDSA signing (EIP-712)
+// Compute message hash for ECDSA signing (EIP-712)
 pts, _ := pwr.WithMessageHash(programID)
 
 // Distribute pts.MessageHash to signers
