@@ -55,11 +55,11 @@ type (
 
 // Proposal types
 type (
-	Proposal         = proposal.Proposal
-	ProposalWithRoot = proposal.ProposalWithRoot
-	ProposalToSign   = proposal.ProposalToSign
-	ProposalBuilder  = proposal.Builder
-	RootMetadata     = proposal.RootMetadata
+	Proposal                = proposal.Proposal
+	ProposalWithRoot        = proposal.ProposalWithRoot
+	ProposalWithMessageHash = proposal.ProposalWithMessageHash
+	ProposalBuilder         = proposal.Builder
+	RootMetadata            = proposal.RootMetadata
 )
 
 // Service types

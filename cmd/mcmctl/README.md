@@ -796,6 +796,61 @@ mcmctl proposal hash --proposal <path>
 mcmctl proposal hash --proposal my_proposal.json
 ```
 
+#### `proposal eip712`
+
+Display the complete EIP-712 typed data payload for a proposal (offline operation).
+
+```bash
+mcmctl proposal eip712 --proposal <path> --mcm-program-id <program_id>
+```
+
+**Features:**
+
+- Works completely offline (no blockchain connection needed)
+- Outputs the complete EIP-712 JSON payload
+- Compatible with external signing tools (Ledger, MetaMask, Safe, etc.)
+- Shows the full typed data structure including types, domain, and message
+
+**Example:**
+
+```bash
+mcmctl proposal eip712 \
+  --proposal my_proposal.json \
+  --mcm-program-id 55CNTEUq6cAa2sBA7bkDfJ2bb3uWs7Zh77vAF9H8TnJL
+```
+
+**Output:**
+
+```json
+{
+  "types": {
+    "EIP712Domain": [
+      { "name": "name", "type": "string" },
+      { "name": "version", "type": "string" },
+      { "name": "chainId", "type": "uint256" },
+      { "name": "salt", "type": "bytes32" }
+    ],
+    "RootValidation": [
+      { "name": "root", "type": "bytes32" },
+      { "name": "validUntil", "type": "uint32" }
+    ]
+  },
+  "primaryType": "RootValidation",
+  "domain": {
+    "name": "ManyChainMultiSig",
+    "version": "1",
+    "chainId": "0x1",
+    "salt": "0x..."
+  },
+  "message": {
+    "root": "0x...",
+    "validUntil": "1800000000"
+  }
+}
+```
+
+This JSON can be directly used with EIP-712 signing tools.
+
 #### `proposal set-root`
 
 Load a proposal and set its Merkle root on-chain.

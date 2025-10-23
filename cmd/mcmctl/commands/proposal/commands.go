@@ -16,6 +16,7 @@ func Command() *ucli.Command {
 		Subcommands: []*ucli.Command{
 			CreateCommand(),
 			HashCommand(),
+			EIP712Command(),
 			SetRootCommand(),
 			ExecuteCommand(),
 			bridge.Command(),

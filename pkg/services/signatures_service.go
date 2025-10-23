@@ -54,13 +54,13 @@ func (s *SignaturesService) InitSignatures(ctx context.Context, params InitSigna
 
 // AppendSignaturesParams contains parameters for appending signatures
 type AppendSignaturesParams struct {
-	ProposalToSign *proposal.ProposalToSign
-	Signatures     [][65]byte // ECDSA signatures in raw format (R + S + V)
+	ProposalWithMessageHash *proposal.ProposalWithMessageHash
+	Signatures              [][65]byte // ECDSA signatures in raw format (R + S + V)
 }
 
 // AppendSignatures appends a batch of signatures to the storage
 func (s *SignaturesService) AppendSignatures(ctx context.Context, params AppendSignaturesParams) (solana.Signature, error) {
-	proposalToSign := params.ProposalToSign
+	proposalToSign := params.ProposalWithMessageHash
 	signatures := params.Signatures
 
 	// Sort signatures by recovered EVM address (strictly increasing order)

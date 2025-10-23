@@ -4,6 +4,7 @@ package proposal
 import (
 	"github.com/base/mcm-go/pkg/crypto"
 
+	"github.com/ethereum/go-ethereum/signer/core/apitypes"
 	"github.com/gagliardetto/solana-go"
 )
 
@@ -38,12 +39,13 @@ type ProposalWithRoot struct {
 	ProposalRoot
 }
 
-// ProposalToSign extends ProposalWithRoot with the hash that signers need to sign
-type ProposalToSign struct {
+// ProposalWithMessageHash extends ProposalWithRoot with the hash that signers need to sign
+type ProposalWithMessageHash struct {
 	*ProposalWithRoot
-	MessageHash     [32]byte // Final EIP-712 hash (used for ecrecover)
-	DomainSeparator [32]byte // hashStruct(EIP712Domain)
-	StructHash      [32]byte // hashStruct(RootValidation)
+	MessageHash     [32]byte           // Final EIP-712 hash (used for ecrecover)
+	DomainSeparator [32]byte           // hashStruct(EIP712Domain)
+	StructHash      [32]byte           // hashStruct(RootValidation)
+	TypedData       apitypes.TypedData // Complete EIP-712 typed data structure (for external signers)
 }
 
 // Validate checks if the proposal is valid

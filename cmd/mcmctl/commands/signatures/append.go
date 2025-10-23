@@ -45,15 +45,15 @@ func AppendCommand() *ucli.Command {
 				return err
 			}
 
-			// Create ProposalToSign from ProposalWithRoot
-			pts, err := util.CreateProposalToSign(pwr, programID)
+			// Create ProposalWithMessageHash from ProposalWithRoot
+			pts, err := util.CreateProposalWithMessageHash(pwr, programID)
 			if err != nil {
 				return fmt.Errorf("failed to create proposal to sign: %w", err)
 			}
 
 			sig, err := svc.AppendSignatures(c.Context, services.AppendSignaturesParams{
-				ProposalToSign: pts,
-				Signatures:     signatures,
+				ProposalWithMessageHash: pts,
+				Signatures:              signatures,
 			})
 			if err != nil {
 				return fmt.Errorf("failed to append signatures: %w", err)

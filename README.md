@@ -113,7 +113,7 @@ mcm-go/
 │   ├── pda/                 # Program Derived Address utilities (MCM program)
 │   ├── proposal/            # Proposal types, builder, Merkle computation, signing
 │   │   ├── io/              # JSON persistence (save/load proposals)
-│   │   ├── types.go         # Core types (Proposal, ProposalWithRoot, ProposalToSign)
+│   │   ├── types.go         # Core types (Proposal, ProposalWithRoot, ProposalWithMessageHash)
 │   │   ├── builder.go       # Builder pattern for constructing proposals
 │   │   ├── merkle.go        # Merkle root computation (p.WithRoot())
 │   │   └── signing.go       # Hash to sign computation (pwr.WithMessageHash())
