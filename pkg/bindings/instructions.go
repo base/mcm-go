@@ -328,6 +328,88 @@ func NewSetRootInstruction(
 	), nil
 }
 
+// Builds a "set_root_eip712" instruction.
+// Set a new Merkle root using EIP-712 signature verification. //  // This is identical to `set_root` but verifies signatures using EIP-712 typed // structured data hashing instead of Ethereum Personal Sign format. //  // # Parameters //  // - `ctx`: The context containing required accounts (same as `set_root`). // - `multisig_id`: The multisig instance identifier. // - `root`: The new Merkle root to set. // - `valid_until`: timestamp until which the root remains valid. // - `metadata`: Structured input containing chain_id, multisig, and operation counters. // - `metadata_proof`: Merkle proof validating the metadata.
+func NewSetRootEip712Instruction(
+	// Params:
+	multisigIdParam [32]uint8,
+	rootParam [32]uint8,
+	validUntilParam uint32,
+	metadataParam RootMetadataInput,
+	metadataProofParam [][32]uint8,
+
+	// Accounts:
+	rootSignaturesAccount solanago.PublicKey,
+	rootMetadataAccount solanago.PublicKey,
+	seenSignedHashesAccount solanago.PublicKey,
+	expiringRootAndOpCountAccount solanago.PublicKey,
+	multisigConfigAccount solanago.PublicKey,
+	authorityAccount solanago.PublicKey,
+	systemProgramAccount solanago.PublicKey,
+) (solanago.Instruction, error) {
+	buf__ := new(bytes.Buffer)
+	enc__ := binary.NewBorshEncoder(buf__)
+
+	// Encode the instruction discriminator.
+	err := enc__.WriteBytes(Instruction_SetRootEip712[:], false)
+	if err != nil {
+		return nil, fmt.Errorf("failed to write instruction discriminator: %w", err)
+	}
+	{
+		// Serialize `multisigIdParam`:
+		err = enc__.Encode(multisigIdParam)
+		if err != nil {
+			return nil, errors.NewField("multisigIdParam", err)
+		}
+		// Serialize `rootParam`:
+		err = enc__.Encode(rootParam)
+		if err != nil {
+			return nil, errors.NewField("rootParam", err)
+		}
+		// Serialize `validUntilParam`:
+		err = enc__.Encode(validUntilParam)
+		if err != nil {
+			return nil, errors.NewField("validUntilParam", err)
+		}
+		// Serialize `metadataParam`:
+		err = enc__.Encode(metadataParam)
+		if err != nil {
+			return nil, errors.NewField("metadataParam", err)
+		}
+		// Serialize `metadataProofParam`:
+		err = enc__.Encode(metadataProofParam)
+		if err != nil {
+			return nil, errors.NewField("metadataProofParam", err)
+		}
+	}
+	accounts__ := solanago.AccountMetaSlice{}
+
+	// Add the accounts to the instruction.
+	{
+		// Account 0 "root_signatures": Writable, Non-signer, Required
+		accounts__.Append(solanago.NewAccountMeta(rootSignaturesAccount, true, false))
+		// Account 1 "root_metadata": Writable, Non-signer, Required
+		accounts__.Append(solanago.NewAccountMeta(rootMetadataAccount, true, false))
+		// Account 2 "seen_signed_hashes": Writable, Non-signer, Required
+		accounts__.Append(solanago.NewAccountMeta(seenSignedHashesAccount, true, false))
+		// Account 3 "expiring_root_and_op_count": Writable, Non-signer, Required
+		accounts__.Append(solanago.NewAccountMeta(expiringRootAndOpCountAccount, true, false))
+		// Account 4 "multisig_config": Read-only, Non-signer, Required
+		accounts__.Append(solanago.NewAccountMeta(multisigConfigAccount, false, false))
+		// Account 5 "authority": Writable, Signer, Required
+		accounts__.Append(solanago.NewAccountMeta(authorityAccount, true, true))
+		// Account 6 "system_program": Read-only, Non-signer, Required
+		accounts__.Append(solanago.NewAccountMeta(systemProgramAccount, false, false))
+	}
+
+	// Create the instruction.
+	return solanago.NewInstruction(
+		ProgramID,
+		accounts__,
+		buf__.Bytes(),
+	), nil
+}
+
 // Builds a "execute" instruction.
 // Executes an operation after verifying it's authorized in the current Merkle root. //  // This function: // 1. Performs extensive validation checks on the operation // - Ensures the operation is within the allowed count range // - Verifies chain ID matches the configured chain // - Checks the root has not expired // - Validates the operation's nonce against current state // 2. Verifies the operation's inclusion in the Merkle tree // 3. Executes the cross-program invocation with the multisig signer PDA //  // # Parameters //  // - `ctx`: Context containing operation accounts and signer information // - `multisig_id`: Identifier for the multisig instance // - `chain_id`: Network identifier that must match configuration // - `nonce`: Operation counter that must match current state // - `data`: Instruction data to be executed // - `proof`: Merkle proof for operation verification //  // # Security Considerations //  // This instruction implements secure privilege delegation through PDA signing. // The multisig's signer PDA becomes the authoritative signer for the operation, // allowing controlled execution of privileged actions while maintaining the // security guarantees of the Merkle root validation.
 func NewExecuteInstruction(

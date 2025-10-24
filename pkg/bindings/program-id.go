@@ -5,4 +5,4 @@ package bindings
 
 import solanago "github.com/gagliardetto/solana-go"
 
-var ProgramID = solanago.MustPublicKeyFromBase58("55CNTEUq6cAa2sBA7bkDfJ2bb3uWs7Zh77vAF9H8TnJL")
+var ProgramID = solanago.MustPublicKeyFromBase58("5vNJx78mz7KVMjhuipyr9jKBKcMrKYGdjGkgE4LUmjKk")

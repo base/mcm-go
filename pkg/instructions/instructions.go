@@ -165,8 +165,8 @@ func SetConfig(params SetConfigParams) (solana.Instruction, error) {
 	return setProgramID(ix, params.ProgramID), nil
 }
 
-// SetRootParams contains parameters for the SetRoot instruction
-type SetRootParams struct {
+// SetRootEip712Params contains parameters for the SetRootEip712 instruction
+type SetRootEip712Params struct {
 	MultisigID    [32]byte
 	Root          [32]byte
 	ValidUntil    uint32
@@ -176,8 +176,8 @@ type SetRootParams struct {
 	ProgramID     solana.PublicKey
 }
 
-// SetRoot creates a SetRoot instruction
-func SetRoot(params SetRootParams) (solana.Instruction, error) {
+// SetRootEip712 creates a SetRootEip712 instruction
+func SetRootEip712(params SetRootEip712Params) (solana.Instruction, error) {
 	rootSignatures, _, err := pda.RootSignaturesPDA(
 		params.ProgramID,
 		params.MultisigID,
@@ -214,7 +214,7 @@ func SetRoot(params SetRootParams) (solana.Instruction, error) {
 		return nil, fmt.Errorf("failed to derive multisig config PDA: %w", err)
 	}
 
-	ix, err := bindings.NewSetRootInstruction(
+	ix, err := bindings.NewSetRootEip712Instruction(
 		params.MultisigID,
 		params.Root,
 		params.ValidUntil,

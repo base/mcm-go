@@ -27,6 +27,7 @@ var (
 	Instruction_AcceptOwnership    = [8]byte{172, 23, 43, 13, 238, 213, 85, 150}
 	Instruction_SetConfig          = [8]byte{108, 158, 154, 175, 212, 98, 52, 66}
 	Instruction_SetRoot            = [8]byte{183, 49, 10, 206, 168, 183, 131, 67}
+	Instruction_SetRootEip712      = [8]byte{157, 205, 118, 37, 222, 43, 152, 95}
 	Instruction_Execute            = [8]byte{130, 221, 242, 154, 13, 193, 189, 29}
 	Instruction_InitSigners        = [8]byte{102, 182, 129, 16, 138, 142, 223, 196}
 	Instruction_AppendSigners      = [8]byte{238, 209, 251, 39, 41, 241, 146, 25}

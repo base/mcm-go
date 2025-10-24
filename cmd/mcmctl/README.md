@@ -863,7 +863,7 @@ mcmctl proposal set-root --proposal <path>
 
 - Loads proposal from JSON file
 - Computes Merkle root and metadata proof
-- Submits SetRoot transaction to Solana
+- Submits SetRootEip712 transaction to Solana
 - Requires transaction flags (--rpc-url, --ws-url, --mcm-program-id, --authority)
 
 **Example:**

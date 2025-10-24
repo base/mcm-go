@@ -33,7 +33,7 @@ func SetRootCommand() *ucli.Command {
 			defer mcmClient.Close()
 
 			proposalSvc := services.NewProposalService(mcmClient)
-			sig, err := proposalSvc.SetRoot(c.Context, services.SetRootParams{
+			sig, err := proposalSvc.SetRootEip712(c.Context, services.SetRootEip712Params{
 				MultisigID: pwr.MultisigID,
 				Proposal:   pwr,
 			})

@@ -223,7 +223,7 @@ sigsSvc.FinalizeSignatures(ctx, params)
 // Proposal service (includes creation, root setting, and execution)
 proposalSvc := services.NewProposalService(client)
 p, _ := proposalSvc.CreateProposalFromChain(ctx, params)
-proposalSvc.SetRoot(ctx, params)
+proposalSvc.SetRootEip712(ctx, params)
 proposalSvc.Execute(ctx, params) // Execute operations (single, multiple, or all)
 ```
 
@@ -342,7 +342,7 @@ sigsSvc.FinalizeSignatures(ctx, services.FinalizeSignaturesParams{
 
 ```go
 // Set root on-chain
-proposalSvc.SetRoot(ctx, services.SetRootParams{
+proposalSvc.SetRootEip712(ctx, services.SetRootEip712Params{
     MultisigID: multisigID,
     Proposal:   pwr,
 })

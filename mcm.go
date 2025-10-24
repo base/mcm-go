@@ -78,7 +78,7 @@ type (
 	AppendSignaturesParams        = services.AppendSignaturesParams
 	FinalizeSignaturesParams      = services.FinalizeSignaturesParams
 	ClearSignaturesParams         = services.ClearSignaturesParams
-	SetRootParams                 = services.SetRootParams
+	SetRootEip712Params           = services.SetRootEip712Params
 	CreateProposalFromChainParams = services.CreateProposalFromChainParams
 	ExecuteParams                 = services.ExecuteParams
 )
@@ -134,7 +134,7 @@ var (
 var (
 	Initialize         = instructions.Initialize
 	SetConfig          = instructions.SetConfig
-	SetRoot            = instructions.SetRoot
+	SetRootEip712      = instructions.SetRootEip712
 	Execute            = instructions.Execute
 	InitSigners        = instructions.InitSigners
 	AppendSigners      = instructions.AppendSigners

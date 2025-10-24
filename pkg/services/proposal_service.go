@@ -111,14 +111,14 @@ func (s *ProposalService) CreateProposalFromChain(
 	return builder.Build()
 }
 
-// SetRootParams contains parameters for setting a new root
-type SetRootParams struct {
+// SetRootEip712Params contains parameters for setting a new root
+type SetRootEip712Params struct {
 	MultisigID [32]byte
 	Proposal   *proposal.ProposalWithRoot
 }
 
-// SetRoot sets a new Merkle root for the multisig
-func (s *ProposalService) SetRoot(ctx context.Context, params SetRootParams) (solana.Signature, error) {
+// SetRootEip712 sets a new Merkle root for the multisig
+func (s *ProposalService) SetRootEip712(ctx context.Context, params SetRootEip712Params) (solana.Signature, error) {
 	// Convert ProposalWithRoot metadata to RootMetadataInput
 	metadata := bindings.RootMetadataInput{
 		ChainId:              params.Proposal.RootMetadata.ChainID,
@@ -132,7 +132,7 @@ func (s *ProposalService) SetRoot(ctx context.Context, params SetRootParams) (so
 	metadataProof := make([][32]uint8, len(params.Proposal.MetadataProof))
 	copy(metadataProof, params.Proposal.MetadataProof)
 
-	ix, err := instructions.SetRoot(instructions.SetRootParams{
+	ix, err := instructions.SetRootEip712(instructions.SetRootEip712Params{
 		MultisigID:    params.MultisigID,
 		Root:          params.Proposal.Root,
 		ValidUntil:    params.Proposal.ValidUntil,

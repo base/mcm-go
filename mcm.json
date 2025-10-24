@@ -1,5 +1,5 @@
 {
-    "address": "55CNTEUq6cAa2sBA7bkDfJ2bb3uWs7Zh77vAF9H8TnJL",
+    "address": "5vNJx78mz7KVMjhuipyr9jKBKcMrKYGdjGkgE4LUmjKk",
     "metadata": {
         "name": "mcm",
         "version": "0.1.1",
@@ -343,6 +343,106 @@
                 183,
                 131,
                 67
+            ],
+            "accounts": [
+                {
+                    "name": "root_signatures",
+                    "writable": true
+                },
+                {
+                    "name": "root_metadata",
+                    "writable": true
+                },
+                {
+                    "name": "seen_signed_hashes",
+                    "writable": true
+                },
+                {
+                    "name": "expiring_root_and_op_count",
+                    "writable": true
+                },
+                {
+                    "name": "multisig_config"
+                },
+                {
+                    "name": "authority",
+                    "writable": true,
+                    "signer": true
+                },
+                {
+                    "name": "system_program"
+                }
+            ],
+            "args": [
+                {
+                    "name": "multisig_id",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "root",
+                    "type": {
+                        "array": [
+                            "u8",
+                            32
+                        ]
+                    }
+                },
+                {
+                    "name": "valid_until",
+                    "type": "u32"
+                },
+                {
+                    "name": "metadata",
+                    "type": {
+                        "defined": {
+                            "name": "RootMetadataInput"
+                        }
+                    }
+                },
+                {
+                    "name": "metadata_proof",
+                    "type": {
+                        "vec": {
+                            "array": [
+                                "u8",
+                                32
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "set_root_eip712",
+            "docs": [
+                "Set a new Merkle root using EIP-712 signature verification.",
+                "",
+                "This is identical to `set_root` but verifies signatures using EIP-712 typed",
+                "structured data hashing instead of Ethereum Personal Sign format.",
+                "",
+                "# Parameters",
+                "",
+                "- `ctx`: The context containing required accounts (same as `set_root`).",
+                "- `multisig_id`: The multisig instance identifier.",
+                "- `root`: The new Merkle root to set.",
+                "- `valid_until`: timestamp until which the root remains valid.",
+                "- `metadata`: Structured input containing chain_id, multisig, and operation counters.",
+                "- `metadata_proof`: Merkle proof validating the metadata."
+            ],
+            "discriminator": [
+                157,
+                205,
+                118,
+                37,
+                222,
+                43,
+                152,
+                95
             ],
             "accounts": [
                 {
