@@ -271,11 +271,13 @@ signersSvc.InitSigners(ctx, services.InitSignersParams{
     TotalSigners: 10,
 })
 
-// Add signers
-signersSvc.AppendSigners(ctx, services.AppendSignersParams{
+// Add signers (automatically batched in chunks of 10, sends multiple transactions if needed)
+// Note: signerAddresses must be sorted in strictly increasing order
+sigs, err := signersSvc.AppendSigners(ctx, services.AppendSignersParams{
     MultisigID:   multisigID,
-    SignersBatch: signerAddresses,
+    SignersBatch: signerAddresses, // Must be pre-sorted
 })
+// Returns []solana.Signature - one signature per batch transaction
 
 // Finalize
 signersSvc.FinalizeSigners(ctx, services.FinalizeSignersParams{

@@ -41,7 +41,7 @@ func AppendCommand() *ucli.Command {
 				fmt.Println("signers were reordered to be strictly increasing")
 			}
 
-			sig, err := svc.AppendSigners(c.Context, services.AppendSignersParams{
+			sigs, err := svc.AppendSigners(c.Context, services.AppendSignersParams{
 				MultisigID:   multisigID,
 				SignersBatch: signers,
 			})
@@ -50,7 +50,9 @@ func AppendCommand() *ucli.Command {
 			}
 
 			fmt.Printf("Signers appended successfully\n")
-			fmt.Printf("Signature: %s\n", sig)
+			for i, sig := range sigs {
+				fmt.Printf("Transaction %d: %s\n", i+1, sig)
+			}
 			return nil
 		},
 	}

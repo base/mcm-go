@@ -1,10 +1,8 @@
 package services
 
 import (
-	"bytes"
 	"context"
 	"fmt"
-	"sort"
 
 	"github.com/base/mcm-go/pkg/client"
 	"github.com/base/mcm-go/pkg/instructions"
@@ -44,24 +42,35 @@ type AppendSignersParams struct {
 	SignersBatch [][20]uint8
 }
 
-func (s *SignersService) AppendSigners(ctx context.Context, params AppendSignersParams) (solana.Signature, error) {
-	// Sort signers by address (strictly increasing order) as required by the Solana contract
-	sortedSigners, err := sortSigners(params.SignersBatch)
-	if err != nil {
-		return solana.Signature{}, fmt.Errorf("failed to sort signers: %w", err)
+func (s *SignersService) AppendSigners(ctx context.Context, params AppendSignersParams) ([]solana.Signature, error) {
+	// Split into batches of 10 maximum signers per transaction
+	// Note: Callers are responsible for sorting signers before calling this function
+	const maxSignersPerBatch = 10
+	signatures := make([]solana.Signature, 0)
+
+	for i := 0; i < len(params.SignersBatch); i += maxSignersPerBatch {
+		end := min(i+maxSignersPerBatch, len(params.SignersBatch))
+		batch := params.SignersBatch[i:end]
+
+		ix, err := instructions.AppendSigners(instructions.AppendSignersParams{
+			MultisigID:   params.MultisigID,
+			SignersBatch: batch,
+			Authority:    s.client.Payer().PublicKey(),
+			ProgramID:    s.client.ProgramID,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to build append signers instruction for batch %d: %w", i/maxSignersPerBatch+1, err)
+		}
+
+		sig, err := s.client.BuildSignAndSendWithConfirmation(ctx, ix)
+		if err != nil {
+			return nil, fmt.Errorf("failed to send transaction for batch %d: %w", i/maxSignersPerBatch+1, err)
+		}
+
+		signatures = append(signatures, sig)
 	}
 
-	ix, err := instructions.AppendSigners(instructions.AppendSignersParams{
-		MultisigID:   params.MultisigID,
-		SignersBatch: sortedSigners,
-		Authority:    s.client.Payer().PublicKey(),
-		ProgramID:    s.client.ProgramID,
-	})
-	if err != nil {
-		return solana.Signature{}, fmt.Errorf("failed to build append signers instruction: %w", err)
-	}
-
-	return s.client.BuildSignAndSendWithConfirmation(ctx, ix)
+	return signatures, nil
 }
 
 type FinalizeSignersParams struct {
@@ -121,30 +130,4 @@ func (s *SignersService) SetConfig(ctx context.Context, params SetConfigParams) 
 	}
 
 	return s.client.BuildSignAndSendWithConfirmation(ctx, ix)
-}
-
-// sortSigners sorts a batch of signers by address in strictly increasing order.
-// Returns an error if duplicate addresses are detected.
-func sortSigners(signers [][20]uint8) ([][20]uint8, error) {
-	if len(signers) == 0 {
-		return signers, nil
-	}
-
-	// Create a copy to avoid modifying the original slice
-	sorted := make([][20]uint8, len(signers))
-	copy(sorted, signers)
-
-	// Sort by address in ascending order
-	sort.Slice(sorted, func(i, j int) bool {
-		return bytes.Compare(sorted[i][:], sorted[j][:]) < 0
-	})
-
-	// Validate strictly increasing order (no duplicates)
-	for i := 1; i < len(sorted); i++ {
-		if bytes.Equal(sorted[i-1][:], sorted[i][:]) {
-			return nil, fmt.Errorf("duplicate signer address detected: %x", sorted[i])
-		}
-	}
-
-	return sorted, nil
 }
