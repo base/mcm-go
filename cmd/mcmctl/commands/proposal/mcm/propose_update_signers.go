@@ -47,6 +47,11 @@ func UpdateSignersCommand() *ucli.Command {
 				Usage: "Clear existing root when setting config",
 				Value: false,
 			},
+			&ucli.BoolFlag{
+				Name:  "clear-signers",
+				Usage: "Clear existing signers before updating (adds ClearSigners instruction at the beginning)",
+				Value: false,
+			},
 		),
 		Action: func(c *ucli.Context) error {
 			// Parse and validate CLI parameters
@@ -108,6 +113,7 @@ type updateSignersParams struct {
 	signerGroups []uint8
 	groupQuorums [32]uint8
 	groupParents [32]uint8
+	clearSigners bool
 	clearRoot    bool
 }
 
@@ -124,6 +130,7 @@ func parseUpdateSignersParams(c *ucli.Context) (*updateSignersParams, error) {
 	outputPath := c.String("output")
 
 	// 2. Parse specific update-signers parameters
+
 	// Parse new signers (with automatic sorting)
 	newSigners, sorted, err := util.ParseAndSortSigners(c.String("new-signers"))
 	if err != nil {
@@ -154,6 +161,7 @@ func parseUpdateSignersParams(c *ucli.Context) (*updateSignersParams, error) {
 		return nil, fmt.Errorf("failed to parse group-parents: %w", err)
 	}
 
+	clearSigners := c.Bool("clear-signers")
 	clearRoot := c.Bool("clear-root")
 
 	// 3. Return with common fields first
@@ -166,6 +174,7 @@ func parseUpdateSignersParams(c *ucli.Context) (*updateSignersParams, error) {
 		signerGroups:         signerGroups,
 		groupQuorums:         groupQuorums,
 		groupParents:         groupParents,
+		clearSigners:         clearSigners,
 		clearRoot:            clearRoot,
 	}, nil
 }
@@ -179,7 +188,8 @@ func printUpdateSignersConfig(params *updateSignersParams) {
 	fmt.Printf("Signer groups: %v\n", params.signerGroups)
 	fmt.Printf("Group quorums: %v\n", params.groupQuorums)
 	fmt.Printf("Group parents: %v\n", params.groupParents)
-	fmt.Printf("Clear root: %v\n\n", params.clearRoot)
+	fmt.Printf("Clear signers: %v\n\n", params.clearSigners)
+	fmt.Printf("Clear root: %v\n", params.clearRoot)
 }
 
 // buildUpdateSignersInstructions builds all instructions for updating signers
@@ -193,8 +203,22 @@ func buildUpdateSignersInstructions(mcmClient *client.Client, params *updateSign
 
 	proposalIxs := make([]solana.Instruction, 0)
 
+	// 0. Clear signers instruction (optional)
+	if params.clearSigners {
+		fmt.Println("Creating ClearSigners instruction...")
+		clearSignersIx, err := mcmInstructions.ClearSigners(mcmInstructions.ClearSignersParams{
+			MultisigID: params.multisigID,
+			Authority:  mcmAuthority,
+			ProgramID:  mcmClient.ProgramID,
+		})
+		if err != nil {
+			return nil, fmt.Errorf("failed to create clear signers instruction: %w", err)
+		}
+		proposalIxs = append(proposalIxs, clearSignersIx)
+	}
+
 	// 1. Initialize signers instruction
-	fmt.Println("1. Creating InitSigners instruction...")
+	fmt.Println("Creating InitSigners instruction...")
 	initSignersIx, err := mcmInstructions.InitSigners(mcmInstructions.InitSignersParams{
 		MultisigID:   params.multisigID,
 		TotalSigners: uint8(len(params.newSigners)),
@@ -204,12 +228,11 @@ func buildUpdateSignersInstructions(mcmClient *client.Client, params *updateSign
 	if err != nil {
 		return nil, fmt.Errorf("failed to create init signers instruction: %w", err)
 	}
-	fmt.Printf("   Total signers: %d\n", len(params.newSigners))
 	proposalIxs = append(proposalIxs, initSignersIx)
 
 	// 2. Append signers instructions
 	const maxSignersPerAppend = 10
-	fmt.Println("\n2. Creating AppendSigners instruction(s)...")
+	fmt.Println("Creating AppendSigners instruction(s)...")
 	for i := 0; i < len(params.newSigners); i += maxSignersPerAppend {
 		end := min(i+maxSignersPerAppend, len(params.newSigners))
 		signersChunk := params.newSigners[i:end]
@@ -223,12 +246,11 @@ func buildUpdateSignersInstructions(mcmClient *client.Client, params *updateSign
 		if err != nil {
 			return nil, fmt.Errorf("failed to create append signers instruction: %w", err)
 		}
-		fmt.Printf("   Chunk %d: %d signers [%d:%d]\n", (i/maxSignersPerAppend)+1, len(signersChunk), i, end)
 		proposalIxs = append(proposalIxs, appendSignersIx)
 	}
 
 	// 3. Finalize signers instruction
-	fmt.Println("\n3. Creating FinalizeSigners instruction...")
+	fmt.Println("Creating FinalizeSigners instruction...")
 	finalizeSignersIx, err := mcmInstructions.FinalizeSigners(mcmInstructions.FinalizeSignersParams{
 		MultisigID: params.multisigID,
 		Authority:  mcmAuthority,
@@ -237,11 +259,10 @@ func buildUpdateSignersInstructions(mcmClient *client.Client, params *updateSign
 	if err != nil {
 		return nil, fmt.Errorf("failed to create finalize signers instruction: %w", err)
 	}
-	fmt.Println("   Finalize complete")
 	proposalIxs = append(proposalIxs, finalizeSignersIx)
 
 	// 4. SetConfig instruction
-	fmt.Println("\n4. Creating SetConfig instruction...")
+	fmt.Println("Creating SetConfig instruction...")
 	setConfigIx, err := mcmInstructions.SetConfig(mcmInstructions.SetConfigParams{
 		MultisigID:   params.multisigID,
 		SignerGroups: params.signerGroups,
@@ -254,19 +275,7 @@ func buildUpdateSignersInstructions(mcmClient *client.Client, params *updateSign
 	if err != nil {
 		return nil, fmt.Errorf("failed to create set config instruction: %w", err)
 	}
-	fmt.Printf("   Groups: %d, ClearRoot: %v\n", countNonZeroGroups(params.groupQuorums), params.clearRoot)
 	proposalIxs = append(proposalIxs, setConfigIx)
 
 	return proposalIxs, nil
-}
-
-// countNonZeroGroups counts non-zero values in the group quorums array
-func countNonZeroGroups(groupQuorums [32]uint8) int {
-	count := 0
-	for _, q := range groupQuorums {
-		if q != 0 {
-			count++
-		}
-	}
-	return count
 }

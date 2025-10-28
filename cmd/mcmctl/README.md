@@ -301,6 +301,7 @@ mcmctl signers append \
 - Accepts EVM addresses in hex format (must have `0x` prefix)
 - Automatically sorts signers in strictly increasing order
 - Validates for duplicates
+- Automatically batches signers in chunks of 10 per transaction (sends multiple transactions if needed)
 
 **Example:**
 
@@ -577,6 +578,7 @@ mcmctl proposal mcm update-signers \
   --multisig-id <hex32> \
   --valid-until <timestamp> \
   [--clear-root] \
+  [--clear-signers] \
   [--override-previous-root] \
   --output <path>
 ```
@@ -584,21 +586,24 @@ mcmctl proposal mcm update-signers \
 **Features:**
 
 - Generates a complete signers update workflow in a single proposal:
+  0. **ClearSigners** (optional): Clears existing signers if `--clear-signers` flag is set
   1. **InitSigners**: Initializes signer storage with total count
   2. **AppendSigners**: Adds all signers in chunks (max 10 per instruction)
   3. **FinalizeSigners**: Finalizes the signer list
   4. **SetConfig**: Configures signer groups, quorums, and parent relationships
+- Automatically sorts signers in strictly increasing order (warns if reordering occurs)
 - Automatically derives the MCM authority PDA
 - Creates a complete proposal file ready for signing and execution
 - Read-only operation (only requires `--rpc-url` and `--mcm-program-id`, no wallet needed)
 
 **Parameters:**
 
-- `--new-signers`: Comma-separated list of 20-byte hex addresses (with 0x prefix)
+- `--new-signers`: Comma-separated list of 20-byte hex addresses (with 0x prefix). Automatically sorted in strictly increasing order.
 - `--signer-groups`: Group index for each signer (e.g., "0,0,1,1" for 4 signers in 2 groups)
 - `--group-quorums`: Quorum threshold for each group (e.g., "2,3" for 2 groups)
 - `--group-parents`: Parent group index for each group (e.g., "0,0" for 2 root groups)
 - `--clear-root`: Optional flag to clear existing Merkle root (invalidates pending operations)
+- `--clear-signers`: Optional flag to clear existing signers before updating (adds ClearSigners instruction at the beginning)
 
 **Example:**
 
