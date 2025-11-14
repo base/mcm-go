@@ -185,6 +185,7 @@ func fetchAndValidateAuthorities(params *upgradeParams) (solana.PublicKey, error
 }
 
 // fetchUpgradeAuthority fetches and parses the upgrade authority from the program data account
+// TODO: This could be factorized in some internal/loader_v3 package
 func fetchUpgradeAuthority(ctx context.Context, client *rpc.Client, program, programData solana.PublicKey) (solana.PublicKey, error) {
 	// Fetch program account
 	programAccountInfo, err := client.GetAccountInfo(ctx, program)
@@ -225,6 +226,7 @@ func fetchUpgradeAuthority(ctx context.Context, client *rpc.Client, program, pro
 }
 
 // fetchBufferAuthority fetches and parses the buffer authority from the buffer account
+// TODO: This could be factorized in some internal/loader_v3 package
 func fetchBufferAuthority(ctx context.Context, client *rpc.Client, buffer solana.PublicKey) (solana.PublicKey, error) {
 	// Fetch buffer account
 	bufferAccountInfo, err := client.GetAccountInfo(ctx, buffer)
@@ -257,6 +259,7 @@ func fetchBufferAuthority(ctx context.Context, client *rpc.Client, buffer solana
 
 // newUpgradeInstruction builds an "upgrade" instruction for the BPF Loader Upgradeable program.
 // The data (0x03000000) is the 4-byte upgrade instruction discriminator.
+// TODO: This should probably be moved to some internal/loader_v3 package
 func newUpgradeInstruction(
 	programData solana.PublicKey,
 	program solana.PublicKey,

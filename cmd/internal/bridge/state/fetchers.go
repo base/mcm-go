@@ -52,6 +52,7 @@ func (f *Fetcher) GetBridge(ctx context.Context) (*bindings.Bridge, error) {
 }
 
 // GetUpgradeAuthority fetches the upgrade authority from the bridge program's ProgramData account
+// TODO: This could be factorized in some internal/loader_v3 package
 func (f *Fetcher) GetUpgradeAuthority(ctx context.Context) (solana.PublicKey, error) {
 	programData, _, err := mcmPDA.ProgramDataPDA(f.programID)
 	if err != nil {
@@ -68,7 +69,9 @@ func (f *Fetcher) GetUpgradeAuthority(ctx context.Context) (solana.PublicKey, er
 	}
 
 	// ProgramData account structure (BPF Loader Upgradeable):
-	// - 4 bytes: state discriminator (3 = ProgramData)
+	// Serialized with bincode as an enum:
+	// - 4 bytes: enum discriminator (3 = ProgramData)
+	// - 8 bytes: slot (u64)
 	// - 1 byte: option flag for upgrade authority (0 = None, 1 = Some)
 	// - 32 bytes: upgrade authority pubkey (if option = 1)
 	data := accountInfo.Value.Data.GetBinary()
@@ -76,14 +79,14 @@ func (f *Fetcher) GetUpgradeAuthority(ctx context.Context) (solana.PublicKey, er
 		return solana.PublicKey{}, fmt.Errorf("invalid program data account size")
 	}
 
-	// Check if upgrade authority is set (byte 4 should be 1)
-	if data[4] != 1 {
+	// Check if upgrade authority is set (byte 12 should be 1)
+	if data[12] != 1 {
 		return solana.PublicKey{}, fmt.Errorf("program has no upgrade authority (immutable)")
 	}
 
-	// Extract upgrade authority (bytes 5-36)
+	// Extract upgrade authority (bytes 13-45)
 	var upgradeAuthority solana.PublicKey
-	copy(upgradeAuthority[:], data[5:37])
+	copy(upgradeAuthority[:], data[13:45])
 
 	return upgradeAuthority, nil
 }

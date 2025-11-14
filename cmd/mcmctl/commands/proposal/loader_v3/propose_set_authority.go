@@ -51,8 +51,8 @@ func SetAuthorityCommand() *ucli.Command {
 
 			// Warn user if making immutable
 			if params.newAuthority == nil {
-				fmt.Println("\n⚠️  WARNING: This will make the program/buffer IMMUTABLE.")
-				fmt.Println("⚠️  This action is IRREVERSIBLE - no further upgrades or authority changes will be possible.")
+				fmt.Println("WARNING: This will make the program/buffer IMMUTABLE.")
+				fmt.Println("This action is IRREVERSIBLE - no further upgrades or authority changes will be possible.")
 			} else {
 				fmt.Printf("New authority: %s\n", *params.newAuthority)
 			}
@@ -210,6 +210,7 @@ func detectAndResolveTarget(params *setAuthorityParams) (solana.PublicKey, solan
 
 // newSetAuthorityInstruction builds a "set_authority" instruction for the BPF Loader Upgradeable program.
 // The data (0x04000000) is the 4-byte set authority instruction discriminator.
+// TODO: This should probably be moved to some internal/loader_v3 package
 func newSetAuthorityInstruction(
 	target solana.PublicKey, // Buffer or ProgramData account
 	currentAuthority solana.PublicKey, // Current authority (signer)
