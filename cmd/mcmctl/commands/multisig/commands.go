@@ -12,6 +12,7 @@ func Command() *ucli.Command {
 		Subcommands: []*ucli.Command{
 			InitCommand(),
 			PrintAuthorityCommand(),
+			PrintStatusCommand(),
 		},
 	}
 }
